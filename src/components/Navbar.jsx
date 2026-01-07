@@ -5,17 +5,33 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 import {
   FiMenu,
   FiX,
   FiMessageCircle,
+  FiUser,
+  FiLogOut,
 } from "react-icons/fi";
 
 export default function Navbar() {
   const { scrollY } = useScroll();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+
+  // ✅ cek login
+  const isLoggedIn = !!localStorage.getItem("token");
+
+  // ✅ tampilkan auth button HANYA di halaman jobs
+  const isJobsPage = location.pathname.startsWith("/jobs");
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious();
@@ -28,6 +44,12 @@ export default function Navbar() {
 
   const menuClass =
     "hover:opacity-70 transition cursor-pointer";
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
     <>
@@ -58,6 +80,7 @@ export default function Navbar() {
             <NavLink to="/services" className={menuClass}>Services</NavLink>
             <NavLink to="/portfolio" className={menuClass}>Portfolio</NavLink>
             <NavLink to="/catalog" className={menuClass}>Catalog</NavLink>
+            <NavLink to="/jobs" className={menuClass}>Karir / Lowongan</NavLink>
             <NavLink to="/about" className={menuClass}>About</NavLink>
             <NavLink to="/contact" className={menuClass}>Contact</NavLink>
           </ul>
@@ -65,37 +88,46 @@ export default function Navbar() {
           {/* RIGHT SIDE */}
           <div className="flex items-center gap-4">
 
-            {/* MARKETPLACE – DESKTOP */}
-            <div className="hidden md:flex items-center gap-3">
-              <a
-                href="https://www.tokopedia.com/sidomulyo-printing--adver"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-70 hover:opacity-100 transition"
-              >
-                <img src="/logo-tokopedia.png" className="h-5" />
-              </a>
+            {/* 🔥 AUTH ACTION – DESKTOP (HANYA DI JOBS) */}
+            {isJobsPage && (
+              <div className="hidden md:flex items-center gap-3">
+                {!isLoggedIn ? (
+                  <>
+                    <Link
+                      to="/login"
+                      className="text-sm px-4 py-2 border rounded hover:bg-[#f5f5f7]"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/register"
+                      className="text-sm px-4 py-2 bg-[#1d1d1f] text-white rounded"
+                    >
+                      Daftar
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="flex items-center gap-2 text-sm px-4 py-2 border rounded hover:bg-[#f5f5f7]"
+                    >
+                      <FiUser />
+                      Profile
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-2 text-sm px-4 py-2 border rounded hover:bg-red-50 text-red-600"
+                    >
+                      <FiLogOut />
+                      Logout
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
 
-              <a
-                href="https://www.tiktok.com/@sidomulyo.advertising"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-70 hover:opacity-100 transition"
-              >
-                <img src="/logo-tiktokshop.png" className="h-5" />
-              </a>
-
-              <a
-                href="https://shopee.co.id/sidomulyoadvertising"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="opacity-70 hover:opacity-100 transition"
-              >
-                <img src="/logo-shopee.png" className="h-5" />
-              </a>
-            </div>
-
-            {/* WHATSAPP DESKTOP */}
+            {/* WHATSAPP */}
             <a
               href="https://wa.me/6288808888880"
               target="_blank"
@@ -138,6 +170,7 @@ export default function Navbar() {
                 { name: "Services", path: "/services" },
                 { name: "Portfolio", path: "/portfolio" },
                 { name: "Catalog", path: "/catalog" },
+                { name: "Karir / Lowongan", path: "/jobs" },
                 { name: "About", path: "/about" },
                 { name: "Contact", path: "/contact" },
               ].map((item) => (
@@ -145,28 +178,61 @@ export default function Navbar() {
                   <Link
                     to={item.path}
                     onClick={() => setOpen(false)}
-                    className="block px-6 py-5 text-lg
-                               hover:bg-[#f5f5f7]"
+                    className="block px-6 py-5 text-lg hover:bg-[#f5f5f7]"
                   >
                     {item.name}
                   </Link>
                 </li>
               ))}
 
-              {/* MARKETPLACE – MOBILE */}
-              <li className="px-6 py-5">
-                <div className="flex gap-4 items-center">
-                  <a href="https://www.tokopedia.com/sidomulyo-printing--adver" target="_blank">
-                    <img src="/logo-tokopedia.png" className="h-6" />
-                  </a>
-                  <a href="https://www.tiktok.com/@sidomulyo.advertising" target="_blank">
-                    <img src="/logo-tiktokshop.png" className="h-6" />
-                  </a>
-                  <a href="https://shopee.co.id/sidomulyoadvertising" target="_blank">
-                    <img src="/logo-shopee.png" className="h-6" />
-                  </a>
-                </div>
-              </li>
+              {/* 🔥 AUTH – MOBILE (HANYA DI JOBS) */}
+              {isJobsPage && (
+                !isLoggedIn ? (
+                  <>
+                    <li>
+                      <Link
+                        to="/login"
+                        onClick={() => setOpen(false)}
+                        className="block px-6 py-5 text-lg"
+                      >
+                        Login
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/register"
+                        onClick={() => setOpen(false)}
+                        className="block px-6 py-5 text-lg font-semibold"
+                      >
+                        Daftar
+                      </Link>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link
+                        to="/profile"
+                        onClick={() => setOpen(false)}
+                        className="block px-6 py-5 text-lg"
+                      >
+                        Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          setOpen(false);
+                        }}
+                        className="w-full text-left px-6 py-5 text-lg text-red-600"
+                      >
+                        Logout
+                      </button>
+                    </li>
+                  </>
+                )
+              )}
 
               {/* WHATSAPP – MOBILE */}
               <li className="px-6 py-5">
