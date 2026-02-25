@@ -7,6 +7,7 @@ import Services from "./pages/Services";
 import PortfolioPage from "./pages/PortfolioPage";
 import CatalogPage from "./pages/CatalogPage";
 import Contact from "./pages/Contact";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 /* ===== PAGES JOB (FITUR KARIR) ===== */
 import Jobs from "./pages/Jobs";
@@ -36,6 +37,7 @@ export default function App() {
           <Route path="/portfolio" element={<PortfolioPage />} />
           <Route path="/catalog" element={<CatalogPage />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
 
           {/* ===============================
               ROUTE KARIR (PUBLIC)
