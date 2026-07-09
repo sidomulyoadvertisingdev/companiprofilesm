@@ -10,9 +10,6 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^4.4.2",
-    "@astrojs/tailwind": "^5.1.5",
-    "astro": "^5.18.2",
     "axios": "^1.13.2",
     "framer-motion": "^12.23.26",
     "react": "^19.2.0",
@@ -24,6 +21,9 @@
     "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
+    "@astrojs/react": "^4.4.2",
+    "@astrojs/tailwind": "^5.1.5",
+    "astro": "^5.18.2",
     "autoprefixer": "^10.4.23",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",

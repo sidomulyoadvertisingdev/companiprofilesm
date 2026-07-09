@@ -69,7 +69,7 @@ export default function Navbar() {
           {/* LOGO */}
           <a href="/">
             <img
-              src="/logo-sidomulyo.png"
+              src="/logo-sidomulyo.webp"
               alt="Sidomulyo Advertising"
               className="h-9 w-auto"
             />

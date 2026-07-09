@@ -28,17 +28,17 @@ export default function Catalog() {
             {
               title: "Neon Box Akrilik",
               desc: "Pencahayaan LED premium & desain modern",
-              image: "/catalog-1.png",
+              image: "/catalog-1.webp",
             },
             {
               title: "Banner Flexi",
               desc: "Material kuat untuk indoor & outdoor",
-              image: "/catalog-2.png",
+              image: "/catalog-2.webp",
             },
             {
               title: "Huruf Timbul",
               desc: "Akrilik & stainless tampilan eksklusif",
-              image: "/catalog-3.png",
+              image: "/catalog-3.webp",
             },
           ].map((item, index) => (
             <motion.div

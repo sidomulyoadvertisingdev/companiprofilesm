@@ -27,17 +27,17 @@ export default function Portfolio() {
             {
               title: "Neon Box Premium",
               desc: "Akrilik & LED",
-              image: "/portfolio-1.png",
+              image: "/portfolio-1.webp",
             },
             {
               title: "Banner Promosi",
               desc: "Cetak Outdoor & Indoor",
-              image: "/portfolio-2.png",
+              image: "/portfolio-2.webp",
             },
             {
               title: "Huruf Timbul",
               desc: "Stainless & Akrilik",
-              image: "/portfolio-3.png",
+              image: "/portfolio-3.webp",
             },
           ].map((item, i) => (
             <motion.div

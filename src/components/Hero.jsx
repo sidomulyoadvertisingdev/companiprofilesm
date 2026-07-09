@@ -79,7 +79,7 @@ export default function Hero() {
           viewport={{ once: true }}
         >
           <img
-            src="/hero-product.jpg"
+            src="/hero-product.webp"
             alt="Produk Sidomulyo Advertising"
             className="w-full rounded-3xl shadow-sm"
           />

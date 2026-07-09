@@ -32,11 +32,11 @@ export default function CatalogPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-16">
             {[
-              { title: "Neon Box Akrilik", desc: "LED premium & desain modern", image: "/catalog-1.png" },
-              { title: "Banner Flexi", desc: "Indoor & outdoor berkualitas", image: "/catalog-2.png" },
-              { title: "Huruf Timbul", desc: "Akrilik & stainless", image: "/catalog-3.png" },
-              { title: "Sticker & Digital Printing", desc: "Cetak tajam & tahan lama", image: "/catalog-4.png" },
-              { title: "Akrilik Custom", desc: "Display & branding eksklusif", image: "/catalog-5.png" },
+              { title: "Neon Box Akrilik", desc: "LED premium & desain modern", image: "/catalog-1.webp" },
+              { title: "Banner Flexi", desc: "Indoor & outdoor berkualitas", image: "/catalog-2.webp" },
+              { title: "Huruf Timbul", desc: "Akrilik & stainless", image: "/catalog-3.webp" },
+              { title: "Sticker & Digital Printing", desc: "Cetak tajam & tahan lama", image: "/catalog-4.webp" },
+              { title: "Akrilik Custom", desc: "Display & branding eksklusif", image: "/catalog-5.webp" },
             ].map((item, i) => (
               <motion.div
                 key={i}

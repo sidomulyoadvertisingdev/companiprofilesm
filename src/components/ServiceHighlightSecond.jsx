@@ -25,7 +25,7 @@ export default function ServiceHighlightSecond() {
           className="relative"
         >
           <img
-            src="/service-banner.png"
+            src="/service-banner.webp"
             alt="Banner dan Huruf Timbul"
             className="w-full rounded-3xl shadow-sm"
           />

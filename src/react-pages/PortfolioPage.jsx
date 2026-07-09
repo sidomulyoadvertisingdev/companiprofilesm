@@ -32,12 +32,12 @@ export default function PortfolioPage() {
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid md:grid-cols-3 gap-16">
             {[
-              { title: "Neon Box Toko", category: "Neon Box", image: "/portfolio-1.png" },
-              { title: "Banner Promosi", category: "Banner", image: "/portfolio-2.png" },
-              { title: "Huruf Timbul", category: "Huruf Timbul", image: "/portfolio-3.png" },
-              { title: "Neon Box Outdoor", category: "Neon Box", image: "/portfolio-4.png" },
-              { title: "Branding Toko", category: "Advertising", image: "/portfolio-5.png" },
-              { title: "Display Akrilik", category: "Akrilik", image: "/portfolio-6.png" },
+              { title: "Neon Box Toko", category: "Neon Box", image: "/portfolio-1.webp" },
+              { title: "Banner Promosi", category: "Banner", image: "/portfolio-2.webp" },
+              { title: "Huruf Timbul", category: "Huruf Timbul", image: "/portfolio-3.webp" },
+              { title: "Neon Box Outdoor", category: "Neon Box", image: "/portfolio-4.webp" },
+              { title: "Branding Toko", category: "Advertising", image: "/portfolio-5.webp" },
+              { title: "Display Akrilik", category: "Akrilik", image: "/portfolio-6.webp" },
             ].map((item, i) => (
               <motion.div
                 key={i}

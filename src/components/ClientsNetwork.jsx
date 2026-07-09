@@ -30,7 +30,7 @@ export default function ClientsNetwork() {
           className="flex justify-center"
         >
           <img
-            src="/clients-network.png"
+            src="/clients-network.webp"
             alt="Jaringan Perusahaan Sidomulyo Advertising"
             className="w-full max-w-4xl object-contain"
           />

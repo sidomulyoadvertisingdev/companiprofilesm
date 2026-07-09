@@ -31,7 +31,7 @@ export default function ServiceHighlight() {
           className="relative"
         >
           <img
-            src="/service-neonbox.jpg"
+            src="/service-neonbox.webp"
             alt="Neon Box Sidomulyo Advertising"
             className="w-full rounded-3xl shadow-sm"
           />
