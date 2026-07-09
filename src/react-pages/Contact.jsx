@@ -70,9 +70,9 @@ export default function Contact() {
             <FiMapPin className="text-2xl mb-4" />
             <h3 className="text-xl font-medium mb-2">Alamat</h3>
             <p className="text-[#6e6e73] leading-relaxed">
-              SIDOMULYO ADVERTISING & PRINTING<br />
-              Jl. Kartini No.108<br />
-              Salatiga, Jawa Tengah 50711
+               SIDOMULYO ADVERTISING & PRINTING<br />
+               Jl. Kartini No.108, Sidorejo<br />
+               Kota Salatiga, Jawa Tengah 50711
             </p>
           </motion.div>
         </div>

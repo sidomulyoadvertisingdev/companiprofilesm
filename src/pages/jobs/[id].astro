@@ -9,6 +9,9 @@ export function getStaticPaths() {
 const { id } = Astro.params;
 ---
 
-<MainLayout>
+<MainLayout
+  title="Detail Lowongan Kerja - Sidomulyo Advertising"
+  description="Lihat detail lowongan pekerjaan di Sidomulyo Advertising. Lamar sekarang dan bergabung dengan tim kami."
+>
   <JobDetail id={id} client:load />
 </MainLayout>

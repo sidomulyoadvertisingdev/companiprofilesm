@@ -1,5 +1,11 @@
 ---
 import "../styles/index.css";
+
+const {
+  title = "Sidomulyo Advertising - Jasa Percetakan & Advertising di Salatiga",
+  description = "Sidomulyo Advertising adalah perusahaan percetakan dan advertising di Salatiga. Melayani neon box, banner, digital printing, huruf timbul, dan branding dengan mesin tercanggih.",
+  image = "/hero-product.webp",
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -8,7 +14,68 @@ import "../styles/index.css";
     <meta charset="UTF-8" />
     <link rel="icon" type="image/webp" href="/logo-sidomulyo.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sidomulyo Advertising</title>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="id_ID" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+
+    <link rel="canonical" href={Astro.url} />
+
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      name: "Sidomulyo Advertising & Printing",
+      image: "https://sidomulyo-advertising.com/logo-sidomulyo.webp",
+      url: "https://sidomulyo-advertising.com",
+      telephone: "+6288808888880",
+      email: "sosmedsidomulyo@gmail.com",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "Jl. Kartini No.108",
+        addressLocality: "Salatiga",
+        addressRegion: "Jawa Tengah",
+        postalCode: "50711",
+        addressCountry: "ID",
+      },
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: -7.3329,
+        longitude: 110.5048,
+      },
+      openingHoursSpecification: [
+        { "@type": "OpeningHoursSpecification", dayOfWeek: "Monday", opens: "08:00", closes: "22:00" },
+        { "@type": "OpeningHoursSpecification", dayOfWeek: "Tuesday", opens: "08:00", closes: "22:00" },
+        { "@type": "OpeningHoursSpecification", dayOfWeek: "Wednesday", opens: "08:00", closes: "22:00" },
+        { "@type": "OpeningHoursSpecification", dayOfWeek: "Thursday", opens: "08:00", closes: "22:00" },
+        { "@type": "OpeningHoursSpecification", dayOfWeek: "Friday", opens: "08:00", closes: "22:00" },
+        { "@type": "OpeningHoursSpecification", dayOfWeek: "Saturday", opens: "08:00", closes: "22:00" },
+        { "@type": "OpeningHoursSpecification", dayOfWeek: "Sunday", opens: "08:00", closes: "22:00" },
+      ],
+      areaServed: ["Salatiga", "Semarang", "Surakarta", "Jawa Tengah"],
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "Layanan Percetakan & Advertising",
+        itemListElement: [
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Cetak Banner & MMT" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Neon Box" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Digital Printing" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Cetak Buku" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Cetak A3 Murah" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Huruf Timbul" } },
+          { "@type": "Offer", itemOffered: { "@type": "Service", name: "Branding & Advertising" } },
+        ],
+      },
+    })} />
   </head>
   <body class="bg-white text-[#1d1d1f]">
     <slot />

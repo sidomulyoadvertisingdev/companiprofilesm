@@ -2,7 +2,10 @@
 import MainLayout from "../layouts/MainLayout.astro";
 ---
 
-<MainLayout>
+<MainLayout
+  title="Tentang Sidomulyo Advertising - Percetakan Profesional di Salatiga"
+  description="Kenali Sidomulyo Advertising, perusahaan percetakan dan advertising profesional di Salatiga. Berpengalaman dengan mesin tercanggih untuk neon box, banner, digital printing, dan branding."
+>
   <main class="pt-20">
     <section class="min-h-[70vh] flex items-center bg-white">
       <div class="max-w-6xl mx-auto px-6">
@@ -10,9 +13,7 @@ import MainLayout from "../layouts/MainLayout.astro";
           Tentang Sidomulyo Advertising
         </h1>
         <p class="text-xl text-[#6e6e73] max-w-3xl leading-relaxed">
-          Kami adalah perusahaan yang bergerak di bidang percetakan dan
-          advertising dengan fokus pada kualitas, ketepatan, dan kepuasan
-          pelanggan.
+          Kami adalah perusahaan percetakan dan advertising profesional yang berpusat di <strong>Salatiga, Jawa Tengah</strong> — didukung mesin tercanggih dan tim ahli untuk hasil terbaik.
         </p>
       </div>
     </section>
@@ -24,11 +25,7 @@ import MainLayout from "../layouts/MainLayout.astro";
             Siapa Kami
           </h2>
           <p class="text-[#6e6e73] text-lg leading-relaxed">
-            Sidomulyo Advertising adalah salah satu perusahaan yang bergerak
-            di bidang jasa digital printing dan advertising. Kami didukung
-            oleh mesin-mesin modern, tenaga profesional, serta pengalaman
-            dalam menangani berbagai kebutuhan promosi dan branding
-            perusahaan.
+            Sidomulyo Advertising adalah perusahaan digital printing dan advertising yang berlokasi di <strong>Jl. Kartini No.108, Salatiga</strong>. Kami melayani berbagai kebutuhan promosi dan branding untuk bisnis di Salatiga, Semarang, Surakarta, dan seluruh Jawa Tengah dengan mesin tercanggih dan hasil cepat jadi.
           </p>
         </div>
         <div class="flex justify-center">
@@ -37,6 +34,9 @@ import MainLayout from "../layouts/MainLayout.astro";
               src="/logo-sidomulyo.webp"
               alt="Sidomulyo Advertising"
               class="h-40 md:h-48 w-auto object-contain mx-auto"
+              width="500"
+              height="200"
+              loading="lazy"
             />
           </div>
         </div>
@@ -48,17 +48,16 @@ import MainLayout from "../layouts/MainLayout.astro";
         <div>
           <h3 class="text-3xl font-semibold mb-4">Visi</h3>
           <p class="text-[#6e6e73] text-lg">
-            Menjadi perusahaan percetakan dan advertising terpercaya dengan
-            kualitas terbaik di Indonesia.
+            Menjadi perusahaan percetakan dan advertising terpercaya dengan kualitas terbaik di Indonesia — dimulai dari Salatiga untuk seluruh nusantara.
           </p>
         </div>
         <div>
           <h3 class="text-3xl font-semibold mb-4">Misi</h3>
           <ul class="text-[#6e6e73] text-lg space-y-3 list-disc list-inside">
-            <li>Memberikan hasil cetak berkualitas tinggi</li>
-            <li>Mengutamakan kepuasan pelanggan</li>
-            <li>Mengikuti perkembangan teknologi percetakan</li>
-            <li>Memberikan pelayanan cepat dan profesional</li>
+            <li>Memberikan hasil cetak berkualitas tinggi dengan mesin paling modern</li>
+            <li>Mengutamakan kepuasan pelanggan dengan layanan cepat jadi</li>
+            <li>Mengikuti perkembangan teknologi percetakan terbaru</li>
+            <li>Memberikan pelayanan cepat, profesional, dan tepat waktu</li>
           </ul>
         </div>
       </div>
@@ -74,8 +73,7 @@ import MainLayout from "../layouts/MainLayout.astro";
             <div class="bg-white rounded-3xl p-8">
               <h4 class="text-xl font-medium mb-3">{item}</h4>
               <p class="text-[#6e6e73]">
-                Kami berkomitmen memberikan layanan terbaik dengan standar
-                profesional.
+                Kami berkomitmen memberikan layanan terbaik dengan standar profesional dan mesin tercanggih.
               </p>
             </div>
           ))}
@@ -87,6 +85,9 @@ import MainLayout from "../layouts/MainLayout.astro";
       <h2 class="text-4xl font-semibold mb-6">
         Siap Bekerja Sama dengan Kami?
       </h2>
+      <p class="text-lg text-[#6e6e73] mb-8 max-w-3xl mx-auto">
+        Butuh percetakan cepat jadi di Salatiga? Hubungi kami sekarang!
+      </p>
       <a
         href="https://wa.me/6288808888880"
         target="_blank"
@@ -96,7 +97,7 @@ import MainLayout from "../layouts/MainLayout.astro";
                px-8 py-4 text-sm font-medium
                hover:bg-black transition"
       >
-        Hubungi Kami
+        Hubungi Kami via WhatsApp
       </a>
     </section>
   </main>

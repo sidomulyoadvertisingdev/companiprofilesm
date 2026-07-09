@@ -3,7 +3,10 @@ import MainLayout from "../layouts/MainLayout.astro";
 import { FiArrowRight } from "react-icons/fi";
 ---
 
-<MainLayout>
+<MainLayout
+  title="Layanan Percetakan & Advertising - Sidomulyo Advertising Salatiga"
+  description="Layanan percetakan dan advertising profesional: neon box, digital printing, huruf timbul, branding. Cepat jadi, mesin tercanggih, hasil berkualitas. Melayani Salatiga, Semarang, dan sekitarnya."
+>
   <main class="pt-20">
     <section class="min-h-[60vh] flex items-center bg-white">
       <div class="max-w-6xl mx-auto px-6">
@@ -11,8 +14,7 @@ import { FiArrowRight } from "react-icons/fi";
           Layanan Kami
         </h1>
         <p class="text-xl text-[#6e6e73] max-w-3xl">
-          Kami menyediakan berbagai layanan percetakan dan advertising
-          untuk mendukung branding serta promosi bisnis Anda.
+          Kami menyediakan berbagai layanan percetakan dan advertising untuk mendukung branding serta promosi bisnis Anda — cepat jadi dengan mesin tercanggih.
         </p>
       </div>
     </section>
@@ -22,19 +24,19 @@ import { FiArrowRight } from "react-icons/fi";
         {[
           {
             title: "Neon Box",
-            desc: "Pembuatan neon box akrilik dan LED dengan desain modern, pencahayaan optimal, dan material berkualitas tinggi.",
+            desc: "Pembuatan neon box akrilik dan LED dengan desain modern, pencahayaan optimal, dan material berkualitas tinggi. Cocok untuk branding toko Anda.",
           },
           {
             title: "Digital Printing",
-            desc: "Cetak banner, spanduk, poster, stiker, dan media promosi lainnya dengan hasil tajam dan warna akurat.",
+            desc: "Cetak banner, spanduk, poster, stiker, dan media promosi lainnya dengan hasil tajam dan warna akurat. Cepat jadi untuk kebutuhan mendesak.",
           },
           {
             title: "Huruf Timbul",
-            desc: "Produksi huruf timbul dari akrilik, stainless, dan galvanis untuk tampilan branding yang eksklusif.",
+            desc: "Produksi huruf timbul dari akrilik, stainless, dan galvanis untuk tampilan branding yang eksklusif dan profesional.",
           },
           {
             title: "Branding & Advertising",
-            desc: "Solusi branding menyeluruh untuk toko, kantor, dan usaha Anda agar tampil lebih profesional.",
+            desc: "Solusi branding menyeluruh untuk toko, kantor, dan usaha Anda agar tampil lebih profesional dan menarik perhatian pelanggan.",
           },
         ].map((item) => (
           <div class="bg-white rounded-3xl p-10">
@@ -70,7 +72,7 @@ import { FiArrowRight } from "react-icons/fi";
                px-10 py-4 text-sm font-medium
                hover:bg-black transition"
       >
-        Konsultasi Sekarang
+        Konsultasi Sekarang via WhatsApp
         <FiArrowRight />
       </a>
     </section>

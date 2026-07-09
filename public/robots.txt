@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sidomulyo-advertising.com/sitemap-index.xml
