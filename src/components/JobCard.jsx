@@ -1,10 +1,7 @@
-import { Link } from "react-router-dom";
-
 export default function JobCard({ job }) {
   return (
     <div className="rounded-xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md transition">
 
-      {/* THUMBNAIL */}
       {job.thumbnail ? (
         <img
           src={job.thumbnail}
@@ -17,7 +14,6 @@ export default function JobCard({ job }) {
         </div>
       )}
 
-      {/* CONTENT */}
       <div className="p-5">
         <h3 className="text-lg font-semibold mb-1">
           {job.title}
@@ -27,12 +23,12 @@ export default function JobCard({ job }) {
           {job.location} • {job.job_type}
         </p>
 
-        <Link
-          to={`/jobs/${job.id}`}
+        <a
+          href={`/jobs/${job.id}`}
           className="inline-block text-sm font-medium text-black hover:underline"
         >
           Lihat Detail →
-        </Link>
+        </a>
       </div>
     </div>
   );

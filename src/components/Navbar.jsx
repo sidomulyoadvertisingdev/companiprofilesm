@@ -4,13 +4,7 @@ import {
   useMotionValueEvent,
   AnimatePresence,
 } from "framer-motion";
-import { useState } from "react";
-import {
-  Link,
-  NavLink,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   FiMenu,
   FiX,
@@ -21,17 +15,18 @@ import {
 
 export default function Navbar() {
   const { scrollY } = useScroll();
-  const navigate = useNavigate();
-  const location = useLocation();
-
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
 
-  // ✅ cek login
-  const isLoggedIn = !!localStorage.getItem("token");
+  const [isClient, setIsClient] = useState(false);
+  const [pathname, setPathname] = useState("");
+  useEffect(() => {
+    setIsClient(true);
+    setPathname(window.location.pathname);
+  }, []);
 
-  // ✅ tampilkan auth button HANYA di halaman jobs
-  const isJobsPage = location.pathname.startsWith("/jobs");
+  const isLoggedIn = isClient ? !!localStorage.getItem("token") : false;
+  const isJobsPage = isClient ? pathname.startsWith("/jobs") : false;
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious();
@@ -42,18 +37,24 @@ export default function Navbar() {
     }
   });
 
-  const menuClass =
-    "hover:opacity-70 transition cursor-pointer";
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    navigate("/login");
+    window.location.href = "/login";
   };
+
+  const navItems = [
+    { name: "Home", path: "/" },
+    { name: "Services", path: "/services" },
+    { name: "Portfolio", path: "/portfolio" },
+    { name: "Catalog", path: "/catalog" },
+    { name: "Karir / Lowongan", path: "/jobs" },
+    { name: "About", path: "/about" },
+    { name: "Contact", path: "/contact" },
+  ];
 
   return (
     <>
-      {/* NAVBAR */}
       <motion.nav
         variants={{
           visible: { y: 0 },
@@ -66,55 +67,57 @@ export default function Navbar() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
 
           {/* LOGO */}
-          <Link to="/">
+          <a href="/">
             <img
               src="/logo-sidomulyo.png"
               alt="Sidomulyo Advertising"
               className="h-9 w-auto"
             />
-          </Link>
+          </a>
 
           {/* DESKTOP MENU */}
           <ul className="hidden md:flex space-x-8 text-sm text-[#1d1d1f]">
-            <NavLink to="/" className={menuClass}>Home</NavLink>
-            <NavLink to="/services" className={menuClass}>Services</NavLink>
-            <NavLink to="/portfolio" className={menuClass}>Portfolio</NavLink>
-            <NavLink to="/catalog" className={menuClass}>Catalog</NavLink>
-            <NavLink to="/jobs" className={menuClass}>Karir / Lowongan</NavLink>
-            <NavLink to="/about" className={menuClass}>About</NavLink>
-            <NavLink to="/contact" className={menuClass}>Contact</NavLink>
+            {navItems.map((item) => (
+              <a
+                key={item.path}
+                href={item.path}
+                className={`hover:opacity-70 transition cursor-pointer ${pathname === item.path ? "opacity-50" : ""}`}
+              >
+                {item.name}
+              </a>
+            ))}
           </ul>
 
           {/* RIGHT SIDE */}
           <div className="flex items-center gap-4">
 
-            {/* 🔥 AUTH ACTION – DESKTOP (HANYA DI JOBS) */}
+            {/* AUTH ACTION – DESKTOP (HANYA DI JOBS) */}
             {isJobsPage && (
               <div className="hidden md:flex items-center gap-3">
                 {!isLoggedIn ? (
                   <>
-                    <Link
-                      to="/login"
+                    <a
+                      href="/login"
                       className="text-sm px-4 py-2 border rounded hover:bg-[#f5f5f7]"
                     >
                       Login
-                    </Link>
-                    <Link
-                      to="/register"
+                    </a>
+                    <a
+                      href="/register"
                       className="text-sm px-4 py-2 bg-[#1d1d1f] text-white rounded"
                     >
                       Daftar
-                    </Link>
+                    </a>
                   </>
                 ) : (
                   <>
-                    <Link
-                      to="/profile"
+                    <a
+                      href="/profile"
                       className="flex items-center gap-2 text-sm px-4 py-2 border rounded hover:bg-[#f5f5f7]"
                     >
                       <FiUser />
                       Profile
-                    </Link>
+                    </a>
                     <button
                       onClick={handleLogout}
                       className="flex items-center gap-2 text-sm px-4 py-2 border rounded hover:bg-red-50 text-red-600"
@@ -164,60 +167,51 @@ export default function Navbar() {
                        backdrop-blur bg-white/90 border-b border-[#e5e5e5]"
           >
             <ul className="flex flex-col divide-y">
-
-              {[
-                { name: "Home", path: "/" },
-                { name: "Services", path: "/services" },
-                { name: "Portfolio", path: "/portfolio" },
-                { name: "Catalog", path: "/catalog" },
-                { name: "Karir / Lowongan", path: "/jobs" },
-                { name: "About", path: "/about" },
-                { name: "Contact", path: "/contact" },
-              ].map((item) => (
-                <li key={item.name}>
-                  <Link
-                    to={item.path}
+              {navItems.map((item) => (
+                <li key={item.path}>
+                  <a
+                    href={item.path}
                     onClick={() => setOpen(false)}
                     className="block px-6 py-5 text-lg hover:bg-[#f5f5f7]"
                   >
                     {item.name}
-                  </Link>
+                  </a>
                 </li>
               ))}
 
-              {/* 🔥 AUTH – MOBILE (HANYA DI JOBS) */}
+              {/* AUTH – MOBILE (HANYA DI JOBS) */}
               {isJobsPage && (
                 !isLoggedIn ? (
                   <>
                     <li>
-                      <Link
-                        to="/login"
+                      <a
+                        href="/login"
                         onClick={() => setOpen(false)}
                         className="block px-6 py-5 text-lg"
                       >
                         Login
-                      </Link>
+                      </a>
                     </li>
                     <li>
-                      <Link
-                        to="/register"
+                      <a
+                        href="/register"
                         onClick={() => setOpen(false)}
                         className="block px-6 py-5 text-lg font-semibold"
                       >
                         Daftar
-                      </Link>
+                      </a>
                     </li>
                   </>
                 ) : (
                   <>
                     <li>
-                      <Link
-                        to="/profile"
+                      <a
+                        href="/profile"
                         onClick={() => setOpen(false)}
                         className="block px-6 py-5 text-lg"
                       >
                         Profile
-                      </Link>
+                      </a>
                     </li>
                     <li>
                       <button

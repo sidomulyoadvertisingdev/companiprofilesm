@@ -1,0 +1,22 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Hero from "../components/Hero.jsx";
+import ServiceHighlight from "../components/ServiceHighlight.jsx";
+import ServiceHighlightSecond from "../components/ServiceHighlightSecond.jsx";
+import Portfolio from "../components/Portfolio.jsx";
+import ClientsNetwork from "../components/ClientsNetwork.jsx";
+import Catalog from "../components/Catalog.jsx";
+import CTA from "../components/CTA.jsx";
+---
+
+<MainLayout>
+  <main class="pt-20">
+    <Hero client:visible />
+    <ServiceHighlight client:visible />
+    <ServiceHighlightSecond client:visible />
+    <Portfolio client:visible />
+    <ClientsNetwork client:visible />
+    <Catalog client:visible />
+    <CTA client:visible />
+  </main>
+</MainLayout>

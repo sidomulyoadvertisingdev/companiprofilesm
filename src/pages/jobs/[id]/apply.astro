@@ -1,0 +1,14 @@
+---
+import MainLayout from "../../../layouts/MainLayout.astro";
+import ApplyJob from "../../../react-pages/ApplyJob.jsx";
+
+export function getStaticPaths() {
+  return [{ params: { id: "1" } }];
+}
+
+const { id } = Astro.params;
+---
+
+<MainLayout>
+  <ApplyJob id={id} client:load />
+</MainLayout>
