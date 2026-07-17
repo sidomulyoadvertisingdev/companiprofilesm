@@ -35,3 +35,26 @@ export function getClientIP(request) {
   if (xr) return xr;
   return "127.0.0.1";
 }
+
+// Reverse-geocode GPS coordinates to an accurate city/region/country.
+// Uses BigDataCloud's free client API (no API key required). Returns the
+// same shape as lookupIP so callers can treat both uniformly.
+export async function reverseGeocode(latitude, longitude) {
+  if (latitude == null || longitude == null) {
+    return { city: "", region: "", country: "", latitude, longitude };
+  }
+  try {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+    const d = await res.json();
+    return {
+      city: d.city || d.locality || "",
+      region: d.principalSubdivision || d.principalSubdivisionCode || "",
+      country: d.countryName || "",
+      latitude,
+      longitude,
+    };
+  } catch {
+    return { city: "", region: "", country: "", latitude, longitude };
+  }
+}

@@ -200,6 +200,7 @@ const TABLES = [
     os VARCHAR(50) NOT NULL DEFAULT '',
     latitude DOUBLE DEFAULT NULL,
     longitude DOUBLE DEFAULT NULL,
+    location_source ENUM('ip','gps') DEFAULT NULL,
     UNIQUE KEY idx_visitor_id (visitor_id),
     INDEX idx_last_seen (last_seen),
     INDEX idx_city (city)
@@ -210,5 +211,27 @@ const TABLES = [
 export async function initSchema() {
   for (const sql of TABLES) {
     await db.execute(sql);
+  }
+
+  // Idempotently add columns that were introduced after the initial schema,
+  // since CREATE TABLE IF NOT EXISTS won't alter an already-existing table.
+  await ensureColumn(
+    "analytics_visitors",
+    "location_source",
+    "ENUM('ip','gps') DEFAULT NULL"
+  );
+}
+
+async function ensureColumn(table, column, definition) {
+  try {
+    const [rows] = await db.execute(
+      `SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = ? AND column_name = ?`,
+      [table, column]
+    );
+    if (rows.length === 0) {
+      await db.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+    }
+  } catch (err) {
+    console.error(`[schema] ensureColumn ${table}.${column} failed:`, err.message);
   }
 }

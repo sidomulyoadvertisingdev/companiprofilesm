@@ -29,14 +29,16 @@ export async function POST({ request }) {
     const isClick = eventType === "click" ? 1 : 0;
     const isVisit = eventType === "pageview" ? 1 : 0;
     await db.execute(
-      `INSERT INTO analytics_visitors (visitor_id, total_visits, total_clicks, city, region, country, device_type, browser, os, latitude, longitude)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `INSERT INTO analytics_visitors (visitor_id, total_visits, total_clicks, city, region, country, device_type, browser, os, latitude, longitude, location_source)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ip')
        ON DUPLICATE KEY UPDATE
          total_visits = total_visits + VALUES(total_visits),
          total_clicks = total_clicks + VALUES(total_clicks),
-         city = IF(VALUES(city) != '', VALUES(city), city),
-         region = IF(VALUES(region) != '', VALUES(region), region),
-         country = IF(VALUES(country) != '', VALUES(country), country),
+         city = IF(location_source = 'gps', city, IF(VALUES(city) != '', VALUES(city), city)),
+         region = IF(location_source = 'gps', region, IF(VALUES(region) != '', VALUES(region), region)),
+         country = IF(location_source = 'gps', country, IF(VALUES(country) != '', VALUES(country), country)),
+         latitude = IF(location_source = 'gps', latitude, VALUES(latitude)),
+         longitude = IF(location_source = 'gps', longitude, VALUES(longitude)),
          device_type = IF(VALUES(device_type) != 'unknown', VALUES(device_type), device_type),
          browser = IF(VALUES(browser) != 'Other', VALUES(browser), browser),
          os = IF(VALUES(os) != 'Other', VALUES(os), os)`,

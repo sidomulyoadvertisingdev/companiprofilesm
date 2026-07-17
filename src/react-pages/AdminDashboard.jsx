@@ -22,6 +22,8 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 const TABS = [
   { key: "services", label: "Layanan", icon: FiGrid, group: "Konten" },
@@ -1379,6 +1381,98 @@ function StatCard({ icon: Icon, label, value, sub }) {
   );
 }
 
+function VisitorMap() {
+  const mapRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let map = null;
+    let cancelled = false;
+    const markers = L.layerGroup();
+
+    async function init() {
+      if (!mapRef.current) return;
+
+      map = L.map(mapRef.current, { scrollWheelZoom: false }).setView([-2.5, 118], 4);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap",
+        maxZoom: 18,
+      }).addTo(map);
+      markers.addTo(map);
+
+      try {
+        const res = await fetch("/api/admin/analytics/visitors-map");
+        const d = await res.json();
+        if (cancelled || !map) return;
+        const pts = d.data || [];
+        setCount(pts.length);
+
+        const gpsIcon = L.divIcon({
+          className: "",
+          html: `<span style="display:block;width:12px;height:12px;border-radius:9999px;background:#f97316;border:2px solid #fff;box-shadow:0 0 0 2px rgba(249,115,22,.4)"></span>`,
+          iconSize: [12, 12],
+        });
+        const ipIcon = L.divIcon({
+          className: "",
+          html: `<span style="display:block;width:12px;height:12px;border-radius:9999px;background:#94a3b8;border:2px solid #fff;box-shadow:0 0 0 2px rgba(148,163,184,.4)"></span>`,
+          iconSize: [12, 12],
+        });
+
+        let hasGps = false;
+        pts.forEach((p) => {
+          const isGps = p.location_source === "gps";
+          if (isGps) hasGps = true;
+          const m = L.marker([p.latitude, p.longitude], { icon: isGps ? gpsIcon : ipIcon });
+          const when = new Date(p.last_seen).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+          m.bindPopup(
+            `<div style="font-size:12px;min-width:140px"><strong>${p.city || "-"}</strong><br/>${p.region || ""}${p.region && p.country ? ", " : ""}${p.country || ""}<br/><span style="color:#6e6e73">${p.device_type || ""} · ${when}</span><br/><span style="color:${isGps ? "#f97316" : "#94a3b8"}">${isGps ? "GPS" : "IP"}</span></div>`
+          );
+          markers.addLayer(m);
+        });
+
+        if (hasGps) {
+          const gpsPts = pts.filter((p) => p.location_source === "gps");
+          const avgLat = gpsPts.reduce((s, p) => s + p.latitude, 0) / gpsPts.length;
+          const avgLng = gpsPts.reduce((s, p) => s + p.longitude, 0) / gpsPts.length;
+          map.setView([avgLat, avgLng], 6);
+        } else if (pts.length) {
+          const avgLat = pts.reduce((s, p) => s + p.latitude, 0) / pts.length;
+          const avgLng = pts.reduce((s, p) => s + p.longitude, 0) / pts.length;
+          map.setView([avgLat, avgLng], 5);
+        }
+      } catch {
+        /* ignore map load errors */
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    init();
+
+    return () => {
+      cancelled = true;
+      if (map) map.remove();
+    };
+  }, []);
+
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-[#e5e5e5] dark:border-slate-700 mb-2">
+      <div ref={mapRef} className="h-64 w-full bg-[#f0f0f2] dark:bg-slate-800" />
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center text-xs text-[#6e6e73] dark:text-slate-400">
+          Memuat peta lokasi…
+        </div>
+      )}
+      {!loading && count === 0 && (
+        <div className="absolute inset-0 flex items-center justify-center text-xs text-[#6e6e73] dark:text-slate-400">
+          Belum ada data lokasi
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AnalyticsDashboard() {
   const [range, setRange] = useState("30d");
   const [data, setData] = useState(null);
@@ -1564,7 +1658,12 @@ function AnalyticsDashboard() {
             </div>
 
             <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-5">
-              <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white mb-4">Lokasi Pengunjung</h3>
+              <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white mb-3">Lokasi Pengunjung</h3>
+              <VisitorMap />
+              <div className="flex items-center gap-4 mt-3 mb-4 text-[11px] text-[#6e6e73] dark:text-slate-400">
+                <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-orange-500" /> GPS (akurat)</span>
+                <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-slate-400" /> IP (perkiraan)</span>
+              </div>
               <div className="space-y-2">
                 {data.topCities.length === 0 && <p className="text-xs text-[#6e6e73] dark:text-slate-400">Belum ada data</p>}
                 {data.topCities.map((c, i) => (

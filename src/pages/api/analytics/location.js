@@ -1,4 +1,5 @@
 import db from "../../../lib/db.js";
+import { reverseGeocode } from "../../../lib/geo.js";
 
 export const prerender = false;
 
@@ -9,9 +10,14 @@ export async function POST({ request }) {
       return new Response(JSON.stringify({ message: "Missing data" }), { status: 400 });
     }
 
+    // Derive an accurate city/region/country from the device GPS coordinates.
+    const geo = await reverseGeocode(latitude, longitude);
+
     await db.execute(
-      `UPDATE analytics_visitors SET latitude = ?, longitude = ? WHERE visitor_id = ?`,
-      [latitude, longitude, visitorId]
+      `UPDATE analytics_visitors
+       SET latitude = ?, longitude = ?, city = ?, region = ?, country = ?, location_source = 'gps'
+       WHERE visitor_id = ?`,
+      [latitude, longitude, geo.city, geo.region, geo.country, visitorId]
     );
 
     await db.execute(
@@ -19,7 +25,7 @@ export async function POST({ request }) {
       [latitude, longitude, visitorId, visitorId]
     );
 
-    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+    return new Response(JSON.stringify({ ok: true, geo }), { status: 200 });
   } catch (err) {
     return new Response(JSON.stringify({ message: err.message }), { status: 500 });
   }
