@@ -72,6 +72,7 @@ export default function Hero({ initialData, children }) {
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
                   href="#portfolio"
+                  data-track="cta-lihat-portofolio-hero"
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 text-white px-6 py-3 text-sm font-semibold hover:bg-orange-400 transition"
                 >
                   Lihat Portofolio
@@ -81,6 +82,7 @@ export default function Hero({ initialData, children }) {
                   href={waLink}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-track="cta-whatsapp-hero"
                   className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 text-white px-6 py-3 text-sm font-semibold hover:bg-white/10 transition"
                 >
                   Hubungi Kami

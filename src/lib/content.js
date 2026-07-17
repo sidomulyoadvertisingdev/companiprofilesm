@@ -49,3 +49,15 @@ export async function getNav() {
   if (import.meta.env.SSR) return (await import("./queries.js")).getNav();
   return (await import("./api.js")).getNav();
 }
+export async function getPosts() {
+  if (import.meta.env.SSR) return (await import("./queries.js")).getPosts();
+  return (await import("./api.js")).getPosts();
+}
+export async function getPublishedPosts() {
+  if (import.meta.env.SSR) return (await import("./queries.js")).getPublishedPosts();
+  return (await import("./api.js")).getPosts();
+}
+export async function getPost(id) {
+  if (import.meta.env.SSR) return (await import("./queries.js")).getPost(id);
+  return (await import("./api.js")).getPost(id);
+}

@@ -13,11 +13,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (!admin) return redirect("/admin/login");
   }
 
-  // Protect mutating API endpoints (anything except GET) except auth routes
+  // Protect mutating API endpoints (anything except GET) except auth routes and analytics
   if (path.startsWith("/api")) {
     const isWrite = ["POST", "PUT", "DELETE"].includes(request.method);
     const isAuthRoute = path.startsWith("/api/auth");
-    if (isWrite && !isAuthRoute && !admin) {
+    const isAnalyticsRoute = path.startsWith("/api/analytics");
+    if (isWrite && !isAuthRoute && !isAnalyticsRoute && !admin) {
       return new Response(JSON.stringify({ message: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },

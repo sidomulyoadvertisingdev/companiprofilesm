@@ -76,7 +76,43 @@ export async function getNav() {
     { name: "Services", path: "/services" },
     { name: "Portfolio", path: "/portfolio" },
     { name: "Catalog", path: "/catalog" },
+    { name: "Blog", path: "/blog" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
   ];
+}
+
+export async function getPosts() {
+  const [rows] = await db.execute("SELECT id, title, slug, excerpt, featured_image, tags_json, meta_title, meta_description, status, author, created_at, updated_at FROM posts ORDER BY created_at DESC");
+  return rows.map((r) => ({
+    id: r.id, title: r.title, slug: r.slug, excerpt: r.excerpt,
+    featuredImage: r.featured_image, tags: JSON.parse(r.tags_json || "[]"),
+    metaTitle: r.meta_title, metaDescription: r.meta_description,
+    status: r.status, author: r.author,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  }));
+}
+
+export async function getPublishedPosts() {
+  const [rows] = await db.execute("SELECT id, title, slug, excerpt, featured_image, tags_json, meta_title, meta_description, status, author, created_at, updated_at FROM posts WHERE status = 'published' ORDER BY created_at DESC");
+  return rows.map((r) => ({
+    id: r.id, title: r.title, slug: r.slug, excerpt: r.excerpt,
+    featuredImage: r.featured_image, tags: JSON.parse(r.tags_json || "[]"),
+    metaTitle: r.meta_title, metaDescription: r.meta_description,
+    status: r.status, author: r.author,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  }));
+}
+
+export async function getPost(id) {
+  const [rows] = await db.execute("SELECT * FROM posts WHERE id = ?", [id]);
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    id: r.id, title: r.title, slug: r.slug, excerpt: r.excerpt, content: r.content,
+    featuredImage: r.featured_image, tags: JSON.parse(r.tags_json || "[]"),
+    metaTitle: r.meta_title, metaDescription: r.meta_description,
+    status: r.status, author: r.author,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  };
 }

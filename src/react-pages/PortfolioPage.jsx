@@ -108,6 +108,7 @@ export default function PortfolioPage({ initialData, siteData }) {
           href={wa}
           target="_blank"
           rel="noopener noreferrer"
+          data-track="cta-konsultasi-portfolio"
           className="inline-flex items-center gap-2 rounded-full bg-orange-500 text-white px-10 py-4 text-sm font-semibold hover:bg-orange-400 transition"
         >
           Konsultasi Proyek Anda

@@ -1,13 +1,17 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { FiArrowRight } from "react-icons/fi";
-import { getProducts } from "../lib/content.js";
+import { getProducts, getSite } from "../lib/content.js";
 
 export default function Catalog({ initialData }) {
   const [products, setProducts] = useState(initialData || []);
+  const [site, setSite] = useState(null);
   useEffect(() => {
     if (!initialData) getProducts().then(setProducts);
+    getSite().then(setSite);
   }, [initialData]);
+
+  const wa = site ? `https://wa.me/${site.phone}` : "#";
 
   return (
     <section className="py-28 bg-white dark:bg-[#0a0a1a] transition-colors">
@@ -61,9 +65,10 @@ export default function Catalog({ initialData }) {
                   {item.priceText}
                 </p>
                 <a
-                  href="https://wa.me/6288808888880"
+                  href={wa}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-track="cta-pesan-sekarang-catalog"
                   className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-orange-600 hover:gap-2 transition-all"
                 >
                   Pesan Sekarang <FiArrowRight />

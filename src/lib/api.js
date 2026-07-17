@@ -23,3 +23,5 @@ export const getPartners = () => getJSON("/api/partners");
 export const getTestimonials = () => getJSON("/api/testimonials");
 export const getStats = () => getJSON("/api/stats");
 export const getNav = () => getJSON("/api/nav");
+export const getPosts = () => getJSON("/api/posts");
+export const getPost = (id) => getJSON(`/api/posts/${id}`);

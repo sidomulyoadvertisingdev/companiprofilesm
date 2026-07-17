@@ -26,6 +26,7 @@ export default function CTA({ initialData }) {
           href={waLink}
           target="_blank"
           rel="noopener noreferrer"
+          data-track="cta-whatsapp-cta-section"
           className="inline-flex items-center gap-2 rounded-full bg-orange-500 text-white px-8 py-4 text-sm font-semibold hover:bg-orange-400 transition"
         >
           Hubungi via WhatsApp

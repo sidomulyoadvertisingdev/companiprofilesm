@@ -30,7 +30,7 @@ export default function Footer() {
           <h4 className="font-semibold text-[#1d1d1f] dark:text-white mb-3">Kontak</h4>
           <p className="text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
             WhatsApp:{" "}
-            <a href={wa} className="hover:underline text-orange-600">
+            <a href={wa} className="hover:underline text-orange-600" data-track="cta-whatsapp-footer">
               {phoneDisplay}
             </a>
             <br />

@@ -76,6 +76,7 @@ export default function CatalogPage({ initialData, siteData }) {
                     href={wa}
                     target="_blank"
                     rel="noopener noreferrer"
+                    data-track="cta-tanya-produk-catalog"
                     className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-orange-600 dark:text-orange-400 hover:gap-2 transition-all"
                   >
                     Tanya Produk <FiArrowRight />
@@ -97,6 +98,7 @@ export default function CatalogPage({ initialData, siteData }) {
           href={wa}
           target="_blank"
           rel="noopener noreferrer"
+          data-track="cta-konsultasi-catalog"
           className="inline-flex items-center gap-2 rounded-full bg-orange-500 text-white px-10 py-4 text-sm font-semibold hover:bg-orange-400 transition"
         >
           Konsultasi & Pemesanan

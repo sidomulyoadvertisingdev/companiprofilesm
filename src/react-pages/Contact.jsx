@@ -52,7 +52,7 @@ export default function Contact({ initialData }) {
             <FiPhone className="text-2xl mb-4" />
             <h3 className="text-xl font-medium mb-2 dark:text-white">WhatsApp</h3>
             <p className="text-[#6e6e73] dark:text-slate-400 mb-4">{phoneDisplay}</p>
-            <a href={wa} target="_blank" rel="noopener noreferrer" className="text-orange-600 dark:text-orange-400 hover:underline">
+            <a href={wa} target="_blank" rel="noopener noreferrer" data-track="cta-whatsapp-contact" className="text-orange-600 dark:text-orange-400 hover:underline">
               Chat Sekarang
             </a>
           </motion.div>
