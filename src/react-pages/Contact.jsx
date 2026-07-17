@@ -5,11 +5,41 @@ import { getSite } from "../lib/content.js";
 
 export default function Contact({ initialData }) {
   const [site, setSite] = useState(initialData || null);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [status, setStatus] = useState("idle"); // idle | sending | sent | error
+  const [error, setError] = useState("");
+
   useEffect(() => {
     if (!initialData) getSite().then(setSite);
   }, [initialData]);
 
   if (!site) return <main className="pt-20 min-h-screen" />;
+
+  const update = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.message.trim()) {
+      setError("Nama dan pesan wajib diisi");
+      return;
+    }
+    setStatus("sending");
+    setError("");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.message || "Gagal mengirim pesan");
+      setStatus("sent");
+      setForm({ name: "", email: "", message: "" });
+    } catch (err) {
+      setStatus("error");
+      setError(err.message);
+    }
+  };
 
   const { address, phoneDisplay, email, phone, mapsEmbed, mapsUrl } = site;
   const wa = `https://wa.me/${phone}`;
@@ -125,20 +155,29 @@ export default function Contact({ initialData }) {
           >
             Kirim Pesan
           </motion.h2>
-          <form className="space-y-6">
-            <input type="text" placeholder="Nama" className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
-            <input type="email" placeholder="Email" className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
-            <textarea placeholder="Pesan" rows="5" className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2
-                         rounded-full bg-[#1d1d1f] dark:bg-white dark:text-[#1d1d1f] text-white
-                         px-8 py-4 text-sm font-medium
-                         hover:bg-black dark:hover:bg-gray-200 transition-colors"
-            >
-              Kirim Pesan
-              <FiSend />
-            </button>
+          <form className="space-y-6" onSubmit={submit}>
+            <input type="text" placeholder="Nama" value={form.name} onChange={update("name")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
+            <input type="email" placeholder="Email" value={form.email} onChange={update("email")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
+            <textarea placeholder="Pesan" rows="5" value={form.message} onChange={update("message")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
+            <div className="flex items-center gap-4">
+              <button
+                type="submit"
+                disabled={status === "sending"}
+                className="inline-flex items-center gap-2
+                           rounded-full bg-[#1d1d1f] dark:bg-white dark:text-[#1d1d1f] text-white
+                           px-8 py-4 text-sm font-medium
+                           hover:bg-black dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                {status === "sending" ? "Mengirim…" : "Kirim Pesan"}
+                <FiSend />
+              </button>
+              {status === "sent" && (
+                <span className="text-sm font-medium text-green-600 dark:text-green-400">Pesan terkirim!</span>
+              )}
+              {status === "error" && (
+                <span className="text-sm font-medium text-red-600 dark:text-red-400">{error}</span>
+              )}
+            </div>
           </form>
         </div>
       </section>

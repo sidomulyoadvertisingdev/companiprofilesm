@@ -12,7 +12,7 @@ import {
   FiBell, FiLogOut, FiChevronDown, FiChevronLeft, FiChevronRight,
   FiTag, FiPercent, FiPlus, FiTrash2,
   FiFileText, FiEdit3, FiSearch, FiCalendar, FiBarChart2, FiMapPin, FiMonitor,
-  FiSun, FiMoon,
+  FiSun, FiMoon, FiMail,
 } from "react-icons/fi";
 import {
   TbBold, TbItalic, TbStrikethrough, TbCode, TbH1, TbH2, TbH3,
@@ -31,6 +31,7 @@ const TABS = [
   { key: "posts", label: "Blog", icon: FiFileText, group: "Konten" },
   { key: "partners", label: "Mitra", icon: FiUsers, group: "Konten" },
   { key: "testimonials", label: "Testimoni", icon: FiMessageSquare, group: "Konten" },
+  { key: "messages", label: "Pesan Masuk", icon: FiMail, group: "Konten" },
   { key: "marketplace", label: "Kode Redeem", icon: FiTag, group: "Marketplace" },
   { key: "redeem-rules", label: "Aturan Redeem", icon: FiPercent, group: "Marketplace" },
   { key: "site", label: "Profil Usaha", icon: FiSettings, group: "Pengaturan" },
@@ -46,6 +47,8 @@ export default function AdminDashboard({ admin }) {
   const [portfolio, setPortfolio] = useState([]);
   const [partners, setPartners] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [marketplaceCodes, setMarketplaceCodes] = useState([]);
   const [redeemRules, setRedeemRules] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -87,14 +90,16 @@ export default function AdminDashboard({ admin }) {
   };
 
   const load = useCallback(async () => {
-    const [s, sv, p, pf, pt, t, mc, rr, po] = await Promise.all([
+    const [s, sv, p, pf, pt, t, mc, rr, po, msgs] = await Promise.all([
       getSite(), getServices(), getProducts(), getPortfolio(), getPartners(), getTestimonials(),
       safeJson("/api/marketplace", []),
       safeJson("/api/admin/redeem-rules", []),
       safeJson("/api/posts", []),
+      safeJson("/api/admin/contact-messages", { data: [], unread: 0 }),
     ]);
     setSite(s); setServices(sv); setProducts(p); setPortfolio(pf); setPartners(pt);
     setTestimonials(t); setMarketplaceCodes(mc); setRedeemRules(rr); setPosts(po);
+    setMessages(msgs.data); setUnreadCount(msgs.unread);
   }, []);
 
   useEffect(() => { load().catch(() => {}); }, [load]);
@@ -180,6 +185,11 @@ export default function AdminDashboard({ admin }) {
                         {posts.length}
                       </span>
                     )}
+                    {!collapsed && t.key === "messages" && unreadCount > 0 && (
+                      <span className="ml-auto text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded-full font-semibold">
+                        {unreadCount}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -232,6 +242,7 @@ export default function AdminDashboard({ admin }) {
             ]} endpoint="portfolio" onChanged={load} />
           )}
           {tab === "posts" && <BlogManager posts={posts} onChanged={load} />}
+          {tab === "messages" && <MessagesManager messages={messages} onChanged={load} />}
           {tab === "partners" && (
             <CrudTable rows={partners} fields={[
               { key: "name", label: "Nama" }, { key: "logo", label: "Logo", type: "image" },
@@ -852,7 +863,127 @@ function ToolbarBtn({ onClick, active, disabled, children, title }) {
   );
 }
 
-/* ─── Generic CrudTable ───────────────────────────────────────────────── */
+/* ─── Messages Manager (Pesan Masuk dari form Hubungi Kami) ─────────────── */
+
+function MessagesManager({ messages, onChanged }) {
+  const [search, setSearch] = useState("");
+  const [expanded, setExpanded] = useState(null);
+
+  const filtered = messages.filter((m) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return (
+      m.name.toLowerCase().includes(q) ||
+      m.email.toLowerCase().includes(q) ||
+      m.subject.toLowerCase().includes(q) ||
+      m.message.toLowerCase().includes(q)
+    );
+  });
+
+  const markRead = async (id, isRead) => {
+    try {
+      await fetch(`/api/admin/contact-messages/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_read: isRead }),
+      });
+      onChanged();
+    } catch { /* ignore */ }
+  };
+
+  const remove = async (id) => {
+    if (!confirm("Hapus pesan ini?")) return;
+    try {
+      await fetch(`/api/admin/contact-messages/${id}`, { method: "DELETE" });
+      onChanged();
+    } catch { /* ignore */ }
+  };
+
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-sm text-[#6e6e73] dark:text-slate-400">
+          {messages.length} pesan · {messages.filter((m) => !m.is_read).length} belum dibaca
+        </p>
+      </div>
+      <div className="relative max-w-xs mb-4">
+        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-slate-500 text-sm" />
+        <input type="text" placeholder="Cari nama, email, pesan..." value={search} onChange={(e) => setSearch(e.target.value)}
+          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+      </div>
+
+      <div className="space-y-3">
+        {filtered.map((m) => {
+          const isOpen = expanded === m.id;
+          const when = new Date(m.created_at).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+          return (
+            <div key={m.id} className={`bg-white dark:bg-[#1a1a2e] rounded-3xl border p-4 transition-colors ${m.is_read ? "border-[#e5e5e5] dark:border-slate-700" : "border-orange-300 dark:border-orange-500/40 bg-orange-50/40 dark:bg-orange-500/5"}`}>
+              <div className="flex items-start gap-4">
+                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white grid place-items-center font-semibold text-sm shrink-0">
+                  {m.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => { setExpanded(isOpen ? null : m.id); if (!m.is_read) markRead(m.id, true); }}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-white">{m.name}</h3>
+                    {!m.is_read && <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full font-semibold">BARU</span>}
+                    {m.subject && <span className="text-xs text-[#6e6e73] dark:text-slate-400">· {m.subject}</span>}
+                  </div>
+                  <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-0.5">
+                    {m.email}{m.phone ? ` · ${m.phone}` : ""} · {when}
+                  </p>
+                  <p className="text-sm text-[#1d1d1f] dark:text-slate-200 mt-1.5 line-clamp-2">
+                    {m.message}
+                  </p>
+                </div>
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  {m.is_read ? (
+                    <button onClick={() => markRead(m.id, false)} className="text-[11px] font-semibold text-[#6e6e73] dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors" title="Tandai belum dibaca">
+                      Tandai Baru
+                    </button>
+                  ) : (
+                    <button onClick={() => markRead(m.id, true)} className="text-[11px] font-semibold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors" title="Tandai sudah dibaca">
+                      Tandai Dibaca
+                    </button>
+                  )}
+                  <button onClick={() => remove(m.id)} className="p-1.5 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Hapus">
+                    <FiTrash2 className="text-sm" />
+                  </button>
+                </div>
+              </div>
+              {isOpen && (
+                <div className="mt-4 pt-4 border-t border-[#e5e5e5] dark:border-slate-700">
+                  <p className="text-sm text-[#1d1d1f] dark:text-slate-100 whitespace-pre-wrap leading-relaxed">{m.message}</p>
+                  <div className="flex items-center gap-3 mt-3">
+                    {m.email && (
+                      <a href={`mailto:${m.email}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline">
+                        <FiMail /> Balas Email
+                      </a>
+                    )}
+                    {m.phone && (
+                      <a href={`https://wa.me/${m.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-600 dark:text-green-400 hover:underline">
+                        <FiSend /> Chat WA
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {filtered.length === 0 && (
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-12 text-center">
+            <FiMail className="mx-auto text-4xl text-gray-200 dark:text-slate-600 mb-3" />
+            <p className="text-sm text-[#6e6e73] dark:text-slate-400 font-medium">
+              {messages.length === 0 ? "Belum ada pesan masuk" : "Tidak ditemukan"}
+            </p>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+
 
 function CrudTable({ rows, fields, endpoint, onChanged }) {
   const [editing, setEditing] = useState(null);
