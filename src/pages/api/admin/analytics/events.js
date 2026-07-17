@@ -18,7 +18,7 @@ export async function GET({ url, cookies }) {
     const params = type ? [type, limit, offset] : [limit, offset];
 
     const [rows] = await db.execute(
-      `SELECT id, visitor_id, event_type, page_url, element_target, element_text, city, region, country, device_type, browser, os, created_at
+      `SELECT id, visitor_id, fingerprint, event_type, page_url, element_target, element_text, city, region, country, device_type, browser, os, timezone, locale, ip_address, created_at
        FROM analytics_events ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`, params
     );
 

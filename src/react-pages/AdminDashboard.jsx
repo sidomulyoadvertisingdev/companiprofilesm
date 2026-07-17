@@ -1766,6 +1766,7 @@ function AnalyticsDashboard() {
                         <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Target</th>
                         <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Lokasi</th>
                         <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">IP</th>
+                        <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Device ID</th>
                         <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Device</th>
                       </tr>
                     </thead>
@@ -1784,6 +1785,7 @@ function AnalyticsDashboard() {
                           <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400 truncate max-w-[120px]">{e.element_text || e.element_target || "-"}</td>
                           <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400">{e.city || "-"}, {e.country || "-"}</td>
                           <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400 whitespace-nowrap">{e.ip_address || "-"}</td>
+                          <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400 whitespace-nowrap" title={e.fingerprint || ""}>{e.fingerprint ? e.fingerprint.slice(0, 8) + "…" : "-"}</td>
                           <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400">{e.browser} / {e.os}</td>
                         </tr>
                       ))}

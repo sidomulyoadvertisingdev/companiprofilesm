@@ -2,7 +2,8 @@
   if (typeof window === "undefined") return;
 
   const COOKIE = "sb_vid";
-  function getVisitorId() {
+
+  function getCookieId() {
     const match = document.cookie.match(new RegExp("(?:^|; )" + COOKIE + "=([^;]*)"));
     if (match) return match[1];
     const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36);
@@ -10,11 +11,33 @@
     return id;
   }
 
+  // Stable device ID via fingerprint (no permission needed). Falls back to cookie.
+  let fingerprintId = null;
+  function getVisitorId() {
+    if (fingerprintId) return fingerprintId;
+    return getCookieId();
+  }
+
+  async function initFingerprint() {
+    try {
+      const fp = await import("https://openfpcdn.io/fingerprintjs/v4");
+      const agent = await fp.load();
+      const result = await agent.get();
+      fingerprintId = result.visitorId;
+    } catch {
+      /* keep cookie fallback */
+    }
+  }
+  initFingerprint();
+
   function track(type, data) {
     const body = {
       visitorId: getVisitorId(),
+      fingerprint: fingerprintId,
       eventType: type,
       pageUrl: location.pathname + location.search,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
+      locale: navigator.language || "",
       screenWidth: screen.width,
       screenHeight: screen.height,
       ...data,

@@ -179,6 +179,9 @@ const TABLES = [
     screen_height INT DEFAULT NULL,
     user_agent VARCHAR(500) NOT NULL DEFAULT '',
     ip_address VARCHAR(45) NOT NULL DEFAULT '',
+    fingerprint VARCHAR(64) NOT NULL DEFAULT '',
+    timezone VARCHAR(64) NOT NULL DEFAULT '',
+    locale VARCHAR(16) NOT NULL DEFAULT '',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_visitor (visitor_id),
     INDEX idx_event_type (event_type),
@@ -202,6 +205,9 @@ const TABLES = [
     longitude DOUBLE DEFAULT NULL,
     location_source ENUM('ip','gps') DEFAULT NULL,
     ip_address VARCHAR(45) NOT NULL DEFAULT '',
+    fingerprint VARCHAR(64) NOT NULL DEFAULT '',
+    timezone VARCHAR(64) NOT NULL DEFAULT '',
+    locale VARCHAR(16) NOT NULL DEFAULT '',
     UNIQUE KEY idx_visitor_id (visitor_id),
     INDEX idx_last_seen (last_seen),
     INDEX idx_city (city)
@@ -225,6 +231,36 @@ export async function initSchema() {
     "analytics_visitors",
     "ip_address",
     "VARCHAR(45) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_visitors",
+    "fingerprint",
+    "VARCHAR(64) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_visitors",
+    "timezone",
+    "VARCHAR(64) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_visitors",
+    "locale",
+    "VARCHAR(16) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "fingerprint",
+    "VARCHAR(64) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "timezone",
+    "VARCHAR(64) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "locale",
+    "VARCHAR(16) NOT NULL DEFAULT ''"
   );
 }
 
