@@ -201,6 +201,7 @@ const TABLES = [
     latitude DOUBLE DEFAULT NULL,
     longitude DOUBLE DEFAULT NULL,
     location_source ENUM('ip','gps') DEFAULT NULL,
+    ip_address VARCHAR(45) NOT NULL DEFAULT '',
     UNIQUE KEY idx_visitor_id (visitor_id),
     INDEX idx_last_seen (last_seen),
     INDEX idx_city (city)
@@ -219,6 +220,11 @@ export async function initSchema() {
     "analytics_visitors",
     "location_source",
     "ENUM('ip','gps') DEFAULT NULL"
+  );
+  await ensureColumn(
+    "analytics_visitors",
+    "ip_address",
+    "VARCHAR(45) NOT NULL DEFAULT ''"
   );
 }
 

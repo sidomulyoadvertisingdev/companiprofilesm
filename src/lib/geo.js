@@ -2,29 +2,36 @@ const cache = new Map();
 const CACHE_TTL = 60 * 60 * 1000;
 
 export async function lookupIP(ip) {
-  if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("192.168.") || ip.startsWith("10.")) {
+  if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("192.168.") || ip.startsWith("10.") || ip.startsWith("172.")) {
     return { city: "", region: "", country: "", latitude: null, longitude: null };
   }
   const cached = cache.get(ip);
   if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.data;
 
-  try {
-    const res = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city,lat,lon`, {
-      signal: AbortSignal.timeout(3000),
-    });
-    const d = await res.json();
-    if (d.status === "success") {
+  const providers = [
+    `https://api.bigdatacloud.net/data/ip-geolocation-client?ip=${encodeURIComponent(ip)}&localityLanguage=id`,
+    `https://ipapi.co/${encodeURIComponent(ip)}/json/`,
+  ];
+
+  for (const url of providers) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(3000) });
+      const d = await res.json();
+      if (d.error || d.status === "fail" || d.status === 403) continue;
       const data = {
-        city: d.city || "",
-        region: d.regionName || "",
-        country: d.country || "",
-        latitude: d.lat || null,
-        longitude: d.lon || null,
+        city: d.city || d.locality || "",
+        region: d.region || d.principalSubdivision || "",
+        country: d.country_name || d.countryName || "",
+        latitude: d.latitude ?? d.lat ?? null,
+        longitude: d.longitude ?? d.lon ?? null,
       };
+      if (!data.city && !data.region && !data.country) continue;
       cache.set(ip, { data, ts: Date.now() });
       return data;
+    } catch {
+      /* try next provider */
     }
-  } catch (e) { void e; }
+  }
   return { city: "", region: "", country: "", latitude: null, longitude: null };
 }
 

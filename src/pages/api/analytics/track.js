@@ -29,8 +29,8 @@ export async function POST({ request }) {
     const isClick = eventType === "click" ? 1 : 0;
     const isVisit = eventType === "pageview" ? 1 : 0;
     await db.execute(
-      `INSERT INTO analytics_visitors (visitor_id, total_visits, total_clicks, city, region, country, device_type, browser, os, latitude, longitude, location_source)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ip')
+      `INSERT INTO analytics_visitors (visitor_id, total_visits, total_clicks, city, region, country, device_type, browser, os, latitude, longitude, location_source, ip_address)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ip', ?)
        ON DUPLICATE KEY UPDATE
          total_visits = total_visits + VALUES(total_visits),
          total_clicks = total_clicks + VALUES(total_clicks),
@@ -41,8 +41,9 @@ export async function POST({ request }) {
          longitude = IF(location_source = 'gps', longitude, VALUES(longitude)),
          device_type = IF(VALUES(device_type) != 'unknown', VALUES(device_type), device_type),
          browser = IF(VALUES(browser) != 'Other', VALUES(browser), browser),
-         os = IF(VALUES(os) != 'Other', VALUES(os), os)`,
-      [visitorId, isVisit, isClick, geo.city, geo.region, geo.country, ua.deviceType, ua.browser, ua.os, geo.latitude, geo.longitude]
+         os = IF(VALUES(os) != 'Other', VALUES(os), os),
+         ip_address = IF(VALUES(ip_address) != '', VALUES(ip_address), ip_address)`,
+      [visitorId, isVisit, isClick, geo.city, geo.region, geo.country, ua.deviceType, ua.browser, ua.os, geo.latitude, geo.longitude, ip]
     );
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 });

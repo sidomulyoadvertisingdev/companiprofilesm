@@ -1449,7 +1449,7 @@ function VisitorMap() {
           const m = L.marker([p.latitude, p.longitude], { icon: isGps ? gpsIcon : ipIcon });
           const when = new Date(p.last_seen).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
           m.bindPopup(
-            `<div style="font-size:12px;min-width:140px"><strong>${p.city || "-"}</strong><br/>${p.region || ""}${p.region && p.country ? ", " : ""}${p.country || ""}<br/><span style="color:#6e6e73">${p.device_type || ""} · ${when}</span><br/><span style="color:${isGps ? "#f97316" : "#94a3b8"}">${isGps ? "GPS" : "IP"}</span></div>`
+            `<div style="font-size:12px;min-width:140px"><strong>${p.city || "-"}</strong><br/>${p.region || ""}${p.region && p.country ? ", " : ""}${p.country || ""}<br/><span style="color:#6e6e73">${p.device_type || ""} · ${when}</span><br/><span style="color:#6e6e73">IP: ${p.ip_address || "-"}</span><br/><span style="color:${isGps ? "#f97316" : "#94a3b8"}">${isGps ? "GPS" : "IP"}</span></div>`
           );
           markers.addLayer(m);
         });
@@ -1765,6 +1765,7 @@ function AnalyticsDashboard() {
                         <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Halaman</th>
                         <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Target</th>
                         <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Lokasi</th>
+                        <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">IP</th>
                         <th className="px-3 py-2 text-[10px] font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Device</th>
                       </tr>
                     </thead>
@@ -1782,6 +1783,7 @@ function AnalyticsDashboard() {
                           <td className="px-3 py-2 text-xs text-[#1d1d1f] dark:text-white truncate max-w-[150px]">{e.page_url}</td>
                           <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400 truncate max-w-[120px]">{e.element_text || e.element_target || "-"}</td>
                           <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400">{e.city || "-"}, {e.country || "-"}</td>
+                          <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400 whitespace-nowrap">{e.ip_address || "-"}</td>
                           <td className="px-3 py-2 text-xs text-[#6e6e73] dark:text-slate-400">{e.browser} / {e.os}</td>
                         </tr>
                       ))}

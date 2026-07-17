@@ -14,7 +14,7 @@ export async function GET({ url, cookies }) {
     const limit = String(Math.min(parseInt(url.searchParams.get("limit") || "200") || 200, 500));
 
     const [rows] = await db.execute(
-      `SELECT visitor_id, city, region, country, latitude, longitude, device_type, location_source, last_seen
+      `SELECT visitor_id, city, region, country, latitude, longitude, device_type, location_source, last_seen, ip_address
        FROM analytics_visitors
        WHERE latitude IS NOT NULL AND longitude IS NOT NULL
        ORDER BY last_seen DESC LIMIT ?`,
