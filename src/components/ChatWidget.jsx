@@ -39,6 +39,9 @@ export default function ChatWidget() {
     setMessages(next);
     setInput("");
     setLoading(true);
+
+    const start = Date.now();
+    let reply = "Maaf, saya tidak bisa menjawab saat ini.";
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -46,12 +49,32 @@ export default function ChatWidget() {
         body: JSON.stringify({ messages: next }),
       });
       const d = await res.json();
-      const reply = d.reply || "Maaf, saya tidak bisa menjawab saat ini.";
-      setMessages([...next, { role: "assistant", content: reply }]);
+      reply = d.reply || reply;
     } catch {
-      setMessages([...next, { role: "assistant", content: "Maaf, terjadi gangguan. Silakan hubungi kami via WhatsApp." }]);
-    } finally {
-      setLoading(false);
+      reply = "Maaf, terjadi gangguan. Silakan hubungi kami via WhatsApp.";
+    }
+
+    // Keep the "typing" indicator visible for a natural minimum delay
+    // (so fast responses don't pop in instantly and feel robotic).
+    const elapsed = Date.now() - start;
+    const minTyping = 900;
+    if (elapsed < minTyping) {
+      await new Promise((r) => setTimeout(r, minTyping - elapsed));
+    }
+
+    // Reveal the reply progressively, character by character.
+    const base = [...next, { role: "assistant", content: "" }];
+    setMessages(base);
+    setLoading(false);
+    const clean = reply.replace("[BUTUH_CS]", "").trim();
+    let shown = "";
+    for (let i = 0; i < clean.length; i++) {
+      shown += clean[i];
+      setMessages([...base.slice(0, -1), { role: "assistant", content: shown }]);
+      // Vary speed slightly for a more human feel; pause longer at sentence ends.
+      const ch = clean[i];
+      const delay = ch === " " ? 12 : ch === "." || ch === "?" || ch === "!" ? 90 : 18 + Math.random() * 22;
+      await new Promise((r) => setTimeout(r, delay));
     }
   }
 
