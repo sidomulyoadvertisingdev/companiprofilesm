@@ -1,11 +1,15 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+import { getProducts, getSite } from "../lib/queries.js";
 import CatalogPage from "../react-pages/CatalogPage.jsx";
+
+const products = await getProducts();
+const site = await getSite();
 ---
 
 <MainLayout
   title="Katalog Produk Percetakan - Sidomulyo Advertising Salatiga"
   description="Katalog produk percetakan dan advertising Sidomulyo: neon box akrilik, banner flexi, huruf timbul, sticker, akrilik custom. Kualitas terbaik, harga kompetitif."
 >
-  <CatalogPage client:load />
+  <CatalogPage client:load initialData={products} siteData={site} />
 </MainLayout>

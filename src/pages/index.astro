@@ -1,25 +1,43 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+import { getSite, getStats, getServices, getPortfolio, getPartners, getTestimonials, getProducts } from "../lib/queries.js";
 import Hero from "../components/Hero.jsx";
-import ServiceHighlight from "../components/ServiceHighlight.jsx";
-import ServiceHighlightSecond from "../components/ServiceHighlightSecond.jsx";
+import GlobeShowcase from "../components/ui/GlobeShowcase.jsx";
+import Stats from "../components/Stats.jsx";
+import Services from "../components/Services.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import ClientsNetwork from "../components/ClientsNetwork.jsx";
+import Testimonials from "../components/Testimonials.jsx";
 import Catalog from "../components/Catalog.jsx";
 import CTA from "../components/CTA.jsx";
+
+// Fetch content server-side (SSR) and hydrate islands with initialData
+// so the markup is present in the initial HTML (better SEO + no blank flash).
+const site = await getSite();
+const stats = await getStats();
+const services = await getServices();
+const portfolio = await getPortfolio();
+const partners = await getPartners();
+const testimonials = await getTestimonials();
+const products = await getProducts();
 ---
 
 <MainLayout
-  title="Sidomulyo Advertising - Jasa Percetakan & Advertising Profesional di Salatiga"
-  description="Sidomulyo Advertising adalah perusahaan percetakan dan advertising terpercaya di Salatiga. Melayani neon box, banner, digital printing, huruf timbul, branding, dengan mesin tercanggih dan hasil profesional."
+  title="Sidomulyo Advertising & Printing - Jasa Percetakan & Advertising Profesional di Salatiga"
+  description={site?.description}
 >
-  <main class="pt-20">
-    <Hero client:visible />
-    <ServiceHighlight client:visible />
-    <ServiceHighlightSecond client:visible />
-    <Portfolio client:visible />
-    <ClientsNetwork client:visible />
-    <Catalog client:visible />
-    <CTA client:visible />
+  <main class="pt-0">
+    <div class="relative">
+      <Hero client:visible initialData={site}>
+        <GlobeShowcase client:only="react" />
+      </Hero>
+    </div>
+    <Stats client:visible initialData={stats} />
+    <Services client:visible initialData={services} />
+    <Portfolio client:visible initialData={portfolio} />
+    <ClientsNetwork client:visible initialData={partners} />
+    <Testimonials client:visible initialData={testimonials} />
+    <Catalog client:visible initialData={products} />
+    <CTA client:visible initialData={site} />
   </main>
 </MainLayout>

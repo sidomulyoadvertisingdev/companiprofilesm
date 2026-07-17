@@ -1,11 +1,14 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+import { getSite } from "../lib/queries.js";
 import Contact from "../react-pages/Contact.jsx";
+
+const site = await getSite();
 ---
 
 <MainLayout
   title="Hubungi Sidomulyo Advertising - Percetakan Salatiga"
-  description="Hubungi Sidomulyo Advertising di Jl. Kartini No.108, Salatiga. WhatsApp 0888 0888 8880, email sosmedsidomulyo@gmail.com. Konsultasi gratis untuk kebutuhan percetakan dan branding Anda."
+  description="Hubungi Sidomulyo Advertising di Salatiga. WhatsApp, email, dan alamat lengkap untuk konsultasi percetakan dan branding."
 >
-  <Contact client:load />
+  <Contact client:load initialData={site} />
 </MainLayout>

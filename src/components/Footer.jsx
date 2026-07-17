@@ -1,33 +1,84 @@
+import { useEffect, useState } from "react";
+import { getSite } from "../lib/content.js";
+
 export default function Footer() {
+  const [site, setSite] = useState(null);
+  useEffect(() => {
+    getSite().then(setSite);
+  }, []);
+
+  if (!site) return null;
+
+  const { address, phoneDisplay, email, operationalHours, social, footerLinks, copyrightText } = site;
+  const wa = `https://wa.me/${site.phone}`;
+  const year = new Date().getFullYear();
+
   return (
-    <footer className="py-14 text-center text-sm text-[#6e6e73] bg-white border-t border-[#e5e5e5]">
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="grid md:grid-cols-3 gap-10 mb-10 text-left">
-          <div>
-            <h4 className="font-semibold text-[#1d1d1f] mb-3">Sidomulyo Advertising & Printing</h4>
-            <p className="leading-relaxed">
-              Jl. Kartini No.108, Sidorejo<br />
-              Kota Salatiga, Jawa Tengah 50711
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold text-[#1d1d1f] mb-3">Kontak</h4>
-            <p className="leading-relaxed">
-              WhatsApp: <a href="https://wa.me/6288808888880" className="hover:underline text-blue-600">0888 0888 8880</a><br />
-              Email: <a href="mailto:sosmedsidomulyo@gmail.com" className="hover:underline text-blue-600">sosmedsidomulyo@gmail.com</a>
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold text-[#1d1d1f] mb-3">Jam Operasional</h4>
-            <p className="leading-relaxed">
-              Setiap Hari: 08.00–22.00
-            </p>
+    <footer className="bg-white dark:bg-[#0a0a1a] border-t border-[#e5e5e5] dark:border-slate-700/50 transition-colors">
+      <div className="max-w-6xl mx-auto px-6 py-16 grid md:grid-cols-4 gap-10 text-left">
+        <div>
+          <img src={site.logo} alt={site.name} className="h-10 w-auto mb-4" />
+          <h4 className="font-semibold text-[#1d1d1f] dark:text-white mb-3">{site.name}</h4>
+          <p className="text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
+            {address.street}, {address.city}
+            <br />
+            {address.region} {address.postalCode}
+          </p>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-[#1d1d1f] dark:text-white mb-3">Kontak</h4>
+          <p className="text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
+            WhatsApp:{" "}
+            <a href={wa} className="hover:underline text-orange-600">
+              {phoneDisplay}
+            </a>
+            <br />
+            Email:{" "}
+            <a href={`mailto:${email}`} className="hover:underline text-orange-600">
+              {email}
+            </a>
+          </p>
+        </div>
+
+        <div>
+          <h4 className="font-semibold text-[#1d1d1f] dark:text-white mb-3">Jam Operasional</h4>
+          <p className="text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
+            {operationalHours}
+          </p>
+          <h4 className="font-semibold text-[#1d1d1f] dark:text-white mt-5 mb-3">Sosial Media</h4>
+          <div className="flex flex-wrap gap-3">
+            {social.map((s) => (
+              <a
+                key={s.label}
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-[#6e6e73] dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition"
+              >
+                {s.label}
+              </a>
+            ))}
           </div>
         </div>
-        <p className="mb-2">&copy; {new Date().getFullYear()} Sidomulyo Advertising. All rights reserved.</p>
-        <p>
-          <a href="/privacy-policy" className="hover:underline">Privacy Policy</a>
-        </p>
+
+        <div>
+          <h4 className="font-semibold text-[#1d1d1f] dark:text-white mb-3">Navigasi</h4>
+          <ul className="text-sm text-[#6e6e73] dark:text-slate-400 space-y-2">
+            {footerLinks.map((link) => (
+              <li key={link.path}>
+                <a href={link.path} className="hover:text-orange-600 dark:hover:text-orange-400 transition">{link.name}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="border-t border-[#e5e5e5] dark:border-slate-700/50 py-6 text-center text-sm text-[#6e6e73] dark:text-slate-400">
+        &copy; {year} {site.name}. {copyrightText}{" "}
+        <a href="/privacy-policy" className="hover:underline">
+          Privacy Policy
+        </a>
       </div>
     </footer>
   );

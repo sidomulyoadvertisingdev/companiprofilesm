@@ -1,38 +1,46 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
+import { getSite, getStats } from "../lib/queries.js";
+import { FiArrowRight } from "react-icons/fi";
+
+const s = await getSite();
+const stats = await getStats();
 ---
 
 <MainLayout
   title="Tentang Sidomulyo Advertising - Percetakan Profesional di Salatiga"
-  description="Kenali Sidomulyo Advertising, perusahaan percetakan dan advertising profesional di Salatiga. Berpengalaman dengan mesin tercanggih untuk neon box, banner, digital printing, dan branding."
+  description="Kenali Sidomulyo Advertising & Printing, perusahaan percetakan dan advertising profesional di Salatiga. Berpengalaman dengan mesin tercanggih untuk neon box, banner, digital printing, dan branding."
 >
   <main class="pt-20">
-    <section class="min-h-[70vh] flex items-center bg-white">
+    <section class="min-h-[55vh] flex items-center bg-white dark:bg-[#0a0a1a] transition-colors">
       <div class="max-w-6xl mx-auto px-6">
-        <h1 class="text-5xl md:text-6xl font-semibold text-[#1d1d1f] mb-6">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6 dark:text-white">
           Tentang Sidomulyo Advertising
         </h1>
-        <p class="text-xl text-[#6e6e73] max-w-3xl leading-relaxed">
-          Kami adalah perusahaan percetakan dan advertising profesional yang berpusat di <strong>Salatiga, Jawa Tengah</strong> — didukung mesin tercanggih dan tim ahli untuk hasil terbaik.
+        <p class="text-xl text-[#6e6e73] dark:text-slate-400 max-w-3xl leading-relaxed">
+          Kami adalah perusahaan percetakan dan advertising profesional yang
+          berpusat di <strong class="dark:text-slate-200">{s.address.city}, {s.address.region}</strong> —
+          didukung mesin tercanggih dan tim ahli untuk hasil terbaik.
         </p>
       </div>
     </section>
 
-    <section class="py-32 bg-[#f5f5f7]">
+    <section class="py-24 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
       <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
         <div>
-          <h2 class="text-4xl font-semibold text-[#1d1d1f] mb-6">
-            Siapa Kami
-          </h2>
-          <p class="text-[#6e6e73] text-lg leading-relaxed">
-            Sidomulyo Advertising adalah perusahaan digital printing dan advertising yang berlokasi di <strong>Jl. Kartini No.108, Salatiga</strong>. Kami melayani berbagai kebutuhan promosi dan branding untuk bisnis di Salatiga, Semarang, Surakarta, dan seluruh Jawa Tengah dengan mesin tercanggih dan hasil cepat jadi.
+          <h2 class="text-4xl font-bold mb-6 dark:text-white">Siapa Kami</h2>
+          <p class="text-[#6e6e73] dark:text-slate-400 text-lg leading-relaxed">
+            {s.name} adalah perusahaan digital printing dan advertising yang
+            berlokasi di <strong class="dark:text-slate-200">{s.address.street}, {s.address.city}</strong>.
+            Kami melayani berbagai kebutuhan promosi dan branding untuk bisnis di
+            {s.serviceArea.join(", ")} dengan mesin tercanggih dan hasil cepat jadi.
           </p>
         </div>
         <div class="flex justify-center">
-          <div class="bg-white rounded-3xl shadow-sm p-10">
+          <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-10 transition-colors">
             <img
-              src="/logo-sidomulyo.webp"
-              alt="Sidomulyo Advertising"
+              src={s.logo}
+              alt={s.name}
               class="h-40 md:h-48 w-auto object-contain mx-auto"
               width="500"
               height="200"
@@ -43,61 +51,54 @@ import MainLayout from "../layouts/MainLayout.astro";
       </div>
     </section>
 
-    <section class="py-32 bg-white">
+    <section class="py-24 bg-white dark:bg-[#0a0a1a] transition-colors">
       <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16">
         <div>
-          <h3 class="text-3xl font-semibold mb-4">Visi</h3>
-          <p class="text-[#6e6e73] text-lg">
-            Menjadi perusahaan percetakan dan advertising terpercaya dengan kualitas terbaik di Indonesia — dimulai dari Salatiga untuk seluruh nusantara.
+          <h3 class="text-3xl font-bold mb-4 dark:text-white">Visi</h3>
+          <p class="text-[#6e6e73] dark:text-slate-400 text-lg">
+            Menjadi perusahaan percetakan dan advertising terpercaya dengan
+            kualitas terbaik di Indonesia — dimulai dari Salatiga untuk seluruh
+            nusantara.
           </p>
         </div>
         <div>
-          <h3 class="text-3xl font-semibold mb-4">Misi</h3>
-          <ul class="text-[#6e6e73] text-lg space-y-3 list-disc list-inside">
-            <li>Memberikan hasil cetak berkualitas tinggi dengan mesin paling modern</li>
+          <h3 class="text-3xl font-bold mb-4 dark:text-white">Misi</h3>
+          <ul class="text-[#6e6e73] dark:text-slate-400 text-lg space-y-3 list-disc list-inside">
+            <li>Memberikan hasil cetak berkualitas tinggi dengan mesin modern</li>
             <li>Mengutamakan kepuasan pelanggan dengan layanan cepat jadi</li>
             <li>Mengikuti perkembangan teknologi percetakan terbaru</li>
-            <li>Memberikan pelayanan cepat, profesional, dan tepat waktu</li>
+            <li>Pelayanan cepat, profesional, dan tepat waktu</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <section class="py-32 bg-[#f5f5f7]">
-      <div class="max-w-6xl mx-auto px-6 text-center">
-        <h2 class="text-4xl font-semibold mb-12">
-          Kenapa Memilih Kami
-        </h2>
-        <div class="grid md:grid-cols-3 gap-12">
-          {["Kualitas Premium", "Harga Kompetitif", "Tim Profesional"].map((item) => (
-            <div class="bg-white rounded-3xl p-8">
-              <h4 class="text-xl font-medium mb-3">{item}</h4>
-              <p class="text-[#6e6e73]">
-                Kami berkomitmen memberikan layanan terbaik dengan standar profesional dan mesin tercanggih.
-              </p>
+    <section class="py-24 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
+      <div class="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
+        {stats.map((s) => (
+          <div>
+            <div class="text-4xl md:text-5xl font-bold text-orange-500">
+              {s.value}{s.suffix}
             </div>
-          ))}
-        </div>
+            <div class="mt-2 text-sm text-[#6e6e73] dark:text-slate-400">{s.label}</div>
+          </div>
+        ))}
       </div>
     </section>
 
-    <section class="py-32 bg-white text-center">
-      <h2 class="text-4xl font-semibold mb-6">
-        Siap Bekerja Sama dengan Kami?
-      </h2>
-      <p class="text-lg text-[#6e6e73] mb-8 max-w-3xl mx-auto">
-        Butuh percetakan cepat jadi di Salatiga? Hubungi kami sekarang!
+    <section class="py-24 bg-white dark:bg-[#0a0a1a] text-center transition-colors">
+      <h2 class="text-4xl font-bold mb-6 dark:text-white">Siap Bekerja Sama dengan Kami?</h2>
+      <p class="text-lg text-[#6e6e73] dark:text-slate-400 mb-8 max-w-3xl mx-auto">
+        Butuh percetakan cepat jadi di {s.address.city}? Hubungi kami sekarang!
       </p>
       <a
-        href="https://wa.me/6288808888880"
+        href={`https://wa.me/${s.phone}`}
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex items-center rounded-full
-               bg-[#1d1d1f] text-white
-               px-8 py-4 text-sm font-medium
-               hover:bg-black transition"
+        class="inline-flex items-center rounded-full bg-orange-500 text-white px-8 py-4 text-sm font-semibold hover:bg-orange-400 transition"
       >
         Hubungi Kami via WhatsApp
+        <FiArrowRight />
       </a>
     </section>
   </main>

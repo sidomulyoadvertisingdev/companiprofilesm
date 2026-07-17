@@ -6,7 +6,6 @@ import {
 } from "../api/profile";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +22,6 @@ export default function Profile() {
 
     Promise.all([getProfile(), getMyApplications()])
       .then(([profileRes, appRes]) => {
-        setUser(profileRes.data.data);
         setApplications(appRes.data.data);
         setForm({
           name: profileRes.data.data.name,

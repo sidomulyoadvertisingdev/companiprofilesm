@@ -1,0 +1,12 @@
+---
+import MarketplaceLayout from "../../layouts/MarketplaceLayout.astro";
+import GlobeShowcase from "../../components/ui/GlobeShowcase.jsx";
+import MarketplaceClaim from "../../components/marketplace/MarketplaceClaim.jsx";
+---
+
+<MarketplaceLayout title="Klaim Kode Redeem - Sidomulyo">
+  <div class="fixed inset-0 z-0">
+    <GlobeShowcase client:only="react" />
+  </div>
+  <MarketplaceClaim client:only="react" />
+</MarketplaceLayout>

@@ -18,7 +18,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
       window.location.href = from;
-    } catch (err) {
+    } catch {
       alert("Email atau password salah");
     }
   };

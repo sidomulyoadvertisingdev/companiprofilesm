@@ -1,6 +1,8 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import { FiArrowRight } from "react-icons/fi";
+import { services } from "../data/services.js";
+import { site } from "../data/site.js";
 ---
 
 <MainLayout
@@ -8,69 +10,64 @@ import { FiArrowRight } from "react-icons/fi";
   description="Layanan percetakan dan advertising profesional: neon box, digital printing, huruf timbul, branding. Cepat jadi, mesin tercanggih, hasil berkualitas. Melayani Salatiga, Semarang, dan sekitarnya."
 >
   <main class="pt-20">
-    <section class="min-h-[60vh] flex items-center bg-white">
+    <section class="min-h-[55vh] flex items-center bg-white dark:bg-[#0a0a1a] transition-colors">
       <div class="max-w-6xl mx-auto px-6">
-        <h1 class="text-5xl md:text-6xl font-semibold mb-6">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6 dark:text-white">
           Layanan Kami
         </h1>
-        <p class="text-xl text-[#6e6e73] max-w-3xl">
-          Kami menyediakan berbagai layanan percetakan dan advertising untuk mendukung branding serta promosi bisnis Anda — cepat jadi dengan mesin tercanggih.
+        <p class="text-xl text-[#6e6e73] dark:text-slate-400 max-w-3xl">
+          Kami menyediakan berbagai layanan percetakan dan advertising untuk
+          mendukung branding serta promosi bisnis Anda — cepat jadi dengan
+          mesin tercanggih.
         </p>
       </div>
     </section>
 
-    <section class="py-32 bg-[#f5f5f7]">
-      <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16">
-        {[
-          {
-            title: "Neon Box",
-            desc: "Pembuatan neon box akrilik dan LED dengan desain modern, pencahayaan optimal, dan material berkualitas tinggi. Cocok untuk branding toko Anda.",
-          },
-          {
-            title: "Digital Printing",
-            desc: "Cetak banner, spanduk, poster, stiker, dan media promosi lainnya dengan hasil tajam dan warna akurat. Cepat jadi untuk kebutuhan mendesak.",
-          },
-          {
-            title: "Huruf Timbul",
-            desc: "Produksi huruf timbul dari akrilik, stainless, dan galvanis untuk tampilan branding yang eksklusif dan profesional.",
-          },
-          {
-            title: "Branding & Advertising",
-            desc: "Solusi branding menyeluruh untuk toko, kantor, dan usaha Anda agar tampil lebih profesional dan menarik perhatian pelanggan.",
-          },
-        ].map((item) => (
-          <div class="bg-white rounded-3xl p-10">
-            <h3 class="text-2xl font-medium mb-4">{item.title}</h3>
-            <p class="text-[#6e6e73] text-lg leading-relaxed">{item.desc}</p>
+    <section class="py-24 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
+      <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
+        {services.map((item) => (
+          <div class="bg-white dark:bg-slate-800 rounded-3xl p-10 shadow-sm transition-colors">
+            <h3 class="text-2xl font-semibold mb-4 dark:text-white">{item.title}</h3>
+            <p class="text-[#6e6e73] dark:text-slate-400 text-lg leading-relaxed mb-6">{item.longDesc}</p>
+            <ul class="space-y-2">
+              {item.features.map((f) => (
+                <li class="flex items-start gap-2 text-[#1d1d1f] dark:text-slate-200">
+                  <span class="mt-1 w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></span>
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         ))}
       </div>
     </section>
 
-    <section class="py-32 bg-white text-center">
-      <h2 class="text-4xl font-semibold mb-12">Proses Kerja Kami</h2>
+    <section class="py-24 bg-white dark:bg-[#0a0a1a] text-center transition-colors">
+      <h2 class="text-4xl font-bold mb-12 dark:text-white">Proses Kerja Kami</h2>
       <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-10">
-        {["Konsultasi Kebutuhan", "Desain & Perencanaan", "Produksi", "Pemasangan & Finishing"].map((step) => (
+        {["Konsultasi Kebutuhan", "Desain & Perencanaan", "Produksi", "Pemasangan & Finishing"].map((step, i) => (
           <div class="flex flex-col items-center">
-            <svg class="text-2xl mb-4" stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" width="28" height="28"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <p class="text-lg font-medium text-[#1d1d1f]">{step}</p>
+            <div class="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-950/50 text-orange-500 flex items-center justify-center font-bold mb-4">
+              {i + 1}
+            </div>
+            <p class="text-lg font-medium text-[#1d1d1f] dark:text-slate-200">{step}</p>
           </div>
         ))}
       </div>
     </section>
 
-    <section class="py-32 bg-[#f5f5f7] text-center">
-      <h2 class="text-4xl font-semibold mb-6">
+    <section class="py-24 bg-[#f5f5f7] dark:bg-[#111118] text-center transition-colors">
+      <h2 class="text-4xl font-bold mb-6 dark:text-white">
         Siap Meningkatkan Branding Bisnis Anda?
       </h2>
       <a
-        href="https://wa.me/6288808888880"
+        href={`https://wa.me/${site.phone}`}
         target="_blank"
         rel="noopener noreferrer"
         class="inline-flex items-center gap-2
-               rounded-full bg-[#1d1d1f] text-white
-               px-10 py-4 text-sm font-medium
-               hover:bg-black transition"
+               rounded-full bg-orange-500 text-white
+               px-10 py-4 text-sm font-semibold
+               hover:bg-orange-400 transition"
       >
         Konsultasi Sekarang via WhatsApp
         <FiArrowRight />

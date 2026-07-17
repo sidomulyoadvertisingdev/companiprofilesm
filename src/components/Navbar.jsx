@@ -8,10 +8,12 @@ import { useState, useEffect } from "react";
 import {
   FiMenu,
   FiX,
-  FiMessageCircle,
+  FiShoppingBag,
   FiUser,
   FiLogOut,
 } from "react-icons/fi";
+import { getNav } from "../lib/content.js";
+import ThemeToggle from "./ui/ThemeToggle.jsx";
 
 export default function Navbar() {
   const { scrollY } = useScroll();
@@ -43,7 +45,12 @@ export default function Navbar() {
     window.location.href = "/login";
   };
 
-  const navItems = [
+  const [navItems, setNavItems] = useState([]);
+  useEffect(() => {
+    getNav().then(setNavItems);
+  }, []);
+
+  const staticNavItems = [
     { name: "Home", path: "/" },
     { name: "Services", path: "/services" },
     { name: "Portfolio", path: "/portfolio" },
@@ -51,7 +58,9 @@ export default function Navbar() {
     { name: "Karir / Lowongan", path: "/jobs" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
+    { name: "Marketplace", path: "/marketplace" },
   ];
+  const items = navItems.length ? navItems : staticNavItems;
 
   return (
     <>
@@ -62,7 +71,7 @@ export default function Navbar() {
         }}
         animate={hidden ? "hidden" : "visible"}
         transition={{ duration: 0.35, ease: "easeOut" }}
-        className="fixed top-0 w-full z-50 backdrop-blur bg-white/70 border-b border-[#e5e5e5]"
+        className="fixed top-0 w-full z-50 backdrop-blur bg-white/70 dark:bg-[#0a0a1a]/70 border-b border-[#e5e5e5] dark:border-slate-700/50 transition-colors"
       >
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
 
@@ -76,12 +85,12 @@ export default function Navbar() {
           </a>
 
           {/* DESKTOP MENU */}
-          <ul className="hidden md:flex space-x-8 text-sm text-[#1d1d1f]">
-            {navItems.map((item) => (
+          <ul className="hidden md:flex space-x-8 text-sm text-[#1d1d1f] dark:text-slate-200">
+              {items.map((item) => (
               <a
                 key={item.path}
                 href={item.path}
-                className={`hover:opacity-70 transition cursor-pointer ${pathname === item.path ? "opacity-50" : ""}`}
+                className={`relative transition cursor-pointer hover:text-orange-500 dark:hover:text-orange-400 ${pathname === item.path ? "text-orange-600 dark:text-orange-400 font-semibold" : ""}`}
               >
                 {item.name}
               </a>
@@ -89,7 +98,10 @@ export default function Navbar() {
           </ul>
 
           {/* RIGHT SIDE */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+
+            {/* THEME TOGGLE */}
+            <ThemeToggle />
 
             {/* AUTH ACTION – DESKTOP (HANYA DI JOBS) */}
             {isJobsPage && (
@@ -98,13 +110,13 @@ export default function Navbar() {
                   <>
                     <a
                       href="/login"
-                      className="text-sm px-4 py-2 border rounded hover:bg-[#f5f5f7]"
+                      className="text-sm px-4 py-2 border border-[#d2d2d7] dark:border-slate-600 rounded hover:bg-[#f5f5f7] dark:hover:bg-slate-800 transition"
                     >
                       Login
                     </a>
                     <a
                       href="/register"
-                      className="text-sm px-4 py-2 bg-[#1d1d1f] text-white rounded"
+                      className="text-sm px-4 py-2 bg-[#1d1d1f] dark:bg-white text-white dark:text-[#1d1d1f] rounded transition"
                     >
                       Daftar
                     </a>
@@ -113,14 +125,14 @@ export default function Navbar() {
                   <>
                     <a
                       href="/profile"
-                      className="flex items-center gap-2 text-sm px-4 py-2 border rounded hover:bg-[#f5f5f7]"
+                      className="flex items-center gap-2 text-sm px-4 py-2 border border-[#d2d2d7] dark:border-slate-600 rounded hover:bg-[#f5f5f7] dark:hover:bg-slate-800 transition"
                     >
                       <FiUser />
                       Profile
                     </a>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2 text-sm px-4 py-2 border rounded hover:bg-red-50 text-red-600"
+                      className="flex items-center gap-2 text-sm px-4 py-2 border border-[#d2d2d7] dark:border-slate-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 transition"
                     >
                       <FiLogOut />
                       Logout
@@ -130,18 +142,18 @@ export default function Navbar() {
               </div>
             )}
 
-            {/* WHATSAPP */}
+            {/* MARKETPLACE */}
             <a
-              href="https://wa.me/6288808888880"
+              href="/marketplace"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-2
-                         rounded-full border border-[#d2d2d7]
+                         rounded-full border border-[#d2d2d7] dark:border-slate-600
                          px-4 py-2 text-sm font-medium
-                         hover:bg-[#f5f5f7] transition"
+                         hover:bg-[#f5f5f7] dark:hover:bg-slate-800 transition"
             >
-              <FiMessageCircle />
-              WhatsApp
+              <FiShoppingBag />
+              Marketplace
             </a>
 
             {/* MOBILE MENU BUTTON */}
@@ -164,15 +176,15 @@ export default function Navbar() {
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="fixed top-[72px] left-0 w-full z-40
-                       backdrop-blur bg-white/90 border-b border-[#e5e5e5]"
+                       backdrop-blur bg-white/90 dark:bg-[#0a0a1a]/90 border-b border-[#e5e5e5] dark:border-slate-700/50"
           >
-            <ul className="flex flex-col divide-y">
-              {navItems.map((item) => (
+            <ul className="flex flex-col divide-y divide-[#e5e5e5] dark:divide-slate-700/50">
+            {items.map((item) => (
                 <li key={item.path}>
                   <a
                     href={item.path}
                     onClick={() => setOpen(false)}
-                    className="block px-6 py-5 text-lg hover:bg-[#f5f5f7]"
+                    className="block px-6 py-5 text-lg hover:bg-[#f5f5f7] dark:hover:bg-slate-800 transition"
                   >
                     {item.name}
                   </a>
@@ -187,7 +199,7 @@ export default function Navbar() {
                       <a
                         href="/login"
                         onClick={() => setOpen(false)}
-                        className="block px-6 py-5 text-lg"
+                        className="block px-6 py-5 text-lg transition"
                       >
                         Login
                       </a>
@@ -196,7 +208,7 @@ export default function Navbar() {
                       <a
                         href="/register"
                         onClick={() => setOpen(false)}
-                        className="block px-6 py-5 text-lg font-semibold"
+                        className="block px-6 py-5 text-lg font-semibold transition"
                       >
                         Daftar
                       </a>
@@ -208,7 +220,7 @@ export default function Navbar() {
                       <a
                         href="/profile"
                         onClick={() => setOpen(false)}
-                        className="block px-6 py-5 text-lg"
+                        className="block px-6 py-5 text-lg transition"
                       >
                         Profile
                       </a>
@@ -219,7 +231,7 @@ export default function Navbar() {
                           handleLogout();
                           setOpen(false);
                         }}
-                        className="w-full text-left px-6 py-5 text-lg text-red-600"
+                        className="w-full text-left px-6 py-5 text-lg text-red-600 transition"
                       >
                         Logout
                       </button>
@@ -228,16 +240,19 @@ export default function Navbar() {
                 )
               )}
 
-              {/* WHATSAPP – MOBILE */}
+              {/* MARKETPLACE – MOBILE */}
               <li className="px-6 py-5">
                 <a
-                  href="https://wa.me/6288808888880"
+                  href="/marketplace"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setOpen(false)}
                   className="inline-flex items-center gap-2
-                             rounded-full bg-[#1d1d1f] text-white
-                             px-6 py-3 text-sm font-medium"
+                             rounded-full bg-[#1d1d1f] dark:bg-white text-white dark:text-[#1d1d1f]
+                             px-6 py-3 text-sm font-medium transition"
                 >
-                  <FiMessageCircle />
-                  WhatsApp
+                  <FiShoppingBag />
+                  Marketplace
                 </a>
               </li>
             </ul>
