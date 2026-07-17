@@ -1,9 +1,24 @@
 import { defineMiddleware } from "astro/middleware";
 import { getSessionAdmin, SESSION_COOKIE } from "./lib/auth.js";
+import { initSchema } from "./lib/schema.js";
+
+let schemaReady = false;
+async function ensureSchema() {
+  if (schemaReady) return;
+  schemaReady = true; // guard against concurrent double-init
+  try {
+    await initSchema();
+  } catch (err) {
+    schemaReady = false; // allow retry on next request if it failed
+    console.error("[schema] init failed:", err.message);
+  }
+}
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url, cookies, redirect, request, locals } = context;
   const path = url.pathname;
+
+  await ensureSchema();
 
   const admin = await getSessionAdmin(cookies.get(SESSION_COOKIE)?.value);
   locals.admin = admin;
