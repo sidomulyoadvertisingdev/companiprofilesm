@@ -57,7 +57,7 @@
         }).catch(() => {});
       },
       function () {},
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 3600000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 600000 }
     );
   }
 })();
