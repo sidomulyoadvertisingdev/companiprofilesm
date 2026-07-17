@@ -1380,6 +1380,26 @@ function StatCard({ icon: Icon, label, value, sub }) {
   );
 }
 
+function actionMeta(e) {
+  if (e.event_type === "click") {
+    const label = e.element_text || e.element_target || "Tombol";
+    return {
+      label: `Klik: ${label}`,
+      cls: "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    };
+  }
+  if (e.event_type === "pageview") {
+    return {
+      label: "Kunjungan Halaman",
+      cls: "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    };
+  }
+  return {
+    label: e.event_type || "Aksi",
+    cls: "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300",
+  };
+}
+
 function VisitorMap() {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -1484,6 +1504,7 @@ function AnalyticsDashboard() {
   const [eventsTotal, setEventsTotal] = useState(0);
   const [eventsPage, setEventsPage] = useState(0);
   const [showLog, setShowLog] = useState(false);
+  const [eventFilter, setEventFilter] = useState("all");
   const [lastUpdate, setLastUpdate] = useState(null);
   const [live, setLive] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -1505,13 +1526,14 @@ function AnalyticsDashboard() {
 
   const loadEvents = useCallback(async (page = 0) => {
     try {
-      const res = await fetch(`/api/admin/analytics/events?limit=20&offset=${page * 20}`);
+      const q = eventFilter !== "all" ? `&type=${eventFilter}` : "";
+      const res = await fetch(`/api/admin/analytics/events?limit=20&offset=${page * 20}${q}`);
       const d = await res.json();
       setEvents(d.data || []);
       setEventsTotal(d.total || 0);
       setEventsPage(page);
     } catch { setEvents([]); }
-  }, []);
+  }, [eventFilter]);
 
   // Initial load + realtime stream via SSE (no client-side polling/auto-refresh).
   useEffect(() => {
@@ -1521,7 +1543,7 @@ function AnalyticsDashboard() {
 
   useEffect(() => {
     if (showLog) loadEvents(0);
-  }, [showLog, loadEvents]);
+  }, [showLog, eventFilter, loadEvents]);
 
   useEffect(() => {
     if (typeof EventSource === "undefined") return;
@@ -1714,11 +1736,23 @@ function AnalyticsDashboard() {
           </div>
 
           <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-5">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
               <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white">Log Aktivitas</h3>
-              <button onClick={() => setShowLog(!showLog)} className="text-xs font-semibold text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors">
-                {showLog ? "Sembunyikan" : "Tampilkan Log"}
-              </button>
+              <div className="flex items-center gap-2">
+                {[
+                  ["all", "Semua"],
+                  ["click", "Aksi User"],
+                  ["pageview", "Kunjungan"],
+                ].map(([val, label]) => (
+                  <button key={val} onClick={() => setEventFilter(val)}
+                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${eventFilter === val ? "bg-orange-500 text-white" : "text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700"}`}>
+                    {label}
+                  </button>
+                ))}
+                <button onClick={() => setShowLog(!showLog)} className="text-xs font-semibold text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors">
+                  {showLog ? "Sembunyikan" : "Tampilkan Log"}
+                </button>
+              </div>
             </div>
             {showLog && (
               <>
@@ -1741,8 +1775,8 @@ function AnalyticsDashboard() {
                             {new Date(e.created_at).toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
                           </td>
                           <td className="px-3 py-2">
-                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${e.event_type === "pageview" ? "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400" : "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400"}`}>
-                              {e.event_type}
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${actionMeta(e).cls}`}>
+                              {actionMeta(e).label}
                             </span>
                           </td>
                           <td className="px-3 py-2 text-xs text-[#1d1d1f] dark:text-white truncate max-w-[150px]">{e.page_url}</td>
