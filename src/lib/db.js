@@ -1,4 +1,5 @@
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
+loadEnv();
 import mysql from "mysql2/promise";
 
 const pool = mysql.createPool({
