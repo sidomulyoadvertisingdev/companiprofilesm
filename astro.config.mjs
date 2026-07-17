@@ -5,7 +5,7 @@ import sitemap from "@astrojs/sitemap";
 import node from "@astrojs/node";
 
 export default defineConfig({
-  site: "https://sidomulyo-advertising.com",
+  site: "https://sidomulyoproject.com",
   output: "server",
   adapter: node({
     mode: "standalone",

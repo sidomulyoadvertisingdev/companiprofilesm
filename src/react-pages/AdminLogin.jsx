@@ -63,9 +63,7 @@ export default function AdminLogin() {
           {loading ? "Memproses..." : "Login"}
         </button>
 
-        <p className="text-xs text-[#6e6e73] mt-4 text-center">
-          Default: admin@sidomulyo.com / admin123
-        </p>
+
       </form>
     </div>
   );
