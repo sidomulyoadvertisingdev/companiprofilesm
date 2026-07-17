@@ -21,8 +21,10 @@ export async function POST({ request }) {
     );
 
     await db.execute(
-      `UPDATE analytics_events SET latitude = ?, longitude = ?, location_source = 'gps' WHERE visitor_id = ? AND id = (SELECT id FROM (SELECT id FROM analytics_events WHERE visitor_id = ? ORDER BY id DESC LIMIT 1) AS tmp)`,
-      [latitude, longitude, visitorId, visitorId]
+      `UPDATE analytics_events
+       SET latitude = ?, longitude = ?, location_source = 'gps', city = ?, region = ?, country = ?
+       WHERE visitor_id = ?`,
+      [latitude, longitude, geo.city, geo.region, geo.country, visitorId]
     );
 
     return new Response(JSON.stringify({ ok: true, geo }), { status: 200 });

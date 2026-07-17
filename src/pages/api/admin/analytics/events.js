@@ -14,12 +14,18 @@ export async function GET({ url, cookies }) {
     const offset = String(parseInt(url.searchParams.get("offset") || "0"));
     const type = url.searchParams.get("type");
 
-    const where = type ? "WHERE event_type = ?" : "";
+    const where = type ? "WHERE e.event_type = ?" : "";
     const params = type ? [type, limit, offset] : [limit, offset];
 
     const [rows] = await db.execute(
-      `SELECT id, visitor_id, fingerprint, event_type, page_url, element_target, element_text, city, region, country, device_type, browser, os, timezone, locale, ip_address, created_at
-       FROM analytics_events ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`, params
+      `SELECT e.id, e.visitor_id, e.fingerprint, e.event_type, e.page_url, e.element_target, e.element_text,
+              COALESCE(NULLIF(v.city, ''), e.city) AS city,
+              COALESCE(NULLIF(v.region, ''), e.region) AS region,
+              COALESCE(NULLIF(v.country, ''), e.country) AS country,
+              e.device_type, e.browser, e.os, e.timezone, e.locale, e.ip_address, e.created_at
+       FROM analytics_events e
+       LEFT JOIN analytics_visitors v ON v.visitor_id = e.visitor_id
+       ${where} ORDER BY e.created_at DESC LIMIT ? OFFSET ?`, params
     );
 
     const countWhere = type ? "WHERE event_type = ?" : "";
