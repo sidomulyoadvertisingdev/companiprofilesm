@@ -1,6 +1,7 @@
 ---
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
+import ChatWidget from "../components/ChatWidget.jsx";
 import "../styles/index.css";
 import { site } from "../data/site.js";
 
@@ -92,6 +93,7 @@ const {
     <Navbar client:load />
     <slot />
     <Footer client:load />
+    <ChatWidget client:load />
     <script is:inline src="/tracker.js" defer></script>
   </body>
 </html>

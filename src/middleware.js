@@ -28,12 +28,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
     if (!admin) return redirect("/admin/login");
   }
 
-  // Protect mutating API endpoints (anything except GET) except auth routes and analytics
+  // Protect mutating API endpoints (anything except GET) except auth routes, analytics, and the public chat bot
   if (path.startsWith("/api")) {
     const isWrite = ["POST", "PUT", "DELETE"].includes(request.method);
     const isAuthRoute = path.startsWith("/api/auth");
     const isAnalyticsRoute = path.startsWith("/api/analytics");
-    if (isWrite && !isAuthRoute && !isAnalyticsRoute && !admin) {
+    const isChatRoute = path.startsWith("/api/chat");
+    if (isWrite && !isAuthRoute && !isAnalyticsRoute && !isChatRoute && !admin) {
       return new Response(JSON.stringify({ message: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
