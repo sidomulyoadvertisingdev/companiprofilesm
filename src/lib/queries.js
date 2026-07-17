@@ -1,6 +1,15 @@
 // Server-side read access to the database (used during SSR).
 import db from "./db.js";
 
+// mysql2 returns JSON columns already parsed; guard both cases.
+function parseTags(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v === "string" && v) {
+    try { return JSON.parse(v); } catch { return []; }
+  }
+  return [];
+}
+
 export async function getSite() {
   const [rows] = await db.execute("SELECT * FROM site_config WHERE id = 1");
   const r = rows[0];
@@ -86,7 +95,7 @@ export async function getPosts() {
   const [rows] = await db.execute("SELECT id, title, slug, excerpt, featured_image, tags_json, meta_title, meta_description, status, author, created_at, updated_at FROM posts ORDER BY created_at DESC");
   return rows.map((r) => ({
     id: r.id, title: r.title, slug: r.slug, excerpt: r.excerpt,
-    featuredImage: r.featured_image, tags: JSON.parse(r.tags_json || "[]"),
+      featuredImage: r.featured_image, tags: parseTags(r.tags_json),
     metaTitle: r.meta_title, metaDescription: r.meta_description,
     status: r.status, author: r.author,
     createdAt: r.created_at, updatedAt: r.updated_at,
@@ -97,7 +106,7 @@ export async function getPublishedPosts() {
   const [rows] = await db.execute("SELECT id, title, slug, excerpt, featured_image, tags_json, meta_title, meta_description, status, author, created_at, updated_at FROM posts WHERE status = 'published' ORDER BY created_at DESC");
   return rows.map((r) => ({
     id: r.id, title: r.title, slug: r.slug, excerpt: r.excerpt,
-    featuredImage: r.featured_image, tags: JSON.parse(r.tags_json || "[]"),
+      featuredImage: r.featured_image, tags: parseTags(r.tags_json),
     metaTitle: r.meta_title, metaDescription: r.meta_description,
     status: r.status, author: r.author,
     createdAt: r.created_at, updatedAt: r.updated_at,
@@ -110,7 +119,20 @@ export async function getPost(id) {
   if (!r) return null;
   return {
     id: r.id, title: r.title, slug: r.slug, excerpt: r.excerpt, content: r.content,
-    featuredImage: r.featured_image, tags: JSON.parse(r.tags_json || "[]"),
+      featuredImage: r.featured_image, tags: parseTags(r.tags_json),
+    metaTitle: r.meta_title, metaDescription: r.meta_description,
+    status: r.status, author: r.author,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  };
+}
+
+export async function getPostBySlug(slug) {
+  const [rows] = await db.execute("SELECT * FROM posts WHERE slug = ?", [slug]);
+  const r = rows[0];
+  if (!r) return null;
+  return {
+    id: r.id, title: r.title, slug: r.slug, excerpt: r.excerpt, content: r.content,
+      featuredImage: r.featured_image, tags: parseTags(r.tags_json),
     metaTitle: r.meta_title, metaDescription: r.meta_description,
     status: r.status, author: r.author,
     createdAt: r.created_at, updatedAt: r.updated_at,

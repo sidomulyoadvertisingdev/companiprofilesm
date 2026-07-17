@@ -55,9 +55,13 @@ export async function getPosts() {
 }
 export async function getPublishedPosts() {
   if (import.meta.env.SSR) return (await import("./queries.js")).getPublishedPosts();
-  return (await import("./api.js")).getPosts();
+  return (await import("./api.js")).getPublishedPosts();
 }
 export async function getPost(id) {
   if (import.meta.env.SSR) return (await import("./queries.js")).getPost(id);
   return (await import("./api.js")).getPost(id);
+}
+export async function getPostBySlug(slug) {
+  if (import.meta.env.SSR) return (await import("./queries.js")).getPostBySlug(slug);
+  return (await import("./api.js")).getPostBySlug(slug);
 }

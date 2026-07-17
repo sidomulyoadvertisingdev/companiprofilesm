@@ -1,0 +1,14 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import { getPublishedPosts } from "../lib/queries.js";
+import BlogList from "../react-pages/BlogList.jsx";
+
+const posts = await getPublishedPosts();
+---
+
+<MainLayout
+  title="Blog - Sidomulyo Advertising | Tips & Informasi Advertising"
+  description="Artikel, tips, dan informasi terbaru seputar advertising, branding, dan solusi pemasaran dari Sido Mulyo Advertising."
+>
+  <BlogList client:load initialData={posts} />
+</MainLayout>

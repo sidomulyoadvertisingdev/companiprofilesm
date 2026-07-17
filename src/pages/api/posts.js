@@ -2,6 +2,14 @@ import db from "../../lib/db.js";
 
 export const prerender = false;
 
+function parseTags(v) {
+  if (Array.isArray(v)) return v;
+  if (typeof v === "string" && v) {
+    try { return JSON.parse(v); } catch { return []; }
+  }
+  return [];
+}
+
 async function rows(status) {
   let sql = "SELECT id, title, slug, excerpt, featured_image, tags_json, meta_title, meta_description, status, author, created_at, updated_at FROM posts";
   const params = [];
@@ -13,7 +21,7 @@ async function rows(status) {
   const [r] = await db.execute(sql, params);
   return r.map((x) => ({
     id: x.id, title: x.title, slug: x.slug, excerpt: x.excerpt,
-    featuredImage: x.featured_image, tags: JSON.parse(x.tags_json || "[]"),
+    featuredImage: x.featured_image, tags: parseTags(x.tags_json),
     metaTitle: x.meta_title, metaDescription: x.meta_description,
     status: x.status, author: x.author,
     createdAt: x.created_at, updatedAt: x.updated_at,

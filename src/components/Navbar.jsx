@@ -59,6 +59,7 @@ export default function Navbar() {
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
     { name: "Marketplace", path: "/marketplace" },
+    { name: "Blog", path: "/blog" },
   ];
   const items = navItems.length ? navItems : staticNavItems;
 
