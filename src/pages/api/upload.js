@@ -1,12 +1,10 @@
 import { writeFile, mkdir } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
-import { dirname, join, extname } from "node:path";
+import { join, extname } from "node:path";
 import crypto from "node:crypto";
 
 export const prerender = false;
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const UPLOAD_DIR = join(__dirname, "..", "..", "..", "public", "uploads");
+const UPLOAD_DIR = join(process.cwd(), "public", "uploads");
 
 const ALLOWED = [".webp", ".jpg", ".jpeg", ".png", ".svg", ".gif", ".avif"];
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
