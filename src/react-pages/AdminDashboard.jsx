@@ -74,18 +74,29 @@ export default function AdminDashboard({ admin }) {
     });
   };
 
+  const safeJson = async (url, fallback) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return fallback;
+      const d = await res.json();
+      return d?.data ?? fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
   const load = useCallback(async () => {
     const [s, sv, p, pf, pt, t, mc, rr, po] = await Promise.all([
       getSite(), getServices(), getProducts(), getPortfolio(), getPartners(), getTestimonials(),
-      fetch("/api/marketplace").then(r => r.json()).then(d => d.data || []),
-      fetch("/api/admin/redeem-rules").then(r => r.json()).then(d => d.data || []),
-      fetch("/api/posts").then(r => r.json()).then(d => d.data || []),
+      safeJson("/api/marketplace", []),
+      safeJson("/api/admin/redeem-rules", []),
+      safeJson("/api/posts", []),
     ]);
     setSite(s); setServices(sv); setProducts(p); setPortfolio(pf); setPartners(pt);
     setTestimonials(t); setMarketplaceCodes(mc); setRedeemRules(rr); setPosts(po);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load().catch(() => {}); }, [load]);
 
   const logout = async () => {
     await fetch("/api/auth/login", { method: "DELETE" });
@@ -251,20 +262,25 @@ export default function AdminDashboard({ admin }) {
 /* ─── Realtime Clock ──────────────────────────────────────────────────── */
 
 function RealtimeClock() {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState(null);
 
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const time = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
-  const date = now.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+  const time = now
+    ? now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
+    : "--:--:--";
+  const date = now
+    ? now.toLocaleDateString("id-ID", { weekday: "short", day: "numeric", month: "short", year: "numeric" })
+    : "";
 
   return (
     <div className="hidden sm:flex items-center gap-2 text-xs text-[#6e6e73] dark:text-slate-400 border-l border-[#e5e5e5] dark:border-slate-700 pl-3">
-      <span className="font-mono font-semibold text-[#1d1d1f] dark:text-white text-sm tabular-nums">{time}</span>
-      <span className="text-[10px]">{date}</span>
+      <span suppressHydrationWarning className="font-mono font-semibold text-[#1d1d1f] dark:text-white text-sm tabular-nums">{time}</span>
+      <span suppressHydrationWarning className="text-[10px]">{date}</span>
     </div>
   );
 }
@@ -1380,8 +1396,12 @@ function AnalyticsDashboard() {
     try {
       const res = await fetch(`/api/admin/analytics?range=${range}`);
       const d = await res.json();
-      setData(d);
-      setLastUpdate(new Date());
+      if (res.ok && d && d.summary) {
+        setData(d);
+        setLastUpdate(new Date());
+      } else {
+        setData(null);
+      }
     } catch { setData(null); }
     setLoading(false);
   }, [range]);
@@ -1485,7 +1505,7 @@ function AnalyticsDashboard() {
         <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-12 text-center">
           <p className="text-sm text-[#6e6e73] dark:text-slate-400">Memuat data analytics...</p>
         </div>
-      ) : data ? (
+      ) : data && data.summary ? (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             <StatCard icon={FiBarChart2} label="Total Kunjungan" value={fmt(data.summary.totalVisits)} sub={`${data.summary.avgPerDay}/hari rata-rata`} />
