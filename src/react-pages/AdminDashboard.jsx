@@ -22,7 +22,6 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 const TABS = [
@@ -1389,11 +1388,15 @@ function VisitorMap() {
   useEffect(() => {
     let map = null;
     let cancelled = false;
-    const markers = L.layerGroup();
+    let L = null;
 
     async function init() {
       if (!mapRef.current) return;
+      const leaflet = await import("leaflet");
+      L = leaflet.default;
+      if (cancelled) return;
 
+      const markers = L.layerGroup();
       map = L.map(mapRef.current, { scrollWheelZoom: false }).setView([-2.5, 118], 4);
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap",
