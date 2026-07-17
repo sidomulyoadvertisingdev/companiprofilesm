@@ -567,21 +567,6 @@ function BlogEditor({ post, onBack }) {
   };
   const removeTag = (t) => setTags(tags.filter((x) => x !== t));
 
-  const handleImageUpload = async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        const { url } = await upload(file);
-        if (editor) { editor.chain().focus().setImage({ src: url }).run(); }
-      } catch (err) { alert("Gagal upload gambar: " + err.message); }
-    };
-    input.click();
-  };
-
   const handleFeaturedImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -630,7 +615,6 @@ function BlogEditor({ post, onBack }) {
   };
 
   const wordCount = editor?.storage.characterCount?.characters() || 0;
-  const charCount = editor?.storage.characterCount?.characters() || 0;
 
   return (
     <section>
@@ -1388,8 +1372,8 @@ function AnalyticsDashboard() {
   const [eventsPage, setEventsPage] = useState(0);
   const [showLog, setShowLog] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [autoRefresh, setAutoRefresh] = useState(true);
-  const [countdown, setCountdown] = useState(15);
+  const [live, setLive] = useState(false);
+  const [connected, setConnected] = useState(false);
 
   const loadAnalytics = useCallback(async () => {
     setLoading(true);
@@ -1398,7 +1382,6 @@ function AnalyticsDashboard() {
       const d = await res.json();
       setData(d);
       setLastUpdate(new Date());
-      setCountdown(15);
     } catch { setData(null); }
     setLoading(false);
   }, [range]);
@@ -1413,23 +1396,49 @@ function AnalyticsDashboard() {
     } catch { setEvents([]); }
   }, []);
 
-  useEffect(() => { loadAnalytics(); }, [loadAnalytics]);
-  useEffect(() => { if (showLog) loadEvents(0); }, [showLog, loadEvents]);
+  // Initial load + realtime stream via SSE (no client-side polling/auto-refresh).
+  useEffect(() => {
+    setLoading(true);
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
-    const id = setInterval(() => {
-      loadAnalytics();
-      if (showLog) loadEvents(eventsPage);
-    }, 15000);
-    return () => clearInterval(id);
-  }, [autoRefresh, loadAnalytics, showLog, loadEvents, eventsPage]);
+    if (showLog) loadEvents(0);
+  }, [showLog, loadEvents]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
-    const id = setInterval(() => setCountdown((c) => (c > 0 ? c - 1 : 15)), 1000);
-    return () => clearInterval(id);
-  }, [autoRefresh]);
+    if (typeof EventSource === "undefined") return;
+    const es = new EventSource(`/api/admin/analytics/stream?range=${range}`);
+    setLive(true);
+
+    es.addEventListener("open", () => setConnected(true));
+    es.addEventListener("snapshot", (e) => {
+      try {
+        const snap = JSON.parse(e.data);
+        setData(snap);
+        setLastUpdate(new Date());
+      } catch { /* ignore malformed frame */ }
+    });
+    es.addEventListener("events", (e) => {
+      try {
+        const incoming = JSON.parse(e.data);
+        if (!showLog) return;
+        setEvents((prev) => {
+          const merged = [...incoming, ...prev].slice(0, 20);
+          return merged;
+        });
+        setEventsTotal((t) => t + incoming.length);
+      } catch { /* ignore malformed frame */ }
+    });
+    es.addEventListener("error", () => setConnected(false));
+
+    return () => {
+      es.close();
+      setLive(false);
+      setConnected(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range]);
 
   const fmt = (n) => {
     if (n >= 1000000) return (n / 1000000).toFixed(1) + "M";
@@ -1443,25 +1452,20 @@ function AnalyticsDashboard() {
         <div>
           <div className="flex items-center gap-3">
             <p className="text-sm text-[#6e6e73] dark:text-slate-400">Pantau kunjungan, lokasi, dan perilaku pengunjung.</p>
-            {autoRefresh && (
+            {live && (
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-500/10 px-2 py-0.5 rounded-full">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                LIVE
+                <span className={`h-1.5 w-1.5 rounded-full bg-green-500 ${connected ? "animate-pulse" : ""}`} />
+                {connected ? "LIVE" : "Menyambung…"}
               </span>
             )}
             {lastUpdate && (
               <span className="text-[10px] text-[#6e6e73] dark:text-slate-500 hidden sm:inline">
-                {autoRefresh ? `Update dalam ${countdown}s` : `Update: ${lastUpdate.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`}
+                Update: {lastUpdate.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
               </span>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => { setAutoRefresh(!autoRefresh); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${autoRefresh ? "bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-500/30" : "bg-[#f0f0f2] dark:bg-slate-700 text-[#6e6e73] dark:text-slate-400 border border-transparent"}`}>
-            <span className={`h-1.5 w-1.5 rounded-full ${autoRefresh ? "bg-green-500 animate-pulse" : "bg-gray-400 dark:bg-slate-500"}`} />
-            {autoRefresh ? "Auto" : "Manual"}
-          </button>
           <button onClick={() => { loadAnalytics(); if (showLog) loadEvents(eventsPage); }}
             className="px-3 py-1.5 rounded-full text-xs font-semibold bg-[#f0f0f2] dark:bg-slate-700 text-[#6e6e73] dark:text-slate-400 hover:bg-[#e5e5e5] dark:hover:bg-slate-600 transition-colors">
             Refresh
