@@ -151,7 +151,7 @@ const TABLES = [
     excerpt TEXT,
     content LONGTEXT,
     featured_image VARCHAR(500),
-    tags_json TEXT DEFAULT '[]',
+    tags_json TEXT,
     meta_title VARCHAR(255),
     meta_description TEXT,
     status ENUM('draft', 'published') DEFAULT 'draft',
