@@ -54,28 +54,18 @@ export default function ChatWidget() {
       reply = "Maaf, terjadi gangguan. Silakan hubungi kami via WhatsApp.";
     }
 
-    // Keep the "typing" indicator visible for a natural minimum delay
-    // (so fast responses don't pop in instantly and feel robotic).
+    // Keep the "typing" indicator visible for a natural delay based on the
+    // reply length (so it feels like Hani is actually reading/typing), then
+    // show the full reply at once.
     const elapsed = Date.now() - start;
-    const minTyping = 900;
-    if (elapsed < minTyping) {
-      await new Promise((r) => setTimeout(r, minTyping - elapsed));
+    const typingDelay = Math.min(2500, 700 + reply.replace("[BUTUH_CS]", "").length * 12);
+    if (elapsed < typingDelay) {
+      await new Promise((r) => setTimeout(r, typingDelay - elapsed));
     }
 
-    // Reveal the reply progressively, character by character.
-    const base = [...next, { role: "assistant", content: "" }];
-    setMessages(base);
-    setLoading(false);
     const clean = reply.replace("[BUTUH_CS]", "").trim();
-    let shown = "";
-    for (let i = 0; i < clean.length; i++) {
-      shown += clean[i];
-      setMessages([...base.slice(0, -1), { role: "assistant", content: shown }]);
-      // Vary speed slightly for a more human feel; pause longer at sentence ends.
-      const ch = clean[i];
-      const delay = ch === " " ? 12 : ch === "." || ch === "?" || ch === "!" ? 90 : 18 + Math.random() * 22;
-      await new Promise((r) => setTimeout(r, delay));
-    }
+    setMessages([...next, { role: "assistant", content: clean }]);
+    setLoading(false);
   }
 
   return (
