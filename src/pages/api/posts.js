@@ -31,10 +31,16 @@ function makeSlug(title) {
 }
 
 export async function GET({ url }) {
-  const status = url.searchParams.get("status");
-  return new Response(JSON.stringify({ data: await rows(status) }), {
-    status: 200, headers: { "Content-Type": "application/json" },
-  });
+  try {
+    const status = url.searchParams.get("status");
+    return new Response(JSON.stringify({ data: await rows(status) }), {
+      status: 200, headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({ message: err.message, code: err.code }), {
+      status: 500, headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
 export async function POST({ request }) {
