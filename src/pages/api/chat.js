@@ -40,26 +40,26 @@ async function buildSystemPrompt() {
   } catch {
     ctx = "";
   }
-  return `Kamu adalah customer service AI untuk "${"Sidomulyo Advertising"}", sebuah bisnis advertising, percetakan, dan branding di Salatiga, Indonesia. Tugasmu menjawab pertanyaan pengunjung seputar produk, layanan, pemesanan, harga perkiraan, cara order, dan informasi kontak.
+  return `Kamu adalah Hani, customer service dari Sidomulyo Advertising, sebuah bisnis advertising, percetakan, dan branding di Salatiga, Indonesia. Tugasmu membantu pengunjung menjawab pertanyaan seputar produk, layanan, pemesanan, dan informasi kontak dengan ramah layaknya staf CS sungguhan.
 
 Berikut adalah informasi perusahaan dan layanan yang boleh kamu gunakan sebagai referensi:
 ---
 ${ctx}
 ---
 
-Aturan:
-- Jawab SELALU dalam Bahasa Indonesia yang ramah, singkat, dan profesional.
-- Gunakan HANYA informasi di atas. Jika ditanya hal di luar informasi tersebut (misal harga pasti, ketersediaan spesifik), arahkan pengunjung untuk menghubungi tim via WhatsApp/telepon yang tertera di atas, jangan menebak angka.
-- Untuk pertanyaan pemesanan, jelaskan langkah umum: pilih layanan, hubungi via WhatsApp/telepon, konsultasikan kebutuhan, lalu produksi.
+Aturan penting:
+- Jawab SELALU dalam Bahasa Indonesia yang ramah, singkat, dan natural — seperti staf customer service asli sedang mengobrol. JANGAN sebut diri kamu sebagai "AI", "bot", "asisten virtual", atau "kecerdasan buatan". Panggil diri kamu "Hani".
+- Gunakan HANYA informasi di atas. Jika pertanyaan di luar informasi tersebut (misal harga pasti, ketersediaan spesifik, atau hal teknis di luar layanan), jangan menebak angka dan jangan memberi jawaban mengandung angka yang tidak ada di referensi.
+- Untuk pertanyaan pemesanan, jelaskan langkah umum: pilih layanan, hubungi tim via WhatsApp/telepon, konsultasikan kebutuhan, lalu produksi.
 - Jangan pernah meminta data pribadi sensitif (password, kartu kredit, dll).
-- Jika tidak yakin, sarankan menelepon/hubungi WhatsApp tim.`;
+- JIKA dan HANYA JIKA kamu benar-benar tidak bisa membantu atau pertanyaannya butuh penanganan tim (misal negosiasi harga, jadwal produksi spesifik, keluhan), akhiri jawaban dengan token persis: [BUTUH_CS] (tanpa teks lain di belakangnya). Token ini akan memunculkan tombol hubungi CS. Untuk pertanyaan yang bisa kamu jawab dari referensi, JANGAN tambahkan token tersebut.`;
 }
 
 async function callLLM(messages) {
   const provider = (process.env.AI_PROVIDER || "openai").toLowerCase();
   const apiKey = process.env.AI_API_KEY;
   if (!apiKey) {
-    return "Maaf, layanan AI sedang tidak tersedia. Silakan hubungi kami via WhatsApp atau telepon.";
+    return { reply: "Maaf, layanan sedang tidak tersedia. Silakan hubungi CS kami langsung via WhatsApp untuk pemesanan.", configured: false };
   }
 
   if (provider === "gemini") {
@@ -76,7 +76,10 @@ async function callLLM(messages) {
       signal: AbortSignal.timeout(20000),
     });
     const d = await res.json();
-    return d?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "Maaf, saya tidak bisa menjawab saat ini.";
+    if (!res.ok) {
+      console.error("[chat] Gemini error", res.status, JSON.stringify(d).slice(0, 300));
+    }
+    return { reply: d?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "Maaf, saya tidak bisa menjawab saat ini.", configured: true };
   }
 
   // Default: OpenAI-compatible chat completions
@@ -89,7 +92,10 @@ async function callLLM(messages) {
     signal: AbortSignal.timeout(20000),
   });
   const d = await res.json();
-  return d?.choices?.[0]?.message?.content || "Maaf, saya tidak bisa menjawab saat ini.";
+  if (!res.ok) {
+    console.error("[chat] OpenAI error", res.status, JSON.stringify(d).slice(0, 300));
+  }
+  return { reply: d?.choices?.[0]?.message?.content || "Maaf, saya tidak bisa menjawab saat ini.", configured: true };
 }
 
 export async function POST({ request }) {
@@ -106,15 +112,16 @@ export async function POST({ request }) {
       .map((m) => ({ role: m.role, content: m.content.slice(0, 2000) }));
 
     const full = [{ role: "system", content: system }, ...safe];
-    const reply = await callLLM(full);
+    const { reply, configured } = await callLLM(full);
+    const handoff = !configured || reply.includes("[BUTUH_CS]");
 
-    return new Response(JSON.stringify({ reply }), {
+    return new Response(JSON.stringify({ reply, handoff }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch {
     return new Response(
-      JSON.stringify({ reply: "Maaf, terjadi gangguan. Silakan hubungi kami via WhatsApp atau telepon." }),
+      JSON.stringify({ reply: "Maaf, terjadi gangguan. Silakan hubungi kami via WhatsApp atau telepon.", handoff: true }),
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   }
