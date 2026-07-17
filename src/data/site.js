@@ -24,7 +24,7 @@ export const site = {
     "https://maps.app.goo.gl/9ZQzJmZ2uKwYqiop9",
   mapsEmbed:
     "https://www.google.com/maps?q=SIDOMULYO+ADVERTISING+%26+PRINTING,+Jl.+Kartini+No.108,+Salatiga,+Jawa+Tengah&output=embed",
-  logo: "/logo-sidomulyo.webp",
+  logo: "/sm-logo.png",
   heroImage: "/hero-product.webp",
   social: [
     { label: "WhatsApp", href: "https://wa.me/6288808888880" },

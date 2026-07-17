@@ -77,12 +77,20 @@ export default function Navbar() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
 
           {/* LOGO */}
-          <a href="/">
+          <a href="/" className="flex items-center gap-2">
             <img
-              src="/logo-sidomulyo.webp"
+              src="/sm-logo.png"
               alt="Sidomulyo Advertising"
               className="h-9 w-auto"
             />
+            <span className="flex flex-col leading-tight">
+              <span className="text-lg font-semibold text-[#1d1d1f] dark:text-slate-100">
+                Sidomulyo Advertising
+              </span>
+              <span className="text-xs font-medium text-[#6e6e73] dark:text-slate-400">
+                digital printing salatiga
+              </span>
+            </span>
           </a>
 
           {/* DESKTOP MENU */}
