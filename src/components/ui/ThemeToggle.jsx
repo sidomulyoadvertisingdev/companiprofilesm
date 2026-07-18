@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiSun, FiMoon } from "react-icons/fi";
 
 export default function ThemeToggle({ className = "" }) {
-  const [theme, setTheme] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("theme");
-      if (stored) return stored;
-      if (window.matchMedia("(prefers-color-scheme: dark)").matches) return "dark";
-    }
-    return "light";
-  });
+  const [theme, setTheme] = useState("light");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    const initial =
+      stored ||
+      (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    setTheme(initial);
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
     const next = theme === "dark" ? "light" : "dark";
