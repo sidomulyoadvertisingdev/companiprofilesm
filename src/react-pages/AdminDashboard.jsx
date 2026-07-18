@@ -501,7 +501,7 @@ function BlogManager({ posts, onChanged }) {
   const back = () => { setView("list"); setEditingPost(null); onChanged(); };
 
   if (view === "editor") {
-    return <BlogEditor post={editingPost} onBack={back} />;
+    return <BlogEditor postData={editingPost} onBack={back} />;
   }
 
   const draftCount = posts.filter((p) => p.status === "draft").length;
@@ -596,17 +596,17 @@ function BlogManager({ posts, onChanged }) {
 
 /* ─── Blog Editor (TipTap Rich Text) ──────────────────────────────────── */
 
-function BlogEditor({ post, onBack }) {
-  const [title, setTitle] = useState(post?.title || "");
-  const [slug, setSlug] = useState(post?.slug || "");
-  const [excerpt, setExcerpt] = useState(post?.excerpt || "");
-  const [featuredImage, setFeaturedImage] = useState(post?.featuredImage || "");
-  const [tags, setTags] = useState(post?.tags || []);
+function BlogEditor({ postData, onBack }) {
+  const [title, setTitle] = useState(postData?.title || "");
+  const [slug, setSlug] = useState(postData?.slug || "");
+  const [excerpt, setExcerpt] = useState(postData?.excerpt || "");
+  const [featuredImage, setFeaturedImage] = useState(postData?.featuredImage || "");
+  const [tags, setTags] = useState(postData?.tags || []);
   const [tagInput, setTagInput] = useState("");
-  const [metaTitle, setMetaTitle] = useState(post?.metaTitle || post?.title || "");
-  const [metaDescription, setMetaDescription] = useState(post?.metaDescription || "");
-  const [status, setStatus] = useState(post?.status || "draft");
-  const [author, setAuthor] = useState(post?.author || "");
+  const [metaTitle, setMetaTitle] = useState(postData?.metaTitle || postData?.title || "");
+  const [metaDescription, setMetaDescription] = useState(postData?.metaDescription || "");
+  const [status, setStatus] = useState(postData?.status || "draft");
+  const [author, setAuthor] = useState(postData?.author || "");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
   const [seoOpen, setSeoOpen] = useState(true);
@@ -619,7 +619,7 @@ function BlogEditor({ post, onBack }) {
       Placeholder.configure({ placeholder: "Mulai menulis artikel di sini..." }),
       CharacterCount,
     ],
-    content: post?.content || "",
+    content: postData?.content || "",
   });
 
   const autoSlug = (v) => {
@@ -653,8 +653,8 @@ function BlogEditor({ post, onBack }) {
         excerpt, content: editor?.getHTML() || "", featuredImage, tags,
         metaTitle, metaDescription, status: newStatus || status, author,
       };
-      if (post?.id) {
-        await put(`/api/posts/${post.id}`, payload);
+      if (postData?.id) {
+        await put(`/api/posts/${postData.id}`, payload);
       } else {
         await post("/api/posts", payload);
       }
