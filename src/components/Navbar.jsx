@@ -17,8 +17,10 @@ export default function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const pathname =
-    typeof window !== "undefined" ? window.location.pathname : "";
+  const [pathname, setPathname] = useState("");
+  useEffect(() => {
+    setPathname(window.location.pathname);
+  }, []);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() ?? 0;
@@ -75,6 +77,7 @@ export default function Navbar() {
               <a
                 key={item.path}
                 href={item.path}
+                suppressHydrationWarning
                 className={`relative transition cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 ${pathname === item.path ? "text-blue-800 dark:text-blue-400 font-semibold" : ""}`}
               >
                 {item.name}

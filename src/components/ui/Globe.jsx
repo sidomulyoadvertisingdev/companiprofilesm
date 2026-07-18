@@ -42,17 +42,18 @@ export function Globe({ globeConfig, data }) {
     for (let i = 0; i < arcsData.length; i++) {
       const arc = arcsData[i];
       const rgb = hexToRgb(arc.color);
+      const colorStr = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 1)`;
       points.push({
         size: defaultProps.pointSize,
         order: arc.order,
-        color: (t) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${1 - t})`,
+        color: colorStr,
         lat: arc.startLat,
         lng: arc.startLng,
       });
       points.push({
         size: defaultProps.pointSize,
         order: arc.order,
-        color: (t) => `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${1 - t})`,
+        color: colorStr,
         lat: arc.endLat,
         lng: arc.endLng,
       });
@@ -83,14 +84,14 @@ export function Globe({ globeConfig, data }) {
         .arcEndLng((d) => d.endLng * 1)
         .arcColor((e) => e.color)
         .arcAltitude((e) => e.arcAlt * 1)
-        .arcStroke(() => [0.32, 0.28, 0.3][Math.round(Math.random() * 2)])
+        .arcStroke(0.3)
         .arcDashLength(globeConfigRef.current.arcLength)
         .arcDashInitialGap((e) => e.order * 1)
         .arcDashGap(15)
         .arcDashAnimateTime(() => globeConfigRef.current.arcTime);
 
       globe
-        .pointsData(arcsData)
+        .pointsData(filteredPoints)
         .pointColor((e) => e.color)
         .pointsMerge(true)
         .pointAltitude(0.0)
@@ -98,7 +99,7 @@ export function Globe({ globeConfig, data }) {
 
       globe
         .ringsData([])
-        .ringColor((e) => (t) => e.color(t))
+        .ringColor((e) => (t) => e.color)
         .ringMaxRadius(globeConfigRef.current.maxRings)
         .ringPropagationSpeed(RING_PROPAGATION_SPEED)
         .ringRepeatPeriod(
