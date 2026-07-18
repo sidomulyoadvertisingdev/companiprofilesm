@@ -7,9 +7,11 @@ import { BackgroundGradientAnimation } from "./ui/background-gradient-animation"
 
 export default function Hero({ initialData, children }) {
   const [site, setSite] = useState(initialData || null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (!initialData) getSite().then(setSite);
+    setMounted(true);
   }, [initialData]);
 
   const waLink = site ? `https://wa.me/${site.phone}` : "#";
@@ -44,25 +46,31 @@ export default function Hero({ initialData, children }) {
                 Percetakan & Advertising Profesional
               </span>
 
-              <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
-                <TypeAnimation
-                  sequence={[
-                    "Sidomulyo Advertising",
-                    2200,
-                    "",
-                    500,
-                    "Solusi Cetak Terpercaya",
-                    2200,
-                    "",
-                    500,
-                  ]}
-                  speed={70}
-                  repeat={Infinity}
-                  cursor={true}
-                  wrapper="span"
-                  className="bg-gradient-to-r from-orange-300 via-orange-400 to-amber-300 bg-clip-text text-transparent"
-                />
-              </h1>
+               <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight mb-6">
+                 {mounted ? (
+                   <TypeAnimation
+                     sequence={[
+                       "Sidomulyo Advertising",
+                       2200,
+                       "",
+                       500,
+                       "Solusi Cetak Terpercaya",
+                       2200,
+                       "",
+                       500,
+                     ]}
+                     speed={70}
+                     repeat={Infinity}
+                     cursor={true}
+                     wrapper="span"
+                     className="bg-gradient-to-r from-orange-300 via-orange-400 to-amber-300 bg-clip-text text-transparent"
+                   />
+                 ) : (
+                   <span className="bg-gradient-to-r from-orange-300 via-orange-400 to-amber-300 bg-clip-text text-transparent">
+                     Sidomulyo Advertising
+                   </span>
+                 )}
+               </h1>
 
               <p className="text-lg text-slate-300 mb-10 leading-relaxed">
                 {site?.description ||
