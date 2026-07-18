@@ -9,8 +9,6 @@ import {
   FiMenu,
   FiX,
   FiShoppingBag,
-  FiUser,
-  FiLogOut,
 } from "react-icons/fi";
 import { getNav } from "../lib/content.js";
 import ThemeToggle from "./ui/ThemeToggle.jsx";
@@ -27,9 +25,6 @@ export default function Navbar() {
     setPathname(window.location.pathname);
   }, []);
 
-  const isLoggedIn = isClient ? !!localStorage.getItem("token") : false;
-  const isJobsPage = isClient ? pathname.startsWith("/jobs") : false;
-
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious();
     if (latest > previous && latest > 80 && !open) {
@@ -38,12 +33,6 @@ export default function Navbar() {
       setHidden(false);
     }
   });
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    window.location.href = "/login";
-  };
 
   const [navItems, setNavItems] = useState([]);
   useEffect(() => {
@@ -55,7 +44,6 @@ export default function Navbar() {
     { name: "Services", path: "/services" },
     { name: "Portfolio", path: "/portfolio" },
     { name: "Catalog", path: "/catalog" },
-    { name: "Karir / Lowongan", path: "/jobs" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
     { name: "Marketplace", path: "/marketplace" },
@@ -112,45 +100,6 @@ export default function Navbar() {
             {/* THEME TOGGLE */}
             <ThemeToggle />
 
-            {/* AUTH ACTION – DESKTOP (HANYA DI JOBS) */}
-            {isJobsPage && (
-              <div className="hidden md:flex items-center gap-3">
-                {!isLoggedIn ? (
-                  <>
-                    <a
-                      href="/login"
-                      className="text-sm px-4 py-2 border border-[#d2d2d7] dark:border-slate-600 rounded hover:bg-[#f5f5f7] dark:hover:bg-slate-800 transition"
-                    >
-                      Login
-                    </a>
-                    <a
-                      href="/register"
-                      className="text-sm px-4 py-2 bg-[#1d1d1f] dark:bg-white text-white dark:text-[#1d1d1f] rounded transition"
-                    >
-                      Daftar
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    <a
-                      href="/profile"
-                      className="flex items-center gap-2 text-sm px-4 py-2 border border-[#d2d2d7] dark:border-slate-600 rounded hover:bg-[#f5f5f7] dark:hover:bg-slate-800 transition"
-                    >
-                      <FiUser />
-                      Profile
-                    </a>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center gap-2 text-sm px-4 py-2 border border-[#d2d2d7] dark:border-slate-600 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 transition"
-                    >
-                      <FiLogOut />
-                      Logout
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
-
             {/* MARKETPLACE */}
             <a
               href="/marketplace"
@@ -199,55 +148,6 @@ export default function Navbar() {
                   </a>
                 </li>
               ))}
-
-              {/* AUTH – MOBILE (HANYA DI JOBS) */}
-              {isJobsPage && (
-                !isLoggedIn ? (
-                  <>
-                    <li>
-                      <a
-                        href="/login"
-                        onClick={() => setOpen(false)}
-                        className="block px-6 py-5 text-lg transition"
-                      >
-                        Login
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="/register"
-                        onClick={() => setOpen(false)}
-                        className="block px-6 py-5 text-lg font-semibold transition"
-                      >
-                        Daftar
-                      </a>
-                    </li>
-                  </>
-                ) : (
-                  <>
-                    <li>
-                      <a
-                        href="/profile"
-                        onClick={() => setOpen(false)}
-                        className="block px-6 py-5 text-lg transition"
-                      >
-                        Profile
-                      </a>
-                    </li>
-                    <li>
-                      <button
-                        onClick={() => {
-                          handleLogout();
-                          setOpen(false);
-                        }}
-                        className="w-full text-left px-6 py-5 text-lg text-red-600 transition"
-                      >
-                        Logout
-                      </button>
-                    </li>
-                  </>
-                )
-              )}
 
               {/* MARKETPLACE – MOBILE */}
               <li className="px-6 py-5">

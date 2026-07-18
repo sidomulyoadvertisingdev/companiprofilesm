@@ -95,7 +95,14 @@ export async function getAnalyticsSnapshot(range = "30d") {
     dailyChart: dailyChart.map((r) => ({ date: r.date, visits: r.visits })),
     deviceBreakdown: deviceBreakdown.map((r) => ({ name: r.device_type, value: r.count })),
     browserBreakdown: browserBreakdown.map((r) => ({ name: r.browser, value: r.count })),
-    osBreakdown: osBreakdown.map((r) => ({ name: r.os, value: r.count })),
+    osBreakdown: (() => {
+      const totalOs = osBreakdown.reduce((s, r) => s + Number(r.count || 0), 0) || 1;
+      return osBreakdown.map((r) => ({
+        name: r.os,
+        value: r.count,
+        percent: Math.round((Number(r.count || 0) / totalOs) * 100),
+      }));
+    })(),
     topPages: topPages.map((r) => ({ page: r.page_url, visits: r.visits })),
     topClicks: topClicks.map((r) => ({ target: r.element_target, text: r.element_text, clicks: r.clicks })),
     topCities: topCities.map((r) => ({ city: r.city, region: r.region, country: r.country, count: r.count })),

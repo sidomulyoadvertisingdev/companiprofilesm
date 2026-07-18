@@ -1936,9 +1936,9 @@ function AnalyticsDashboard() {
                 <BarChart data={data.osBreakdown}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" className="dark:stroke-slate-700" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6e6e73" }} />
-                  <YAxis tick={{ fontSize: 11, fill: "#6e6e73" }} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#f97316" radius={[6, 6, 0, 0]} />
+                  <YAxis tick={{ fontSize: 11, fill: "#6e6e73" }} unit="%" domain={[0, 100]} />
+                  <Tooltip formatter={(v, n, p) => [`${p?.payload?.percent ?? v}%`, n]} />
+                  <Bar dataKey="percent" fill="#f97316" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

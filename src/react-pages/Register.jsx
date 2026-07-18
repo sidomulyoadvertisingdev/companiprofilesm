@@ -36,7 +36,7 @@ export default function Register() {
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      window.location.href = "/jobs";
+      window.location.href = "/profile";
     } catch (err) {
       setError(
         err.response?.data?.message ||

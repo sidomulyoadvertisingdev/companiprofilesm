@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import {
   getProfile,
   updateProfile,
-  getMyApplications,
 } from "../api/profile";
 
 export default function Profile() {
-  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
@@ -20,9 +18,8 @@ export default function Profile() {
       return;
     }
 
-    Promise.all([getProfile(), getMyApplications()])
-      .then(([profileRes, appRes]) => {
-        setApplications(appRes.data.data);
+    getProfile()
+      .then((profileRes) => {
         setForm({
           name: profileRes.data.data.name,
           phone: profileRes.data.data.phone || "",
@@ -68,29 +65,6 @@ export default function Profile() {
               Simpan Profile
             </button>
           </form>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Riwayat Lamaran</h2>
-          {applications.length === 0 && (
-            <p className="text-gray-500">Belum ada lamaran.</p>
-          )}
-          <ul className="space-y-4">
-            {applications.map((item) => (
-              <li
-                key={item.id}
-                className="border p-4 rounded flex justify-between items-center"
-              >
-                <div>
-                  <p className="font-medium">{item.job?.title}</p>
-                  <p className="text-sm text-gray-500">Status: {item.status}</p>
-                </div>
-                <span className="text-sm text-gray-400">
-                  {new Date(item.created_at).toLocaleDateString()}
-                </span>
-              </li>
-            ))}
-          </ul>
         </div>
 
       </div>
