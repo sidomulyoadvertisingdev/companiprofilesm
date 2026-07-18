@@ -7,7 +7,7 @@ export const prerender = false;
 const UPLOAD_DIR = join(process.cwd(), "public", "uploads");
 
 const ALLOWED = [".webp", ".jpg", ".jpeg", ".png", ".svg", ".gif", ".avif"];
-const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export async function POST({ request }) {
   let form;

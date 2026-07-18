@@ -35,7 +35,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
     const isAnalyticsRoute = path.startsWith("/api/analytics");
     const isChatRoute = path.startsWith("/api/chat");
     const isContactRoute = path.startsWith("/api/contact");
-    if (isWrite && !isAuthRoute && !isAnalyticsRoute && !isChatRoute && !isContactRoute && !admin) {
+    const isUploadRoute = path.startsWith("/api/upload");
+    if (isWrite && !isAuthRoute && !isAnalyticsRoute && !isChatRoute && !isContactRoute && !isUploadRoute && !admin) {
       return new Response(JSON.stringify({ message: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
