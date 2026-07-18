@@ -48,7 +48,7 @@ export async function POST({ request }) {
   const filename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${ext}`;
   await writeFile(join(UPLOAD_DIR, filename), buf);
 
-  return new Response(JSON.stringify({ url: `/uploads/${filename}` }), {
+  return new Response(JSON.stringify({ url: `/api/uploads/${filename}` }), {
     status: 201,
     headers: { "Content-Type": "application/json" },
   });
