@@ -103,27 +103,27 @@ function RegisterStep({ phone, onDone, onLogin }) {
         <p className="text-slate-400 text-sm">Daftar untuk mendapatkan kode redeem diskon</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="relative"><FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="text" placeholder="Nama Lengkap" value={form.name} onChange={set("name")} required className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50" /></div>
-        <div className="relative"><FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="email" placeholder="Email" value={form.email} onChange={set("email")} required className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50" /></div>
-        <div className="relative"><FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="tel" placeholder="Nomor Handphone" value={form.phone} onChange={set("phone")} required className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50" /></div>
-        <div className="relative"><FiMapPin className="absolute left-4 top-3.5 text-slate-500" /><textarea placeholder="Alamat Lengkap" value={form.address} onChange={set("address")} rows={2} className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none" /></div>
-        <div className="relative"><FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type={showPw ? "text" : "password"} placeholder="Password" value={form.password} onChange={set("password")} required className="w-full pl-11 pr-11 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50" /><button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">{showPw ? <FiEyeOff /> : <FiEye />}</button></div>
+        <div className="relative"><FiUser className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="text" placeholder="Nama Lengkap" value={form.name} onChange={set("name")} required className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+        <div className="relative"><FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="email" placeholder="Email" value={form.email} onChange={set("email")} required className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+        <div className="relative"><FiPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="tel" placeholder="Nomor Handphone" value={form.phone} onChange={set("phone")} required className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+        <div className="relative"><FiMapPin className="absolute left-4 top-3.5 text-slate-500" /><textarea placeholder="Alamat Lengkap" value={form.address} onChange={set("address")} rows={2} className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 resize-none" /></div>
+        <div className="relative"><FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type={showPw ? "text" : "password"} placeholder="Password" value={form.password} onChange={set("password")} required className="w-full pl-11 pr-11 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" /><button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">{showPw ? <FiEyeOff /> : <FiEye />}</button></div>
 
         {phase && (
-          <p className="text-xs text-orange-400 text-center">
+          <p className="text-xs text-blue-400 text-center">
             {phase === "login" && "Sedang login otomatis..."}
             {phase === "redeem" && "Sedang memproses redeem..."}
           </p>
         )}
         {error && <p className="text-xs text-red-400 text-center">{error}</p>}
 
-        <button type="submit" disabled={loading} className="w-full py-3 rounded-xl bg-orange-500 text-white text-sm font-semibold hover:bg-orange-400 disabled:opacity-50">
+        <button type="submit" disabled={loading} className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-50">
           {loading ? "Memproses..." : "Daftar & Klaim Redeem"}
         </button>
       </form>
       <p className="text-center text-xs text-slate-500 mt-4">
         Sudah punya akun?{" "}
-        <button onClick={onLogin} className="text-orange-400 hover:underline">Login</button>
+        <button onClick={onLogin} className="text-blue-400 hover:underline">Login</button>
       </p>
     </div>
   );
@@ -192,19 +192,19 @@ function LoginStep({ phone, onDone, onRegister }) {
         <p className="text-slate-400 text-sm">Masuk untuk klaim redeem Anda</p>
       </div>
       <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="relative"><FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50" /></div>
-        <div className="relative"><FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type={showPw ? "text" : "password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full pl-11 pr-11 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50" /><button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">{showPw ? <FiEyeOff /> : <FiEye />}</button></div>
+        <div className="relative"><FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full pl-11 pr-4 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" /></div>
+        <div className="relative"><FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type={showPw ? "text" : "password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full pl-11 pr-11 py-3 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50" /><button type="button" onClick={() => setShowPw(!showPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">{showPw ? <FiEyeOff /> : <FiEye />}</button></div>
 
-        {phase && <p className="text-xs text-orange-400 text-center">Sedang memproses redeem...</p>}
+        {phase && <p className="text-xs text-blue-400 text-center">Sedang memproses redeem...</p>}
         {error && <p className="text-xs text-red-400 text-center">{error}</p>}
 
-        <button type="submit" disabled={loading} className="w-full py-3 rounded-xl bg-orange-500 text-white text-sm font-semibold hover:bg-orange-400 disabled:opacity-50">
+        <button type="submit" disabled={loading} className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-50">
           {loading ? "Memproses..." : "Login & Klaim"}
         </button>
       </form>
       <p className="text-center text-xs text-slate-500 mt-4">
         Belum punya akun?{" "}
-        <button onClick={onRegister} className="text-orange-400 hover:underline">Daftar</button>
+        <button onClick={onRegister} className="text-blue-400 hover:underline">Daftar</button>
       </p>
     </div>
   );
@@ -258,16 +258,16 @@ function RedeemStep({ onDone, onLogout }) {
     <div className="relative z-10 w-full max-w-md mx-auto px-6">
       <div className="text-center mb-6">
         <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1.5 mb-4">
-          <span className="w-2 h-2 rounded-full bg-orange-500" />
+          <span className="w-2 h-2 rounded-full bg-blue-700" />
           <span className="text-xs font-medium text-slate-300">Halo, {user.name || "User"}</span>
         </div>
         <h2 className="text-2xl font-bold text-white mb-1">Klaim Redeem</h2>
         <p className="text-slate-400 text-sm">Masukkan kode redeem untuk mendapatkan diskon</p>
       </div>
       <form onSubmit={handleRedeem} className="space-y-3">
-        <div className="relative"><FiTag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="text" placeholder="SDM-A1B2C3" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-orange-500/50 uppercase" /></div>
+        <div className="relative"><FiTag className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" /><input type="text" placeholder="SDM-A1B2C3" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} required className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder:text-slate-500 text-sm font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500/50 uppercase" /></div>
         {error && <p className="text-xs text-red-400 text-center">{error}</p>}
-        <button type="submit" disabled={loading || !code.trim()} className="w-full py-3.5 rounded-xl bg-orange-500 text-white text-sm font-semibold hover:bg-orange-400 disabled:opacity-50">
+        <button type="submit" disabled={loading || !code.trim()} className="w-full py-3.5 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-50">
           {loading ? "Memproses..." : "Redeem Sekarang"}
         </button>
       </form>
@@ -298,7 +298,7 @@ function ResultStep({ onTukarLagi }) {
     return (
       <div className="relative z-10 w-full max-w-md mx-auto px-6 text-center space-y-4">
         <p className="text-slate-400 text-sm">Tidak ada data redeem.</p>
-        <button onClick={() => { localStorage.removeItem("mp_result"); onTukarLagi(); }} className="px-5 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-semibold hover:bg-orange-400">Kembali</button>
+        <button onClick={() => { localStorage.removeItem("mp_result"); onTukarLagi(); }} className="px-5 py-2.5 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400">Kembali</button>
       </div>
     );
   }
@@ -315,15 +315,15 @@ function ResultStep({ onTukarLagi }) {
       <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-sm">
         {result.image && <img src={result.image} alt={result.product} className="w-full h-48 object-cover" />}
         <div className="p-6 space-y-3">
-          <span className="inline-block px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 text-xs font-semibold uppercase">{result.category}</span>
+          <span className="inline-block px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-semibold uppercase">{result.category}</span>
           <h3 className="text-xl font-bold text-white">{result.product}</h3>
-          <div className="text-5xl font-bold text-orange-400">{result.discount_percent}% <span className="text-lg text-slate-400 font-normal">OFF</span></div>
+          <div className="text-5xl font-bold text-blue-400">{result.discount_percent}% <span className="text-lg text-slate-400 font-normal">OFF</span></div>
         </div>
       </div>
 
       <div className="flex items-center justify-center gap-2">
         <span className="text-sm text-slate-400">Kode Redeem:</span>
-        <span className="font-mono font-bold text-orange-400 text-lg">{result.code}</span>
+        <span className="font-mono font-bold text-blue-400 text-lg">{result.code}</span>
         <button onClick={() => { navigator.clipboard.writeText(result.code); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition">
           {copied ? <FiCheck className="text-green-400" /> : <FiCopy />}
         </button>

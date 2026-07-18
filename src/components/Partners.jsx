@@ -18,7 +18,7 @@ export default function Partners() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-xs font-semibold tracking-widest uppercase text-orange-500">
+          <span className="text-xs font-semibold tracking-widest uppercase text-blue-700">
             Mitra & Klien
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-[#1d1d1f] mt-3">

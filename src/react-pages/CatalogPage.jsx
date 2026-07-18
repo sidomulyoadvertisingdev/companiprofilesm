@@ -60,7 +60,7 @@ export default function CatalogPage({ initialData, siteData }) {
                   />
                 </div>
                 <div className="p-6">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-orange-500">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-blue-700">
                     {item.category}
                   </span>
                   <h3 className="text-xl font-semibold text-[#1d1d1f] dark:text-white mt-1">
@@ -77,7 +77,7 @@ export default function CatalogPage({ initialData, siteData }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     data-track="cta-tanya-produk-catalog"
-                    className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-orange-600 dark:text-orange-400 hover:gap-2 transition-all"
+                    className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-blue-800 dark:text-blue-400 hover:gap-2 transition-all"
                   >
                     Tanya Produk <FiArrowRight />
                   </a>
@@ -99,7 +99,7 @@ export default function CatalogPage({ initialData, siteData }) {
           target="_blank"
           rel="noopener noreferrer"
           data-track="cta-konsultasi-catalog"
-          className="inline-flex items-center gap-2 rounded-full bg-orange-500 text-white px-10 py-4 text-sm font-semibold hover:bg-orange-400 transition"
+          className="inline-flex items-center gap-2 rounded-full bg-blue-700 text-white px-10 py-4 text-sm font-semibold hover:bg-blue-400 transition"
         >
           Konsultasi & Pemesanan
           <FiArrowRight />

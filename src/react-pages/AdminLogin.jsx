@@ -41,7 +41,7 @@ export default function AdminLogin() {
         <label className="block mb-1 text-sm font-medium">Email</label>
         <input
           type="email"
-          className="w-full border rounded-xl px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full border rounded-xl px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -50,7 +50,7 @@ export default function AdminLogin() {
         <label className="block mb-1 text-sm font-medium">Password</label>
         <input
           type="password"
-          className="w-full border rounded-xl px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full border rounded-xl px-4 py-3 mb-6 focus:outline-none focus:ring-2 focus:ring-blue-400"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -58,7 +58,7 @@ export default function AdminLogin() {
 
         <button
           disabled={loading}
-          className="w-full bg-orange-500 text-white py-3 rounded-xl font-semibold hover:bg-orange-400 disabled:opacity-60"
+          className="w-full bg-blue-700 text-white py-3 rounded-xl font-semibold hover:bg-blue-400 disabled:opacity-60"
         >
           {loading ? "Memproses..." : "Login"}
         </button>

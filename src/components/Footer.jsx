@@ -30,12 +30,12 @@ export default function Footer() {
           <h4 className="font-semibold text-[#1d1d1f] dark:text-white mb-3">Kontak</h4>
           <p className="text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
             WhatsApp:{" "}
-            <a href={wa} className="hover:underline text-orange-600" data-track="cta-whatsapp-footer">
+            <a href={wa} className="hover:underline text-blue-800" data-track="cta-whatsapp-footer">
               {phoneDisplay}
             </a>
             <br />
             Email:{" "}
-            <a href={`mailto:${email}`} className="hover:underline text-orange-600">
+            <a href={`mailto:${email}`} className="hover:underline text-blue-800">
               {email}
             </a>
           </p>
@@ -54,7 +54,7 @@ export default function Footer() {
                 href={s.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-[#6e6e73] dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition"
+                className="text-sm text-[#6e6e73] dark:text-slate-400 hover:text-blue-800 dark:hover:text-blue-400 transition"
               >
                 {s.label}
               </a>
@@ -67,7 +67,7 @@ export default function Footer() {
           <ul className="text-sm text-[#6e6e73] dark:text-slate-400 space-y-2">
             {footerLinks.map((link) => (
               <li key={link.path}>
-                <a href={link.path} className="hover:text-orange-600 dark:hover:text-orange-400 transition">{link.name}</a>
+                <a href={link.path} className="hover:text-blue-800 dark:hover:text-blue-400 transition">{link.name}</a>
               </li>
             ))}
           </ul>

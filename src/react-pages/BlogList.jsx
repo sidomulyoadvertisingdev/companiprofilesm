@@ -67,12 +67,12 @@ export default function BlogList({ initialData }) {
               <div className="p-5 flex flex-col flex-1">
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {(p.tags || []).slice(0, 3).map((t) => (
-                    <span key={t} className="inline-flex items-center gap-1 text-[10px] font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-full">
+                    <span key={t} className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-800 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full">
                       <FiTag /> {t}
                     </span>
                   ))}
                 </div>
-                <h3 className="font-bold text-[#1d1d1f] dark:text-white mb-2 group-hover:text-orange-500 transition-colors line-clamp-2">
+                <h3 className="font-bold text-[#1d1d1f] dark:text-white mb-2 group-hover:text-blue-700 transition-colors line-clamp-2">
                   {p.title}
                 </h3>
                 <p className="text-sm text-[#6e6e73] dark:text-slate-400 line-clamp-3 mb-4 flex-1">

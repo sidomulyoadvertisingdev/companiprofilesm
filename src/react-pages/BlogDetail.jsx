@@ -32,7 +32,7 @@ export default function BlogDetail({ initialData, allPosts = [] }) {
       <main className="pt-20 bg-[#f5f5f7] dark:bg-[#0a0a1a] min-h-screen">
         <div className="max-w-3xl mx-auto px-6 py-20 text-center">
           <h1 className="text-2xl font-bold text-[#1d1d1f] dark:text-white mb-3">Artikel tidak ditemukan</h1>
-          <a href="/blog" className="text-orange-500 hover:underline inline-flex items-center gap-1">
+          <a href="/blog" className="text-blue-700 hover:underline inline-flex items-center gap-1">
             <FiArrowLeft /> Kembali ke Blog
           </a>
         </div>
@@ -63,12 +63,12 @@ export default function BlogDetail({ initialData, allPosts = [] }) {
                           className="w-16 h-16 object-cover rounded-xl shrink-0"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-xl shrink-0 bg-orange-100 dark:bg-orange-500/10 flex items-center justify-center text-orange-500">
+                        <div className="w-16 h-16 rounded-xl shrink-0 bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-700">
                           <FiTag size={18} />
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-[13px] font-medium leading-snug text-[#1d1d1f] dark:text-slate-200 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors line-clamp-2">
+                        <p className="text-[13px] font-medium leading-snug text-[#1d1d1f] dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors line-clamp-2">
                           {p.title}
                         </p>
                         <span className="text-[11px] text-[#6e6e73] dark:text-slate-400">{formatDate(p.createdAt)}</span>
@@ -84,7 +84,7 @@ export default function BlogDetail({ initialData, allPosts = [] }) {
           </aside>
 
           <article className="flex-1 min-w-0 order-1 lg:order-2">
-            <a href="/blog" className="inline-flex items-center gap-1 text-sm text-[#6e6e73] dark:text-slate-400 hover:text-orange-500 transition-colors mb-6">
+            <a href="/blog" className="inline-flex items-center gap-1 text-sm text-[#6e6e73] dark:text-slate-400 hover:text-blue-700 transition-colors mb-6">
               <FiArrowLeft /> Kembali ke Blog
             </a>
 
@@ -112,14 +112,14 @@ export default function BlogDetail({ initialData, allPosts = [] }) {
 
             <div className="flex flex-wrap gap-1.5 mb-8">
               {(post.tags || []).map((t) => (
-                <span key={t} className="inline-flex items-center gap-1 text-[10px] font-semibold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-full">
+                <span key={t} className="inline-flex items-center gap-1 text-[10px] font-semibold text-blue-800 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full">
                   <FiTag /> {t}
                 </span>
               ))}
             </div>
 
             <div
-              className="prose prose-slate dark:prose-invert max-w-none blog-content text-[#1d1d1f] dark:text-slate-200 leading-relaxed [&_img]:rounded-xl [&_img]:my-4 [&_a]:text-orange-500 [&_h2]:font-bold [&_h2]:text-2xl [&_h2]:mt-8 [&_h3]:font-bold [&_h3]:text-xl [&_h3]:mt-6"
+              className="prose prose-slate dark:prose-invert max-w-none blog-content text-[#1d1d1f] dark:text-slate-200 leading-relaxed [&_img]:rounded-xl [&_img]:my-4 [&_a]:text-blue-700 [&_h2]:font-bold [&_h2]:text-2xl [&_h2]:mt-8 [&_h3]:font-bold [&_h3]:text-xl [&_h3]:mt-6"
               dangerouslySetInnerHTML={{ __html: post.content || "" }}
             />
 

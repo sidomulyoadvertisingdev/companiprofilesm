@@ -150,7 +150,7 @@ export default function AdminDashboard({ admin }) {
       <aside className={`fixed z-40 inset-y-0 left-0 bg-white dark:bg-[#1a1a2e] border-r border-[#e5e5e5] dark:border-slate-700/50 flex flex-col transition-all duration-200 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} ${collapsed ? "lg:w-[72px]" : "lg:w-[260px]"} w-[260px]`}>
         <div className={`px-5 py-5 border-b border-gray-100 dark:border-slate-700/50 ${collapsed ? "lg:px-3 lg:py-4" : ""}`}>
           <div className={`flex items-center gap-3 ${collapsed ? "lg:justify-center" : ""}`}>
-            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-blue-700 to-blue-800 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
               S
             </div>
             {!collapsed && (
@@ -179,11 +179,11 @@ export default function AdminDashboard({ admin }) {
                 collapsed ? "lg:justify-center lg:px-0" : ""
               } ${
                 !tab
-                  ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 shadow-sm"
+                  ? "bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 shadow-sm"
                   : "text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/50 hover:text-[#1d1d1f] dark:hover:text-white"
               }`}
             >
-              <FiBarChart2 className={`text-base shrink-0 ${!tab ? "text-orange-500" : "text-[#6e6e73] dark:text-slate-400"}`} />
+              <FiBarChart2 className={`text-base shrink-0 ${!tab ? "text-blue-700" : "text-[#6e6e73] dark:text-slate-400"}`} />
               {!collapsed && <span className="hidden lg:inline">Dashboard</span>}
               <span className="lg:hidden">Dashboard</span>
             </button>
@@ -204,15 +204,15 @@ export default function AdminDashboard({ admin }) {
                       collapsed ? "lg:justify-center lg:px-0" : ""
                     } ${
                       tab === t.key
-                        ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 shadow-sm"
+                        ? "bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 shadow-sm"
                         : "text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/50 hover:text-[#1d1d1f] dark:hover:text-white"
                     }`}
                   >
-                    <Icon className={`text-base shrink-0 ${tab === t.key ? "text-orange-500" : "text-[#6e6e73] dark:text-slate-400"}`} />
+                    <Icon className={`text-base shrink-0 ${tab === t.key ? "text-blue-700" : "text-[#6e6e73] dark:text-slate-400"}`} />
                     {!collapsed && <span className="hidden lg:inline">{t.label}</span>}
                     <span className="lg:hidden">{t.label}</span>
                     {!collapsed && t.key === "posts" && (
-                      <span className="ml-auto text-[10px] bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 px-1.5 py-0.5 rounded-full font-semibold">
+                      <span className="ml-auto text-[10px] bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-400 px-1.5 py-0.5 rounded-full font-semibold">
                         {posts.length}
                       </span>
                     )}
@@ -392,16 +392,16 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark, messages =
             <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a1a2e] rounded-xl shadow-lg border border-[#e5e5e5] dark:border-slate-700 z-30 overflow-hidden">
               <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700 flex items-center justify-between">
                 <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white">Pesan Masuk</h3>
-                {unreadCount > 0 && <span className="text-[10px] bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-semibold">{unreadCount} baru</span>}
+                {unreadCount > 0 && <span className="text-[10px] bg-blue-100 dark:bg-blue-500/20 text-blue-800 dark:text-blue-400 px-2 py-0.5 rounded-full font-semibold">{unreadCount} baru</span>}
               </div>
               <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700/50">
                 {latest.length === 0 && (
                   <div className="px-4 py-6 text-center text-xs text-[#6e6e73] dark:text-slate-400">Belum ada pesan</div>
                 )}
                 {latest.map((m) => (
-                  <div key={m.id} onClick={() => { setNotifOpen(false); onOpenMessage?.(m.id); }} className={`px-4 py-3 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors cursor-pointer ${!m.is_read ? "bg-orange-50/40 dark:bg-orange-500/5" : ""}`}>
+                  <div key={m.id} onClick={() => { setNotifOpen(false); onOpenMessage?.(m.id); }} className={`px-4 py-3 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors cursor-pointer ${!m.is_read ? "bg-blue-50/40 dark:bg-blue-500/5" : ""}`}>
                     <div className="flex items-start gap-3">
-                      <span className={`mt-1 h-2 w-2 rounded-full shrink-0 ${!m.is_read ? "bg-orange-500" : "bg-transparent"}`} />
+                      <span className={`mt-1 h-2 w-2 rounded-full shrink-0 ${!m.is_read ? "bg-blue-700" : "bg-transparent"}`} />
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white truncate">{m.name}</p>
                         <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-0.5 truncate">{m.message}</p>
@@ -412,7 +412,7 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark, messages =
                 ))}
               </div>
               <div className="px-4 py-2.5 border-t border-[#e5e5e5] dark:border-slate-700 text-center">
-                <button onClick={() => { setNotifOpen(false); onOpenMessage?.(latest[0]?.id); }} className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300">Lihat Semua Pesan</button>
+                <button onClick={() => { setNotifOpen(false); onOpenMessage?.(latest[0]?.id); }} className="text-xs font-semibold text-blue-800 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Lihat Semua Pesan</button>
               </div>
             </div>
           )}
@@ -436,9 +436,9 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark, messages =
                   <div className="px-6 py-10 text-center text-xs text-[#6e6e73] dark:text-slate-400">Belum ada pesan</div>
                 )}
                 {latest.map((m) => (
-                  <div key={m.id} onClick={() => { setNotifAllOpen(false); onOpenMessage?.(m.id); }} className={`px-6 py-4 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors cursor-pointer ${!m.is_read ? "bg-orange-50/30 dark:bg-orange-500/5" : ""}`}>
+                  <div key={m.id} onClick={() => { setNotifAllOpen(false); onOpenMessage?.(m.id); }} className={`px-6 py-4 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors cursor-pointer ${!m.is_read ? "bg-blue-50/30 dark:bg-blue-500/5" : ""}`}>
                     <div className="flex items-start gap-3">
-                      <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${!m.is_read ? "bg-orange-500" : "bg-transparent"}`} />
+                      <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${!m.is_read ? "bg-blue-700" : "bg-transparent"}`} />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white">{m.name}</p>
                         <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">{m.message}</p>
@@ -449,14 +449,14 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark, messages =
                 ))}
               </div>
               <div className="px-6 py-3 border-t border-[#e5e5e5] dark:border-slate-700 flex items-center justify-center shrink-0">
-                <button onClick={() => { setNotifAllOpen(false); onOpenMessage?.(latest[0]?.id); }} className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300">Buka Pesan Masuk</button>
+                <button onClick={() => { setNotifAllOpen(false); onOpenMessage?.(latest[0]?.id); }} className="text-xs font-semibold text-blue-800 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300">Buka Pesan Masuk</button>
               </div>
             </div>
           </div>
         )}
         <div className="relative" ref={ref}>
           <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2 rounded-full pl-1 pr-2 py-1 hover:bg-[#f0f0f2] dark:hover:bg-slate-700 transition-colors">
-            <span className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white grid place-items-center font-semibold text-xs">
+            <span className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-800 text-white grid place-items-center font-semibold text-xs">
               {initial}
             </span>
             <span className="hidden sm:block text-left leading-tight">
@@ -515,7 +515,7 @@ function BlogManager({ posts, onChanged }) {
             {publishedCount} dipublikasikan · {draftCount} draft
           </p>
         </div>
-        <button onClick={openNew} className="flex items-center gap-2 bg-orange-500 text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:bg-orange-600 shadow-sm transition-colors">
+        <button onClick={openNew} className="flex items-center gap-2 bg-blue-700 text-white px-4 py-2.5 rounded-full text-sm font-semibold hover:bg-blue-800 shadow-sm transition-colors">
           <FiPlus className="text-base" /> Tulis Artikel
         </button>
       </div>
@@ -526,7 +526,7 @@ function BlogManager({ posts, onChanged }) {
           <input
             type="text" placeholder="Cari judul artikel..."
             value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
           />
         </div>
         <div className="flex bg-[#f0f0f2] dark:bg-slate-700 rounded-xl p-0.5">
@@ -571,7 +571,7 @@ function BlogManager({ posts, onChanged }) {
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => openEdit(p)} className="p-2 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors" title="Edit">
+              <button onClick={() => openEdit(p)} className="p-2 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-blue-800 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors" title="Edit">
                 <FiEdit3 className="text-sm" />
               </button>
               <button onClick={async () => { if (confirm("Hapus artikel ini?")) { await del(`/api/posts/${p.id}`); onChanged(); } }}
@@ -697,7 +697,7 @@ function BlogEditor({ postData, onBack }) {
             {saving ? "Menyimpan..." : "Simpan Draft"}
           </button>
           <button onClick={() => save("published")} disabled={saving}
-            className="px-4 py-2 rounded-full bg-orange-500 text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-50 shadow-sm transition-colors">
+            className="px-4 py-2 rounded-full bg-blue-700 text-white text-sm font-semibold hover:bg-blue-800 disabled:opacity-50 shadow-sm transition-colors">
             {saving ? "Menyimpan..." : "Publish"}
           </button>
         </div>
@@ -779,7 +779,7 @@ function BlogEditor({ postData, onBack }) {
 
           {/* Editor content */}
           <div className="bg-white rounded-3xl border border-[#e5e5e5] overflow-hidden">
-            <EditorContent editor={editor} className="prose prose-sm max-w-none p-5 min-h-[400px] focus:outline-none [&_.tiptap]:outline-none [&_.tiptap]:min-h-[380px] [&_.tiptap_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.tiptap_p.is-editor-empty:first-child::before]:text-gray-300 [&_.tiptap_p.is-editor-empty:first-child::before]:float-left [&_.tiptap_p.is-editor-empty:first-child::before]:pointer-events-none [&_.tiptap_h1]:text-2xl [&_.tiptap_h1]:font-bold [&_.tiptap_h2]:text-xl [&_.tiptap_h2]:font-bold [&_.tiptap_h3]:text-lg [&_.tiptap_h3]:font-semibold [&_.tiptap_ul]:list-disc [&_.tiptap_ul]:pl-6 [&_.tiptap_ol]:list-decimal [&_.tiptap_ol]:pl-6 [&_.tiptap_blockquote]:border-l-4 [&_.tiptap_blockquote]:border-orange-300 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:italic [&_.tiptap_blockquote]:text-gray-600 [&_.tiptap_img]:rounded-xl [&_.tiptap_img]:max-w-full [&_.tiptap_a]:text-orange-600 [&_.tiptap_a]:underline [&_.tiptap_code]:bg-[#f0f0f2] [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:rounded [&_.tiptap_code]:text-sm" />
+            <EditorContent editor={editor} className="prose prose-sm max-w-none p-5 min-h-[400px] focus:outline-none [&_.tiptap]:outline-none [&_.tiptap]:min-h-[380px] [&_.tiptap_p.is-editor-empty:first-child::before]:content-[attr(data-placeholder)] [&_.tiptap_p.is-editor-empty:first-child::before]:text-gray-300 [&_.tiptap_p.is-editor-empty:first-child::before]:float-left [&_.tiptap_p.is-editor-empty:first-child::before]:pointer-events-none [&_.tiptap_h1]:text-2xl [&_.tiptap_h1]:font-bold [&_.tiptap_h2]:text-xl [&_.tiptap_h2]:font-bold [&_.tiptap_h3]:text-lg [&_.tiptap_h3]:font-semibold [&_.tiptap_ul]:list-disc [&_.tiptap_ul]:pl-6 [&_.tiptap_ol]:list-decimal [&_.tiptap_ol]:pl-6 [&_.tiptap_blockquote]:border-l-4 [&_.tiptap_blockquote]:border-blue-300 [&_.tiptap_blockquote]:pl-4 [&_.tiptap_blockquote]:italic [&_.tiptap_blockquote]:text-gray-600 [&_.tiptap_img]:rounded-xl [&_.tiptap_img]:max-w-full [&_.tiptap_a]:text-blue-800 [&_.tiptap_a]:underline [&_.tiptap_code]:bg-[#f0f0f2] [&_.tiptap_code]:px-1.5 [&_.tiptap_code]:py-0.5 [&_.tiptap_code]:rounded [&_.tiptap_code]:text-sm" />
           </div>
         </div>
 
@@ -791,7 +791,7 @@ function BlogEditor({ postData, onBack }) {
             <div>
               <label className="block text-xs font-medium text-[#6e6e73] mb-1">Status</label>
               <select value={status} onChange={(e) => setStatus(e.target.value)}
-                className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+                className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <option value="draft">Draft</option>
                 <option value="published">Published</option>
               </select>
@@ -799,7 +799,7 @@ function BlogEditor({ postData, onBack }) {
             <div>
               <label className="block text-xs font-medium text-[#6e6e73] mb-1">Penulis</label>
               <input type="text" value={author} onChange={(e) => setAuthor(e.target.value)} placeholder="Nama penulis"
-                className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
             </div>
           </div>
 
@@ -815,7 +815,7 @@ function BlogEditor({ postData, onBack }) {
                 </button>
               </div>
             ) : (
-              <label className="block border-2 border-dashed border-[#e5e5e5] rounded-xl h-36 flex flex-col items-center justify-center cursor-pointer hover:border-orange-300 transition-colors">
+              <label className="block border-2 border-dashed border-[#e5e5e5] rounded-xl h-36 flex flex-col items-center justify-center cursor-pointer hover:border-blue-300 transition-colors">
                 <FiPlus className="text-2xl text-gray-300 mb-1" />
                 <span className="text-xs text-[#6e6e73]">Upload gambar</span>
                 <input type="file" accept="image/*" onChange={handleFeaturedImageUpload} className="hidden" />
@@ -827,7 +827,7 @@ function BlogEditor({ postData, onBack }) {
           <div className="bg-white rounded-3xl border border-[#e5e5e5] p-4 space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#6e6e73]">Ringkasan</h3>
             <textarea rows={3} value={excerpt} onChange={(e) => setExcerpt(e.target.value)} placeholder="Deskripsi singkat artikel..."
-              className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
+              className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none" />
           </div>
 
           {/* Tags */}
@@ -837,7 +837,7 @@ function BlogEditor({ postData, onBack }) {
               <input type="text" value={tagInput} onChange={(e) => setTagInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }}
                 placeholder="Tambah tag..."
-                className="flex-1 border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                className="flex-1 border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
               <button onClick={addTag} type="button"
                 className="px-3 py-2 rounded-xl bg-[#f0f0f2] text-[#6e6e73] hover:bg-[#e5e5e5] text-sm font-medium transition-colors">
                 <FiPlus />
@@ -846,9 +846,9 @@ function BlogEditor({ postData, onBack }) {
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {tags.map((t) => (
-                  <span key={t} className="inline-flex items-center gap-1 bg-orange-50 text-orange-600 px-2.5 py-1 rounded-lg text-xs font-medium">
+                  <span key={t} className="inline-flex items-center gap-1 bg-blue-50 text-blue-800 px-2.5 py-1 rounded-lg text-xs font-medium">
                     {t}
-                    <button onClick={() => removeTag(t)} className="hover:text-orange-800">&times;</button>
+                    <button onClick={() => removeTag(t)} className="hover:text-blue-800">&times;</button>
                   </span>
                 ))}
               </div>
@@ -869,14 +869,14 @@ function BlogEditor({ postData, onBack }) {
                     Meta Title <span className={`float-right ${metaTitle.length > 60 ? "text-red-500" : "text-[#6e6e73]"}`}>{metaTitle.length}/60</span>
                   </label>
                   <input type="text" value={metaTitle} onChange={(e) => setMetaTitle(e.target.value)} placeholder="Judul untuk SEO..."
-                    className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+                    className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-[#6e6e73] mb-1">
                     Meta Description <span className={`float-right ${metaDescription.length > 160 ? "text-red-500" : "text-[#6e6e73]"}`}>{metaDescription.length}/160</span>
                   </label>
                   <textarea rows={3} value={metaDescription} onChange={(e) => setMetaDescription(e.target.value)} placeholder="Deskripsi untuk mesin pencari..."
-                    className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
+                    className="w-full border border-[#e5e5e5] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none" />
                 </div>
                 {/* SERP Preview */}
                 <div className="bg-[#f5f5f7] rounded-xl p-3">
@@ -897,7 +897,7 @@ function BlogEditor({ postData, onBack }) {
 function ToolbarBtn({ onClick, active, disabled, children, title }) {
   return (
     <button type="button" onClick={onClick} disabled={disabled} title={title}
-      className={`p-1.5 rounded-lg transition-colors ${active ? "bg-orange-100 text-orange-600" : "text-[#6e6e73] hover:bg-[#f0f0f2] hover:text-[#1d1d1f]"} ${disabled ? "opacity-30 cursor-not-allowed" : ""}`}>
+      className={`p-1.5 rounded-lg transition-colors ${active ? "bg-blue-100 text-blue-800" : "text-[#6e6e73] hover:bg-[#f0f0f2] hover:text-[#1d1d1f]"} ${disabled ? "opacity-30 cursor-not-allowed" : ""}`}>
       {children}
     </button>
   );
@@ -968,7 +968,7 @@ function MessagesManager({ messages, onChanged, focusId, onFocused }) {
           <div className="relative">
             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-slate-500 text-sm" />
             <input type="text" placeholder="Cari nama, email, pesan..." value={search} onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
           </div>
 
           <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-1">
@@ -979,14 +979,14 @@ function MessagesManager({ messages, onChanged, focusId, onFocused }) {
                 <button
                   key={m.id}
                   onClick={() => openMessage(m)}
-                  className={`w-full text-left bg-white dark:bg-[#1a1a2e] rounded-2xl border p-3.5 transition-colors ${isActive ? "border-orange-400 dark:border-orange-500 ring-2 ring-orange-200 dark:ring-orange-500/30" : "border-[#e5e5e5] dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-500/40"} ${m.is_read ? "" : "bg-orange-50/40 dark:bg-orange-500/5"}`}
+                  className={`w-full text-left bg-white dark:bg-[#1a1a2e] rounded-2xl border p-3.5 transition-colors ${isActive ? "border-blue-400 dark:border-blue-700 ring-2 ring-blue-200 dark:ring-blue-700/30" : "border-[#e5e5e5] dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700/40"} ${m.is_read ? "" : "bg-blue-50/40 dark:bg-blue-500/5"}`}
                 >
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white grid place-items-center font-semibold text-xs shrink-0">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-800 text-white grid place-items-center font-semibold text-xs shrink-0">
                       {m.name.charAt(0).toUpperCase()}
                     </div>
                     <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-white truncate flex-1">{m.name}</h3>
-                    {!m.is_read && <span className="h-2 w-2 rounded-full bg-orange-500 shrink-0" />}
+                    {!m.is_read && <span className="h-2 w-2 rounded-full bg-blue-700 shrink-0" />}
                   </div>
                   <p className="text-[11px] text-[#6e6e73] dark:text-slate-400 mt-1 truncate">{when}</p>
                   <p className="text-xs text-[#1d1d1f] dark:text-slate-200 mt-1.5 line-clamp-2">{m.message}</p>
@@ -1009,7 +1009,7 @@ function MessagesManager({ messages, onChanged, focusId, onFocused }) {
           {active ? (
             <div className="flex flex-col h-full">
               <div className="flex items-start gap-4 pb-4 border-b border-[#e5e5e5] dark:border-slate-700">
-                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white grid place-items-center font-semibold text-base shrink-0">
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-800 text-white grid place-items-center font-semibold text-base shrink-0">
                   {active.name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1017,13 +1017,13 @@ function MessagesManager({ messages, onChanged, focusId, onFocused }) {
                   <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-0.5">
                     {active.email}{active.phone ? ` · ${active.phone}` : ""}
                   </p>
-                  {active.subject && <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5 font-medium">{active.subject}</p>}
+                  {active.subject && <p className="text-xs text-blue-800 dark:text-blue-400 mt-0.5 font-medium">{active.subject}</p>}
                   <p className="text-[11px] text-[#6e6e73] dark:text-slate-500 mt-1">
                     {new Date(active.created_at).toLocaleString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => markRead(active.id, !active.is_read)} className="p-2 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors" title={active.is_read ? "Tandai belum dibaca" : "Tandai sudah dibaca"}>
+                  <button onClick={() => markRead(active.id, !active.is_read)} className="p-2 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-blue-800 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors" title={active.is_read ? "Tandai belum dibaca" : "Tandai sudah dibaca"}>
                     {active.is_read ? <FiMessageSquare className="text-base" /> : <FiMail className="text-base" />}
                   </button>
                   <button onClick={() => remove(active.id)} className="p-2 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Hapus">
@@ -1036,7 +1036,7 @@ function MessagesManager({ messages, onChanged, focusId, onFocused }) {
               </div>
               <div className="flex items-center gap-3 pt-4 border-t border-[#e5e5e5] dark:border-slate-700">
                 {active.email && (
-                  <a href={`mailto:${active.email}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline">
+                  <a href={`mailto:${active.email}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-800 dark:text-blue-400 hover:underline">
                     <FiMail /> Balas Email
                   </a>
                 )}
@@ -1099,13 +1099,13 @@ function CrudTable({ rows, fields, endpoint, onChanged }) {
         <div className="relative flex-1 max-w-xs">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-slate-500 text-sm" />
           <input type="text" placeholder="Cari..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
         </div>
-        <button onClick={openNew} className="flex items-center justify-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-orange-600 shadow-sm transition-colors">
+        <button onClick={openNew} className="flex items-center justify-center gap-2 bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-800 shadow-sm transition-colors">
           <FiPlus className="text-base" /> Tambah
         </button>
       </div>
-      {msg && <p className="text-sm text-orange-600 dark:text-orange-400 mb-3">{msg}</p>}
+      {msg && <p className="text-sm text-blue-800 dark:text-blue-400 mb-3">{msg}</p>}
       {editing ? (
         <form onSubmit={save} className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-6 space-y-4 mb-6">
           <div className="grid md:grid-cols-2 gap-4">
@@ -1116,7 +1116,7 @@ function CrudTable({ rows, fields, endpoint, onChanged }) {
                 <div key={f.key} className={f.full ? "md:col-span-2" : ""}>
                   <label className="block text-xs font-medium text-[#6e6e73] dark:text-slate-400 mb-1">{f.label}</label>
                   <input type={f.type || "text"}
-                    className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+                    className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                     placeholder={f.placeholder || ""} value={form[f.key] ?? ""}
                     onChange={(e) => setForm({ ...form, [f.key]: e.target.value })} />
                 </div>
@@ -1124,7 +1124,7 @@ function CrudTable({ rows, fields, endpoint, onChanged }) {
             )}
           </div>
           <div className="flex gap-3 pt-2">
-            <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-orange-600 shadow-sm transition-colors">Simpan</button>
+            <button type="submit" className="bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-blue-800 shadow-sm transition-colors">Simpan</button>
             <button type="button" onClick={close} className="px-6 py-2 rounded-full border border-[#e5e5e5] dark:border-slate-600 text-sm font-medium hover:bg-[#f5f5f7] dark:hover:bg-slate-700 transition-colors">Batal</button>
           </div>
         </form>
@@ -1144,7 +1144,7 @@ function CrudTable({ rows, fields, endpoint, onChanged }) {
                 <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-400 text-xs">{r.id}</td>
                 <td className="px-4 py-3 font-medium text-[#1d1d1f] dark:text-white">{r.title || r.name}</td>
                 <td className="px-4 py-3 space-x-2">
-                  <button onClick={() => openEdit(r)} className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 text-xs font-semibold">Edit</button>
+                  <button onClick={() => openEdit(r)} className="text-blue-800 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-semibold">Edit</button>
                   <button onClick={() => remove(r.id)} className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 text-xs font-semibold">Hapus</button>
                 </td>
               </tr>
@@ -1185,13 +1185,13 @@ function ImageField({ label, value, onChange }) {
         )}
         <div className="flex-1">
           <input type="file" accept="image/*" onChange={pick} disabled={busy}
-            className="block w-full text-sm text-[#6e6e73] dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-orange-50 file:text-orange-600 file:text-sm file:font-semibold hover:file:bg-orange-100 disabled:opacity-50" />
+            className="block w-full text-sm text-[#6e6e73] dark:text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-800 file:text-sm file:font-semibold hover:file:bg-blue-100 disabled:opacity-50" />
           <input type="text"
-            className="mt-2 w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-1.5 text-xs text-[#6e6e73] dark:text-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="mt-2 w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-1.5 text-xs text-[#6e6e73] dark:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="/uploads/... atau URL" value={value ?? ""} onChange={(e) => onChange(e.target.value)} />
         </div>
       </div>
-      {busy && <p className="text-xs text-orange-500 mt-1">Mengunggah...</p>}
+      {busy && <p className="text-xs text-blue-700 mt-1">Mengunggah...</p>}
       {err && <p className="text-xs text-red-500 mt-1">{err}</p>}
     </div>
   );
@@ -1227,7 +1227,7 @@ function AccountForm() {
         <F label="Ulangi Password Baru" v={confirm} onChange={setConfirm} type="password" />
       </div>
       <button type="submit" disabled={busy}
-        className="bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-orange-600 disabled:opacity-50 shadow-sm transition-colors">
+        className="bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-blue-800 disabled:opacity-50 shadow-sm transition-colors">
         {busy ? "Menyimpan..." : "Ganti Password"}
       </button>
     </form>
@@ -1269,7 +1269,7 @@ function SiteForm({ site, onChanged }) {
   return (
     <form onSubmit={save} className="space-y-5">
       <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-6 space-y-4">
-        {msg && <p className="text-sm text-orange-500">{msg}</p>}
+        {msg && <p className="text-sm text-blue-700">{msg}</p>}
         <div className="grid md:grid-cols-2 gap-4">
           <F label="Nama" v={form.name} onChange={(v) => setForm({ ...form, name: v })} />
           <F label="Nama Pendek" v={form.shortName} onChange={(v) => setForm({ ...form, shortName: v })} />
@@ -1293,7 +1293,7 @@ function SiteForm({ site, onChanged }) {
         <div className="flex items-center justify-between">
           <p className="text-sm text-[#6e6e73] dark:text-slate-400">Social media links</p>
           <button type="button" onClick={() => setSocial([...social, { label: "", href: "", logo: "" }])}
-            className="flex items-center gap-1 bg-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-orange-600 shadow-sm transition-colors">
+            className="flex items-center gap-1 bg-blue-700 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-blue-800 shadow-sm transition-colors">
             <FiPlus /> Tambah
           </button>
         </div>
@@ -1302,10 +1302,10 @@ function SiteForm({ site, onChanged }) {
           <div key={i} className="p-3 bg-[#f5f5f7] dark:bg-slate-700/30 rounded-xl space-y-3">
             <div className="flex items-start gap-3">
               <div className="flex-1 grid md:grid-cols-2 gap-3">
-                <input className="border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                <input className="border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   placeholder="Label (Instagram, TikTok, dll)" value={s.label}
                   onChange={(e) => { const n = [...social]; n[i] = { ...n[i], label: e.target.value }; setSocial(n); }} />
-                <input className="border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                <input className="border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   placeholder="URL (https://...)" value={s.href}
                   onChange={(e) => { const n = [...social]; n[i] = { ...n[i], href: e.target.value }; setSocial(n); }} />
               </div>
@@ -1322,17 +1322,17 @@ function SiteForm({ site, onChanged }) {
         <div className="flex items-center justify-between">
           <p className="text-sm text-[#6e6e73] dark:text-slate-400">Navigasi footer</p>
           <button type="button" onClick={() => setFooterLinks([...footerLinks, { name: "", path: "/" }])}
-            className="flex items-center gap-1 bg-orange-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-orange-600 shadow-sm transition-colors">
+            className="flex items-center gap-1 bg-blue-700 text-white px-3 py-1.5 rounded-full text-xs font-semibold hover:bg-blue-800 shadow-sm transition-colors">
             <FiPlus /> Tambah
           </button>
         </div>
         {footerLinks.length === 0 && <p className="text-sm text-[#6e6e73] dark:text-slate-400">Belum ada link footer.</p>}
         {footerLinks.map((l, i) => (
           <div key={i} className="flex items-center gap-3 p-3 bg-[#f5f5f7] dark:bg-slate-700/30 rounded-xl">
-            <input className="flex-1 border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            <input className="flex-1 border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Nama (Home, Services, dll)" value={l.name}
               onChange={(e) => { const n = [...footerLinks]; n[i] = { ...n[i], name: e.target.value }; setFooterLinks(n); }} />
-            <input className="flex-1 border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            <input className="flex-1 border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Path (/services, /portfolio, dll)" value={l.path}
               onChange={(e) => { const n = [...footerLinks]; n[i] = { ...n[i], path: e.target.value }; setFooterLinks(n); }} />
             <button type="button" onClick={() => setFooterLinks(footerLinks.filter((_, j) => j !== i))}
@@ -1341,12 +1341,12 @@ function SiteForm({ site, onChanged }) {
         ))}
         <div>
           <label className="block text-xs font-medium text-[#6e6e73] dark:text-slate-400 mb-1">Copyright Text</label>
-          <input className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+          <input className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={copyrightText} onChange={(e) => setCopyrightText(e.target.value)} />
         </div>
       </div>
 
-      <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-orange-600 shadow-sm transition-colors">
+      <button type="submit" className="bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-blue-800 shadow-sm transition-colors">
         Simpan Semua
       </button>
     </form>
@@ -1360,7 +1360,7 @@ function F({ label, v, onChange, full, type = "text" }) {
     <div className={full ? "md:col-span-2" : ""}>
       <label className="block text-xs font-medium text-[#6e6e73] dark:text-slate-400 mb-1">{label}</label>
       <input type={type}
-        className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+        className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
         value={v} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
@@ -1371,7 +1371,7 @@ function Fa({ label, v, onChange }) {
     <div className="md:col-span-2">
       <label className="block text-xs font-medium text-[#6e6e73] dark:text-slate-400 mb-1">{label}</label>
       <textarea rows={3}
-        className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none"
+        className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent resize-none"
         value={v} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
@@ -1413,19 +1413,19 @@ function RedeemRulesTable({ rules, products, onChanged }) {
         <div className="relative flex-1 max-w-xs">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-slate-500 text-sm" />
           <input type="text" placeholder="Cari produk..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+            className="w-full pl-9 pr-4 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
         </div>
-        <button onClick={openNew} className="flex items-center justify-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-orange-600 shadow-sm transition-colors">
+        <button onClick={openNew} className="flex items-center justify-center gap-2 bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-800 shadow-sm transition-colors">
           <FiPlus /> Tambah
         </button>
       </div>
-      {msg && <p className="text-sm text-orange-500 mb-3">{msg}</p>}
+      {msg && <p className="text-sm text-blue-700 mb-3">{msg}</p>}
       {editing && (
         <form onSubmit={save} className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-6 space-y-4 mb-6">
           <div className="grid md:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-medium text-[#6e6e73] dark:text-slate-400 mb-1">Produk</label>
-              <select className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              <select className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 value={form.product_id} onChange={(e) => setForm({ ...form, product_id: e.target.value })} required>
                 <option value="">Pilih Produk</option>
                 {products.map((p) => (<option key={p.id} value={p.id}>{p.title}</option>))}
@@ -1434,12 +1434,12 @@ function RedeemRulesTable({ rules, products, onChanged }) {
             <div>
               <label className="block text-xs font-medium text-[#6e6e73] dark:text-slate-400 mb-1">Diskon (%)</label>
               <input type="number" min="1" max="100"
-                className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 value={form.discount_percent} onChange={(e) => setForm({ ...form, discount_percent: parseInt(e.target.value) || 0 })} required />
             </div>
             <div>
               <label className="block text-xs font-medium text-[#6e6e73] dark:text-slate-400 mb-1">Status</label>
-              <select className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              <select className="w-full border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                 value={form.is_active ? "1" : "0"} onChange={(e) => setForm({ ...form, is_active: e.target.value === "1" })}>
                 <option value="1">Aktif</option>
                 <option value="0">Nonaktif</option>
@@ -1447,7 +1447,7 @@ function RedeemRulesTable({ rules, products, onChanged }) {
             </div>
           </div>
           <div className="flex gap-3">
-            <button type="submit" className="bg-orange-500 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-orange-600 shadow-sm transition-colors">Simpan</button>
+            <button type="submit" className="bg-blue-700 text-white px-6 py-2 rounded-full text-sm font-semibold hover:bg-blue-800 shadow-sm transition-colors">Simpan</button>
             <button type="button" onClick={close} className="px-6 py-2 rounded-full border border-[#e5e5e5] dark:border-slate-600 text-sm font-medium hover:bg-[#f5f5f7] dark:hover:bg-slate-700 transition-colors">Batal</button>
           </div>
         </form>
@@ -1477,7 +1477,7 @@ function RedeemRulesTable({ rules, products, onChanged }) {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 text-xs font-semibold">
                     <FiPercent className="text-[10px]" /> {r.discount_percent}%
                   </span>
                 </td>
@@ -1489,7 +1489,7 @@ function RedeemRulesTable({ rules, products, onChanged }) {
                   )}
                 </td>
                 <td className="px-4 py-3 space-x-2">
-                  <button onClick={() => openEdit(r)} className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 text-xs font-semibold">Edit</button>
+                  <button onClick={() => openEdit(r)} className="text-blue-800 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-xs font-semibold">Edit</button>
                   <button onClick={() => remove(r.id)} className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 text-xs font-semibold">Hapus</button>
                 </td>
               </tr>
@@ -1523,7 +1523,7 @@ function MarketplaceCodesTable({ codes }) {
         <div className="relative">
           <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-slate-500 text-sm" />
           <input type="text" placeholder="Cari nomor atau kode..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="w-full sm:w-72 pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+            className="w-full sm:w-72 pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
         </div>
       </div>
       <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 overflow-hidden">
@@ -1544,13 +1544,13 @@ function MarketplaceCodesTable({ codes }) {
                   <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-400 text-xs">{i + 1}</td>
                   <td className="px-4 py-3 font-medium text-[#1d1d1f] dark:text-white">{c.phone}</td>
                   <td className="px-4 py-3">
-                    <span className="font-mono font-semibold text-orange-600 dark:text-orange-400">{c.code}</span>
+                    <span className="font-mono font-semibold text-blue-800 dark:text-blue-400">{c.code}</span>
                   </td>
                   <td className="px-4 py-3">
                     {c.redeemed ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium">Ditukar</span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-medium">Belum Ditukar</span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 text-xs font-medium">Belum Ditukar</span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-400 text-xs">
@@ -1571,15 +1571,15 @@ function MarketplaceCodesTable({ codes }) {
 
 /* ─── Analytics Dashboard ────────────────────────────────────────────── */
 
-const PIE_COLORS = ["#f97316", "#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#06b6d4", "#84cc16"];
+const PIE_COLORS = ["#0A4DA6", "#3b82f6", "#10b981", "#8b5cf6", "#f59e0b", "#ef4444", "#06b6d4", "#84cc16"];
 
 // eslint-disable-next-line no-unused-vars
 function StatCard({ icon: Icon, label, value, sub }) {
   return (
     <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-5 hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3 mb-3">
-        <div className="h-10 w-10 rounded-2xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center">
-          <Icon className="text-orange-500 dark:text-orange-400 text-lg" />
+        <div className="h-10 w-10 rounded-2xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center">
+          <Icon className="text-blue-700 dark:text-blue-400 text-lg" />
         </div>
         <span className="text-xs font-semibold uppercase tracking-wider text-[#6e6e73] dark:text-slate-400">{label}</span>
       </div>
@@ -1594,7 +1594,7 @@ function actionMeta(e) {
     const label = e.element_text || e.element_target || "Tombol";
     return {
       label: `Klik: ${label}`,
-      cls: "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400",
+      cls: "bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400",
     };
   }
   if (e.event_type === "pageview") {
@@ -1642,7 +1642,7 @@ function VisitorMap() {
 
         const gpsIcon = L.divIcon({
           className: "",
-          html: `<span style="display:block;width:12px;height:12px;border-radius:9999px;background:#f97316;border:2px solid #fff;box-shadow:0 0 0 2px rgba(249,115,22,.4)"></span>`,
+          html: `<span style="display:block;width:12px;height:12px;border-radius:9999px;background:#0A4DA6;border:2px solid #fff;box-shadow:0 0 0 2px rgba(249,115,22,.4)"></span>`,
           iconSize: [12, 12],
         });
         const ipIcon = L.divIcon({
@@ -1658,7 +1658,7 @@ function VisitorMap() {
           const m = L.marker([p.latitude, p.longitude], { icon: isGps ? gpsIcon : ipIcon });
           const when = new Date(p.last_seen).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
           m.bindPopup(
-            `<div style="font-size:12px;min-width:140px"><strong>${p.city || "-"}</strong><br/>${p.region || ""}${p.region && p.country ? ", " : ""}${p.country || ""}<br/><span style="color:#6e6e73">${p.device_type || ""} · ${when}</span><br/><span style="color:#6e6e73">IP: ${p.ip_address || "-"}</span><br/><span style="color:${isGps ? "#f97316" : "#94a3b8"}">${isGps ? "GPS" : "IP"}</span></div>`
+            `<div style="font-size:12px;min-width:140px"><strong>${p.city || "-"}</strong><br/>${p.region || ""}${p.region && p.country ? ", " : ""}${p.country || ""}<br/><span style="color:#6e6e73">${p.device_type || ""} · ${when}</span><br/><span style="color:#6e6e73">IP: ${p.ip_address || "-"}</span><br/><span style="color:${isGps ? "#0A4DA6" : "#94a3b8"}">${isGps ? "GPS" : "IP"}</span></div>`
           );
           markers.addLayer(m);
         });
@@ -1851,7 +1851,7 @@ function AnalyticsDashboard() {
                   <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#6e6e73" }} tickFormatter={(v) => new Date(v).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })} />
                   <YAxis tick={{ fontSize: 11, fill: "#6e6e73" }} />
                   <Tooltip labelFormatter={(v) => new Date(v).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })} />
-                  <Line type="monotone" dataKey="visits" stroke="#f97316" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="visits" stroke="#0A4DA6" strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -1885,7 +1885,7 @@ function AnalyticsDashboard() {
                 {data.topPages.map((p, i) => (
                   <div key={i} className="flex items-center justify-between py-2 border-b border-[#e5e5e5] dark:border-slate-700 last:border-0">
                     <span className="text-sm text-[#1d1d1f] dark:text-white truncate mr-3">{p.page === "/" ? "Homepage" : p.page}</span>
-                    <span className="text-xs font-semibold text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-full shrink-0">{fmt(p.visits)}</span>
+                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full shrink-0">{fmt(p.visits)}</span>
                   </div>
                 ))}
               </div>
@@ -1895,7 +1895,7 @@ function AnalyticsDashboard() {
               <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white mb-3">Lokasi Pengunjung</h3>
               <VisitorMap />
               <div className="flex items-center gap-4 mt-3 mb-4 text-[11px] text-[#6e6e73] dark:text-slate-400">
-                <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-orange-500" /> GPS (akurat)</span>
+                <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-700" /> GPS (akurat)</span>
                 <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-slate-400" /> IP (perkiraan)</span>
               </div>
               <div className="space-y-2">
@@ -1906,7 +1906,7 @@ function AnalyticsDashboard() {
                       <span className="text-sm text-[#1d1d1f] dark:text-white">{c.city}</span>
                       <span className="text-xs text-[#6e6e73] dark:text-slate-400 ml-1">{c.region}, {c.country}</span>
                     </div>
-                    <span className="text-xs font-semibold text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-full shrink-0">{fmt(c.count)}</span>
+                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full shrink-0">{fmt(c.count)}</span>
                   </div>
                 ))}
               </div>
@@ -1924,7 +1924,7 @@ function AnalyticsDashboard() {
                       <span className="text-sm text-[#1d1d1f] dark:text-white truncate block">{c.text || c.target}</span>
                       <span className="text-[10px] text-[#6e6e73] dark:text-slate-500">{c.target}</span>
                     </div>
-                    <span className="text-xs font-semibold text-orange-500 dark:text-orange-400 bg-orange-50 dark:bg-orange-500/10 px-2 py-0.5 rounded-full shrink-0">{fmt(c.clicks)}</span>
+                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2 py-0.5 rounded-full shrink-0">{fmt(c.clicks)}</span>
                   </div>
                 ))}
               </div>
@@ -1938,7 +1938,7 @@ function AnalyticsDashboard() {
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#6e6e73" }} />
                   <YAxis tick={{ fontSize: 11, fill: "#6e6e73" }} unit="%" domain={[0, 100]} />
                   <Tooltip formatter={(v, n, p) => [`${p?.payload?.percent ?? v}%`, n]} />
-                  <Bar dataKey="percent" fill="#f97316" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="percent" fill="#0A4DA6" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -1954,11 +1954,11 @@ function AnalyticsDashboard() {
                   ["pageview", "Kunjungan"],
                 ].map(([val, label]) => (
                   <button key={val} onClick={() => setEventFilter(val)}
-                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${eventFilter === val ? "bg-orange-500 text-white" : "text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700"}`}>
+                    className={`text-[11px] font-semibold px-2.5 py-1 rounded-full transition-colors ${eventFilter === val ? "bg-blue-700 text-white" : "text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700"}`}>
                     {label}
                   </button>
                 ))}
-                <button onClick={() => setShowLog(!showLog)} className="text-xs font-semibold text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300 transition-colors">
+                <button onClick={() => setShowLog(!showLog)} className="text-xs font-semibold text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors">
                   {showLog ? "Sembunyikan" : "Tampilkan Log"}
                 </button>
               </div>

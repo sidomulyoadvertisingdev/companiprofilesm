@@ -1,5 +1,5 @@
 // Ilustrasi avatar Customer Service wanita (SVG) — "Hani",
-// tampilan profesional, konsisten dengan brand orange Sidomulyo Advertising.
+// tampilan profesional, konsisten dengan brand biru Sidomulyo Advertising.
 export function CsAvatar({ size = 56, className = "" }) {
   return (
     <svg
@@ -13,8 +13,8 @@ export function CsAvatar({ size = 56, className = "" }) {
     >
       <defs>
         <linearGradient id="csBg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#fb923c" />
-          <stop offset="1" stopColor="#ea580c" />
+          <stop offset="0" stopColor="#1e40af" />
+          <stop offset="1" stopColor="#0A4DA6" />
         </linearGradient>
         <clipPath id="csClip">
           <circle cx="32" cy="32" r="32" />
@@ -25,7 +25,7 @@ export function CsAvatar({ size = 56, className = "" }) {
         {/* bahu / blazer */}
         <path d="M9 64c0-10.5 10.3-19 23-19s23 8.5 23 19v3H9v-3z" fill="#ffffff" />
         <path d="M32 45l-7 9 7 4 7-4-7-9z" fill="#1d1d1f" />
-        <path d="M32 45l-2.5 5h5l-2.5-5z" fill="#ea580c" />
+        <path d="M32 45l-2.5 5h5l-2.5-5z" fill="#0A4DA6" />
         {/* leher */}
         <rect x="27.5" y="37" width="9" height="10" rx="4.5" fill="#f3c8a3" />
         {/* kerudung (hijab) */}

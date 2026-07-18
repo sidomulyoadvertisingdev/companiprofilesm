@@ -20,7 +20,7 @@ export default function Services({ initialData }) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-xs font-semibold tracking-widest uppercase text-orange-500">
+          <span className="text-xs font-semibold tracking-widest uppercase text-blue-700">
             Layanan Kami
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-[#1d1d1f] dark:text-white mt-3">
@@ -42,9 +42,9 @@ export default function Services({ initialData }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: i * 0.08 }}
                 viewport={{ once: true }}
-                className="group rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-8 hover:border-orange-300 hover:shadow-lg transition dark:bg-slate-800/50"
+                className="group rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-8 hover:border-blue-300 hover:shadow-lg transition dark:bg-slate-800/50"
               >
-                <div className="w-14 h-14 rounded-2xl bg-orange-50 dark:bg-orange-950/50 text-orange-500 flex items-center justify-center text-2xl mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-700 flex items-center justify-center text-2xl mb-6">
                   <Icon />
                 </div>
                 <h3 className="text-xl font-semibold text-[#1d1d1f] dark:text-white mb-2">
@@ -55,7 +55,7 @@ export default function Services({ initialData }) {
                 </p>
                 <a
                   href="/services"
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-orange-600 hover:gap-2 transition-all"
+                  className="inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:gap-2 transition-all"
                 >
                   Selengkapnya <FiArrowRight />
                 </a>

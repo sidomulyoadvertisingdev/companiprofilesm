@@ -1,8 +1,8 @@
 import { World } from "./Globe.jsx";
 
 // Arc data — mewakili jangkauan nasional Sidomulyo Advertising.
-// Warna disesuaikan dengan palet brand (oranye/merah profesional).
-const colors = ["#ff6b35", "#f7931e", "#ff3b3b"];
+// Palet elegan: globe navy brand, arc emas/putih lembut.
+const colors = ["#fbbf24", "#e5e7eb", "#fcd34d"];
 
 const arcs = [
   { order: 1, startLat: -6.2, startLng: 106.8, endLat: -7.33, endLng: 110.5, arcAlt: 0.3, color: colors[0] }, // Jakarta -> Salatiga
@@ -16,19 +16,19 @@ const arcs = [
 ];
 
 const globeConfig = {
-  pointSize: 4,
-  globeColor: "#0c1528",
+  pointSize: 3,
+  globeColor: "#0a2a5e",
   showAtmosphere: true,
-  atmosphereColor: "#f97316",
-  atmosphereAltitude: 0.15,
-  emissive: "#1a0800",
-  emissiveIntensity: 0.15,
+  atmosphereColor: "#1e63c4",
+  atmosphereAltitude: 0.18,
+  emissive: "#0a2a5e",
+  emissiveIntensity: 0.25,
   shininess: 1,
-  polygonColor: "rgba(249, 115, 22, 0.15)",
-  ambientLight: "#ffffff",
+  polygonColor: "rgba(147, 197, 253, 0.35)",
+  ambientLight: "#bcd4ff",
   directionalLeftLight: "#ffffff",
   directionalTopLight: "#ffffff",
-  pointLight: "#f97316",
+  pointLight: "#bcd4ff",
   arcTime: 2200,
   arcLength: 0.9,
   rings: 1,

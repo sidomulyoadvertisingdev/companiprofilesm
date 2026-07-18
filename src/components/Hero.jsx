@@ -42,7 +42,7 @@ export default function Hero({ initialData, children }) {
               viewport={{ once: true }}
               className="max-w-2xl"
             >
-              <span className="inline-block text-xs font-semibold tracking-widest uppercase text-orange-400 mb-5">
+              <span className="inline-block text-xs font-semibold tracking-widest uppercase text-blue-400 mb-5">
                 Percetakan & Advertising Profesional
               </span>
 
@@ -63,10 +63,10 @@ export default function Hero({ initialData, children }) {
                      repeat={Infinity}
                      cursor={true}
                      wrapper="span"
-                     className="bg-gradient-to-r from-orange-300 via-orange-400 to-amber-300 bg-clip-text text-transparent"
+                     className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-300 bg-clip-text text-transparent"
                    />
                  ) : (
-                   <span className="bg-gradient-to-r from-orange-300 via-orange-400 to-amber-300 bg-clip-text text-transparent">
+                   <span className="bg-gradient-to-r from-blue-300 via-blue-400 to-blue-300 bg-clip-text text-transparent">
                      Sidomulyo Advertising
                    </span>
                  )}
@@ -81,7 +81,7 @@ export default function Hero({ initialData, children }) {
                 <a
                   href="#portfolio"
                   data-track="cta-lihat-portofolio-hero"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 text-white px-6 py-3 text-sm font-semibold hover:bg-orange-400 transition"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-blue-700 text-white px-6 py-3 text-sm font-semibold hover:bg-blue-400 transition"
                 >
                   Lihat Portofolio
                   <FiArrowRight />

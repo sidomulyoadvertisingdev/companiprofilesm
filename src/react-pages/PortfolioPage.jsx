@@ -60,7 +60,7 @@ export default function PortfolioPage({ initialData, siteData }) {
                 className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                   filter === c
                     ? "bg-[#1d1d1f] dark:bg-white dark:text-[#1d1d1f] text-white"
-                    : "bg-white dark:bg-slate-800 text-[#6e6e73] dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-700"
+                    : "bg-white dark:bg-slate-800 text-[#6e6e73] dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-700"
                 }`}
               >
                 {c}
@@ -85,7 +85,7 @@ export default function PortfolioPage({ initialData, siteData }) {
                     className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-[1.05]"
                   />
                 </div>
-                <span className="text-xs font-semibold uppercase tracking-wide text-orange-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-blue-700">
                   {item.category}
                 </span>
                 <h3 className="text-xl font-semibold mb-1 dark:text-white">{item.title}</h3>
@@ -109,7 +109,7 @@ export default function PortfolioPage({ initialData, siteData }) {
           target="_blank"
           rel="noopener noreferrer"
           data-track="cta-konsultasi-portfolio"
-          className="inline-flex items-center gap-2 rounded-full bg-orange-500 text-white px-10 py-4 text-sm font-semibold hover:bg-orange-400 transition"
+          className="inline-flex items-center gap-2 rounded-full bg-blue-700 text-white px-10 py-4 text-sm font-semibold hover:bg-blue-400 transition"
         >
           Konsultasi Proyek Anda
           <FiArrowRight />

@@ -33,7 +33,7 @@ export default function Portfolio({ initialData }) {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <span className="text-xs font-semibold tracking-widest uppercase text-orange-500">
+          <span className="text-xs font-semibold tracking-widest uppercase text-blue-700">
             Portofolio
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-[#1d1d1f] dark:text-white mt-3">
@@ -54,7 +54,7 @@ export default function Portfolio({ initialData }) {
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
                 filter === c
                   ? "bg-[#1d1d1f] dark:bg-white text-white dark:text-[#1d1d1f]"
-                  : "bg-white dark:bg-slate-800 text-[#6e6e73] dark:text-slate-400 hover:bg-orange-50 dark:hover:bg-slate-700"
+                  : "bg-white dark:bg-slate-800 text-[#6e6e73] dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-700"
               }`}
             >
               {c}
@@ -79,7 +79,7 @@ export default function Portfolio({ initialData }) {
                   className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-[1.05]"
                 />
               </div>
-              <span className="text-xs font-semibold uppercase tracking-wide text-orange-500">
+              <span className="text-xs font-semibold uppercase tracking-wide text-blue-700">
                 {item.category}
               </span>
               <h3 className="text-xl font-semibold text-[#1d1d1f] dark:text-white mt-1">

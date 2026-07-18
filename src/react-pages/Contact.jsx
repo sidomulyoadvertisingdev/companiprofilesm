@@ -82,7 +82,7 @@ export default function Contact({ initialData }) {
             <FiPhone className="text-2xl mb-4" />
             <h3 className="text-xl font-medium mb-2 dark:text-white">WhatsApp</h3>
             <p className="text-[#6e6e73] dark:text-slate-400 mb-4">{phoneDisplay}</p>
-            <a href={wa} target="_blank" rel="noopener noreferrer" data-track="cta-whatsapp-contact" className="text-orange-600 dark:text-orange-400 hover:underline">
+            <a href={wa} target="_blank" rel="noopener noreferrer" data-track="cta-whatsapp-contact" className="text-blue-800 dark:text-blue-400 hover:underline">
               Chat Sekarang
             </a>
           </motion.div>
@@ -97,7 +97,7 @@ export default function Contact({ initialData }) {
             <FiMail className="text-2xl mb-4" />
             <h3 className="text-xl font-medium mb-2 dark:text-white">Email</h3>
             <p className="text-[#6e6e73] dark:text-slate-400 mb-4">{email}</p>
-            <a href={`mailto:${email}`} className="text-orange-600 dark:text-orange-400 hover:underline">
+            <a href={`mailto:${email}`} className="text-blue-800 dark:text-blue-400 hover:underline">
               Kirim Email
             </a>
           </motion.div>
@@ -136,7 +136,7 @@ export default function Contact({ initialData }) {
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-orange-600 dark:text-orange-400 hover:underline"
+              className="inline-flex items-center gap-2 text-blue-800 dark:text-blue-400 hover:underline"
             >
               Buka di Google Maps
             </a>
@@ -156,9 +156,9 @@ export default function Contact({ initialData }) {
             Kirim Pesan
           </motion.h2>
           <form className="space-y-6" onSubmit={submit}>
-            <input type="text" placeholder="Nama" value={form.name} onChange={update("name")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
-            <input type="email" placeholder="Email" value={form.email} onChange={update("email")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
-            <textarea placeholder="Pesan" rows="5" value={form.message} onChange={update("message")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-orange-400 transition-colors" />
+            <input type="text" placeholder="Nama" value={form.name} onChange={update("name")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors" />
+            <input type="email" placeholder="Email" value={form.email} onChange={update("email")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors" />
+            <textarea placeholder="Pesan" rows="5" value={form.message} onChange={update("message")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors" />
             <div className="flex items-center gap-4">
               <button
                 type="submit"

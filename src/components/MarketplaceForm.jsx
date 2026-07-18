@@ -20,14 +20,14 @@ export default function MarketplaceForm() {
           placeholder="Masukkan nomor handphone Anda"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="w-full pl-11 pr-5 py-3.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition"
+          className="w-full pl-11 pr-5 py-3.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm text-white placeholder:text-slate-500 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition"
         />
       </div>
 
       <button
         type="submit"
         disabled={!phone.trim()}
-        className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-orange-500 text-white text-sm font-semibold hover:bg-orange-400 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400 transition whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Klaim Kode Redeem
       </button>

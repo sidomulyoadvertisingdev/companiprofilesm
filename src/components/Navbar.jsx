@@ -75,7 +75,7 @@ export default function Navbar() {
               <a
                 key={item.path}
                 href={item.path}
-                className={`relative transition cursor-pointer hover:text-orange-500 dark:hover:text-orange-400 ${pathname === item.path ? "text-orange-600 dark:text-orange-400 font-semibold" : ""}`}
+                className={`relative transition cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 ${pathname === item.path ? "text-blue-800 dark:text-blue-400 font-semibold" : ""}`}
               >
                 {item.name}
               </a>

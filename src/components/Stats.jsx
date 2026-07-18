@@ -19,7 +19,7 @@ export default function Stats({ initialData }) {
             transition={{ duration: 0.6, delay: i * 0.1 }}
             viewport={{ once: true }}
           >
-            <div className="text-4xl md:text-5xl font-bold text-orange-400">
+            <div className="text-4xl md:text-5xl font-bold text-blue-400">
               {s.value}
               {s.suffix}
             </div>

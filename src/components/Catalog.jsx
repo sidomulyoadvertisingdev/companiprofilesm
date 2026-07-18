@@ -23,7 +23,7 @@ export default function Catalog({ initialData }) {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="text-xs font-semibold tracking-widest uppercase text-orange-500">
+          <span className="text-xs font-semibold tracking-widest uppercase text-blue-700">
             Katalog Produk
           </span>
           <h2 className="text-4xl md:text-5xl font-bold text-[#1d1d1f] dark:text-white mt-3">
@@ -52,7 +52,7 @@ export default function Catalog({ initialData }) {
                 />
               </div>
               <div className="p-6">
-                <span className="text-xs font-semibold uppercase tracking-wide text-orange-500">
+                <span className="text-xs font-semibold uppercase tracking-wide text-blue-700">
                   {item.category}
                 </span>
                 <h3 className="text-xl font-semibold text-[#1d1d1f] dark:text-white mt-1">
@@ -69,7 +69,7 @@ export default function Catalog({ initialData }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   data-track="cta-pesan-sekarang-catalog"
-                  className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-orange-600 hover:gap-2 transition-all"
+                  className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-blue-800 hover:gap-2 transition-all"
                 >
                   Pesan Sekarang <FiArrowRight />
                 </a>

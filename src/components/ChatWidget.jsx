@@ -75,7 +75,7 @@ export default function ChatWidget() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Buka chat"
-        className="fixed bottom-5 right-5 z-[60] h-14 w-14 rounded-full bg-orange-500 hover:bg-orange-600 shadow-lg flex items-center justify-center transition-colors overflow-hidden"
+        className="fixed bottom-5 right-5 z-[60] h-14 w-14 rounded-full bg-blue-700 hover:bg-blue-800 shadow-lg flex items-center justify-center transition-colors overflow-hidden"
       >
         {open ? <FiX size={22} className="text-white" /> : <CsAvatar size={56} className="h-14 w-14" />}
       </button>
@@ -83,11 +83,11 @@ export default function ChatWidget() {
       {/* Panel */}
       {open && (
         <div className="fixed bottom-24 right-5 z-[60] w-[calc(100vw-2.5rem)] max-w-sm h-[28rem] bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 shadow-2xl flex flex-col overflow-hidden transition-colors">
-          <div className="px-4 py-3 bg-orange-500 text-white flex items-center gap-3">
+          <div className="px-4 py-3 bg-blue-700 text-white flex items-center gap-3">
             <CsAvatar size={40} className="h-10 w-10 rounded-full shrink-0 ring-2 ring-white/40" />
             <div className="min-w-0">
               <p className="font-bold text-sm">Hani</p>
-              <p className="text-[11px] text-orange-50">Customer Service · Sidomulyo Advertising</p>
+              <p className="text-[11px] text-blue-50">Customer Service · Sidomulyo Advertising</p>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Tutup chat" className="ml-auto text-white/90 hover:text-white shrink-0">
               <FiX size={18} />
@@ -102,7 +102,7 @@ export default function ChatWidget() {
                   <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 overflow-hidden ${m.role === "user" ? "bg-slate-200 dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300" : ""}`}>
                     {m.role === "user" ? <FiUser size={14} /> : <CsAvatar size={28} className="h-7 w-7" />}
                   </div>
-                  <div className={`max-w-[78%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${m.role === "user" ? "bg-orange-500 text-white rounded-br-sm" : "bg-[#f5f5f7] dark:bg-slate-800 text-[#1d1d1f] dark:text-slate-200 rounded-bl-sm"}`}>
+                  <div className={`max-w-[78%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${m.role === "user" ? "bg-blue-700 text-white rounded-br-sm" : "bg-[#f5f5f7] dark:bg-slate-800 text-[#1d1d1f] dark:text-slate-200 rounded-bl-sm"}`}>
                     {clean}
                   </div>
                 </div>
@@ -141,12 +141,12 @@ export default function ChatWidget() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && send()}
                 placeholder="Tulis pertanyaan…"
-                className="flex-1 px-3 py-2 text-sm rounded-full bg-[#f5f5f7] dark:bg-slate-800 text-[#1d1d1f] dark:text-white outline-none border border-transparent focus:border-orange-400"
+                className="flex-1 px-3 py-2 text-sm rounded-full bg-[#f5f5f7] dark:bg-slate-800 text-[#1d1d1f] dark:text-white outline-none border border-transparent focus:border-blue-400"
               />
               <button
                 onClick={send}
                 disabled={loading || !input.trim()}
-                className="h-9 w-9 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center disabled:opacity-40 transition-colors shrink-0"
+                className="h-9 w-9 rounded-full bg-blue-700 hover:bg-blue-800 text-white flex items-center justify-center disabled:opacity-40 transition-colors shrink-0"
                 aria-label="Kirim"
               >
                 <FiSend size={16} />
