@@ -49,6 +49,7 @@ export default function AdminDashboard({ admin }) {
   const [testimonials, setTestimonials] = useState([]);
   const [messages, setMessages] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [messageFocusId, setMessageFocusId] = useState(null);
   const [marketplaceCodes, setMarketplaceCodes] = useState([]);
   const [redeemRules, setRedeemRules] = useState([]);
   const [posts, setPosts] = useState([]);
@@ -89,24 +90,54 @@ export default function AdminDashboard({ admin }) {
     }
   };
 
+  // Like safeJson but returns the full parsed object (used when the API
+  // responds with { data, unread } instead of just data).
+  const safeJsonFull = async (url, fallback) => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return fallback;
+      const d = await res.json();
+      return d ?? fallback;
+    } catch {
+      return fallback;
+    }
+  };
+
   const load = useCallback(async () => {
     const [s, sv, p, pf, pt, t, mc, rr, po, msgs] = await Promise.all([
       getSite(), getServices(), getProducts(), getPortfolio(), getPartners(), getTestimonials(),
       safeJson("/api/marketplace", []),
       safeJson("/api/admin/redeem-rules", []),
       safeJson("/api/posts", []),
-      safeJson("/api/admin/contact-messages", { data: [], unread: 0 }),
+      safeJsonFull("/api/admin/contact-messages", { data: [], unread: 0 }),
     ]);
     setSite(s); setServices(sv); setProducts(p); setPortfolio(pf); setPartners(pt);
     setTestimonials(t); setMarketplaceCodes(mc); setRedeemRules(rr); setPosts(po);
-    setMessages(msgs.data); setUnreadCount(msgs.unread);
+    setMessages(msgs.data || []); setUnreadCount(msgs.unread || 0);
+  }, []);
+
+  // Lightweight poll: refresh only the contact messages so the bell badge and
+  // "Pesan Masuk" list stay in sync when a visitor submits the public form.
+  const loadMessages = useCallback(async () => {
+    const msgs = await safeJsonFull("/api/admin/contact-messages", { data: [], unread: 0 });
+    setMessages(msgs.data || []); setUnreadCount(msgs.unread || 0);
   }, []);
 
   useEffect(() => { load().catch(() => {}); }, [load]);
 
+  useEffect(() => {
+    const id = setInterval(() => { loadMessages().catch(() => {}); }, 15000);
+    return () => clearInterval(id);
+  }, [loadMessages]);
+
   const logout = async () => {
     await fetch("/api/auth/login", { method: "DELETE" });
     window.location.href = "/admin/login";
+  };
+
+  const openMessageFromNotif = (id) => {
+    setTab("messages");
+    setMessageFocusId(id);
   };
 
   const activeTab = TABS.find((t) => t.key === tab);
@@ -167,7 +198,7 @@ export default function AdminDashboard({ admin }) {
                 return (
                   <button
                     key={t.key}
-                    onClick={() => { setTab(t.key); setSidebarOpen(false); }}
+                    onClick={() => { setTab(t.key); setSidebarOpen(false); if (t.key === "messages") loadMessages().catch(() => {}); }}
                     title={collapsed ? t.label : undefined}
                     className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${
                       collapsed ? "lg:justify-center lg:px-0" : ""
@@ -210,7 +241,7 @@ export default function AdminDashboard({ admin }) {
       </aside>
 
       <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
-        <Topbar title={activeTab?.label || "Dashboard"} admin={admin} onLogout={logout} onMenu={() => setSidebarOpen(true)} dark={dark} onToggleDark={() => setDark((d) => !d)} />
+        <Topbar title={activeTab?.label || "Dashboard"} admin={admin} onLogout={logout} onMenu={() => setSidebarOpen(true)} dark={dark} onToggleDark={() => setDark((d) => !d)} messages={messages} onOpenMessage={openMessageFromNotif} />
         <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6">
           {!tab && <AnalyticsDashboard />}
           {tab === "services" && (
@@ -242,7 +273,7 @@ export default function AdminDashboard({ admin }) {
             ]} endpoint="portfolio" onChanged={load} />
           )}
           {tab === "posts" && <BlogManager posts={posts} onChanged={load} />}
-          {tab === "messages" && <MessagesManager messages={messages} onChanged={load} />}
+          {tab === "messages" && <MessagesManager messages={messages} onChanged={load} focusId={messageFocusId} onFocused={() => setMessageFocusId(null)} />}
           {tab === "partners" && (
             <CrudTable rows={partners} fields={[
               { key: "name", label: "Nama" }, { key: "logo", label: "Logo", type: "image" },
@@ -299,24 +330,28 @@ function RealtimeClock() {
 
 /* ─── Topbar ──────────────────────────────────────────────────────────── */
 
-function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark }) {
+function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark, messages = [], onOpenMessage }) {
   const [open, setOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifAllOpen, setNotifAllOpen] = useState(false);
   const ref = useRef(null);
   const notifRef = useRef(null);
 
-  const notifs = [
-    { id: 1, title: "Pesan baru dari klien", desc: "Andi meminta penawaran cetak brosur 1000 lembar untuk acara seminar", time: "5 menit lalu", unread: true },
-    { id: 2, title: "Pesanan selesai", desc: "Order #1234 telah dikonfirmasi selesai dan siap dikirim", time: "1 jam lalu", unread: true },
-    { id: 3, title: "Login baru terdeteksi", desc: "Admin login dari IP 192.168.1.10 menggunakan Chrome", time: "3 jam lalu", unread: true },
-    { id: 4, title: "Pembayaran diterima", desc: "Transfer Rp 2.500.000 dari Budi untuk order spanduk", time: "Kemarin", unread: false },
-    { id: 5, title: "Pengunjung website naik", desc: "Traffic meningkat 25% dibanding minggu lalu", time: "2 hari lalu", unread: false },
-    { id: 6, title: "Testimoni baru", desc: "Rina memberikan testimoni bintang 5 untuk layanan cetak", time: "3 hari lalu", unread: false },
-    { id: 7, title: "Produk baru ditambahkan", desc: "Banner vinyl 440gsm berhasil ditambahkan ke katalog", time: "4 hari lalu", unread: false },
-    { id: 8, title: "Kode redeem digunakan", desc: "Kode DISKON20 ditukar oleh客户 PT Maju Jaya", time: "5 hari lalu", unread: false },
-  ];
-  const unreadCount = notifs.filter((n) => n.unread).length;
+  const latest = [...messages]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 8);
+  const unreadCount = messages.filter((m) => !m.is_read).length;
+
+  const relTime = (iso) => {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return "baru saja";
+    if (m < 60) return `${m} menit lalu`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h} jam lalu`;
+    const d = Math.floor(h / 24);
+    return `${d} hari lalu`;
+  };
 
   useEffect(() => {
     const onClick = (e) => {
@@ -344,37 +379,40 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark }) {
         <button onClick={onToggleDark} className="p-2 rounded-full hover:bg-[#f0f0f2] dark:hover:bg-slate-700 text-[#6e6e73] dark:text-slate-400 transition-colors" aria-label="Toggle dark mode">
           {dark ? <FiSun className="text-lg" /> : <FiMoon className="text-lg" />}
         </button>
-        <button className="relative p-2 rounded-full hover:bg-[#f0f0f2] dark:hover:bg-slate-700 text-[#6e6e73] dark:text-slate-400 transition-colors" aria-label="Pesan">
-          <FiMessageSquare className="text-lg" />
-          <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-white dark:ring-[#1a1a2e]" />
-        </button>
         <div className="relative" ref={notifRef}>
-          <button onClick={() => setNotifOpen((o) => !o)} className="relative p-2 rounded-full hover:bg-[#f0f0f2] dark:hover:bg-slate-700 text-[#6e6e73] dark:text-slate-400 transition-colors" aria-label="Notifikasi">
+          <button onClick={() => setNotifOpen((o) => !o)} className="relative p-2 rounded-full hover:bg-[#f0f0f2] dark:hover:bg-slate-700 text-[#6e6e73] dark:text-slate-400 transition-colors" aria-label="Notifikasi pesan">
             <FiBell className="text-lg" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-orange-500 ring-2 ring-white dark:ring-[#1a1a2e]" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-bold grid place-items-center ring-2 ring-white dark:ring-[#1a1a2e]">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
           </button>
           {notifOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-[#1a1a2e] rounded-xl shadow-lg border border-[#e5e5e5] dark:border-slate-700 z-30 overflow-hidden">
               <div className="px-4 py-3 border-b border-[#e5e5e5] dark:border-slate-700 flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white">Notifikasi</h3>
+                <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white">Pesan Masuk</h3>
                 {unreadCount > 0 && <span className="text-[10px] bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-semibold">{unreadCount} baru</span>}
               </div>
               <div className="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700/50">
-                {notifs.slice(0, 5).map((n) => (
-                  <div key={n.id} className={`px-4 py-3 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors cursor-pointer ${n.unread ? "bg-orange-50/40 dark:bg-orange-500/5" : ""}`}>
+                {latest.length === 0 && (
+                  <div className="px-4 py-6 text-center text-xs text-[#6e6e73] dark:text-slate-400">Belum ada pesan</div>
+                )}
+                {latest.map((m) => (
+                  <div key={m.id} onClick={() => { setNotifOpen(false); onOpenMessage?.(m.id); }} className={`px-4 py-3 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors cursor-pointer ${!m.is_read ? "bg-orange-50/40 dark:bg-orange-500/5" : ""}`}>
                     <div className="flex items-start gap-3">
-                      <span className={`mt-1 h-2 w-2 rounded-full shrink-0 ${n.unread ? "bg-orange-500" : "bg-transparent"}`} />
+                      <span className={`mt-1 h-2 w-2 rounded-full shrink-0 ${!m.is_read ? "bg-orange-500" : "bg-transparent"}`} />
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white">{n.title}</p>
-                        <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-0.5 truncate">{n.desc}</p>
-                        <p className="text-[10px] text-[#6e6e73] dark:text-slate-500 mt-1">{n.time}</p>
+                        <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white truncate">{m.name}</p>
+                        <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-0.5 truncate">{m.message}</p>
+                        <p className="text-[10px] text-[#6e6e73] dark:text-slate-500 mt-1">{relTime(m.created_at)}</p>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
               <div className="px-4 py-2.5 border-t border-[#e5e5e5] dark:border-slate-700 text-center">
-                <button onClick={() => { setNotifOpen(false); setNotifAllOpen(true); }} className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300">Lihat Semua Notifikasi</button>
+                <button onClick={() => { setNotifOpen(false); onOpenMessage?.(latest[0]?.id); }} className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300">Lihat Semua Pesan</button>
               </div>
             </div>
           )}
@@ -386,7 +424,7 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark }) {
             <div className="relative bg-white dark:bg-[#1a1a2e] rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden">
               <div className="px-6 py-4 border-b border-[#e5e5e5] dark:border-slate-700 flex items-center justify-between shrink-0">
                 <div>
-                  <h2 className="text-base font-bold text-[#1d1d1f] dark:text-white">Semua Notifikasi</h2>
+                  <h2 className="text-base font-bold text-[#1d1d1f] dark:text-white">Semua Pesan</h2>
                   <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-0.5">{unreadCount} belum dibaca</p>
                 </div>
                 <button onClick={() => setNotifAllOpen(false)} className="p-2 rounded-full hover:bg-[#f0f0f2] dark:hover:bg-slate-700 text-[#6e6e73] dark:text-slate-400 transition-colors">
@@ -394,22 +432,24 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark }) {
                 </button>
               </div>
               <div className="flex-1 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700/50">
-                {notifs.map((n) => (
-                  <div key={n.id} className={`px-6 py-4 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors cursor-pointer ${n.unread ? "bg-orange-50/30 dark:bg-orange-500/5" : ""}`}>
+                {latest.length === 0 && (
+                  <div className="px-6 py-10 text-center text-xs text-[#6e6e73] dark:text-slate-400">Belum ada pesan</div>
+                )}
+                {latest.map((m) => (
+                  <div key={m.id} onClick={() => { setNotifAllOpen(false); onOpenMessage?.(m.id); }} className={`px-6 py-4 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors cursor-pointer ${!m.is_read ? "bg-orange-50/30 dark:bg-orange-500/5" : ""}`}>
                     <div className="flex items-start gap-3">
-                      <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${n.unread ? "bg-orange-500" : "bg-transparent"}`} />
+                      <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${!m.is_read ? "bg-orange-500" : "bg-transparent"}`} />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white">{n.title}</p>
-                        <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-1 leading-relaxed">{n.desc}</p>
-                        <p className="text-[10px] text-[#6e6e73] dark:text-slate-500 mt-1.5">{n.time}</p>
+                        <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white">{m.name}</p>
+                        <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-1 leading-relaxed line-clamp-2">{m.message}</p>
+                        <p className="text-[10px] text-[#6e6e73] dark:text-slate-500 mt-1.5">{relTime(m.created_at)}</p>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="px-6 py-3 border-t border-[#e5e5e5] dark:border-slate-700 flex items-center justify-between shrink-0">
-                <button className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300">Tandai Semua Dibaca</button>
-                <button className="text-xs font-semibold text-[#6e6e73] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white">Hapus Semua</button>
+              <div className="px-6 py-3 border-t border-[#e5e5e5] dark:border-slate-700 flex items-center justify-center shrink-0">
+                <button onClick={() => { setNotifAllOpen(false); onOpenMessage?.(latest[0]?.id); }} className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300">Buka Pesan Masuk</button>
               </div>
             </div>
           </div>
@@ -865,9 +905,16 @@ function ToolbarBtn({ onClick, active, disabled, children, title }) {
 
 /* ─── Messages Manager (Pesan Masuk dari form Hubungi Kami) ─────────────── */
 
-function MessagesManager({ messages, onChanged }) {
+function MessagesManager({ messages, onChanged, focusId, onFocused }) {
   const [search, setSearch] = useState("");
-  const [expanded, setExpanded] = useState(null);
+  const [activeId, setActiveId] = useState(null);
+
+  useEffect(() => {
+    if (focusId) {
+      setActiveId(focusId);
+      onFocused?.();
+    }
+  }, [focusId, onFocused]);
 
   const filtered = messages.filter((m) => {
     if (!search) return true;
@@ -880,6 +927,8 @@ function MessagesManager({ messages, onChanged }) {
     );
   });
 
+  const active = filtered.find((m) => m.id === activeId) || null;
+
   const markRead = async (id, isRead) => {
     try {
       await fetch(`/api/admin/contact-messages/${id}`, {
@@ -891,10 +940,16 @@ function MessagesManager({ messages, onChanged }) {
     } catch { /* ignore */ }
   };
 
+  const openMessage = (m) => {
+    setActiveId(m.id);
+    if (!m.is_read) markRead(m.id, true);
+  };
+
   const remove = async (id) => {
     if (!confirm("Hapus pesan ini?")) return;
     try {
       await fetch(`/api/admin/contact-messages/${id}`, { method: "DELETE" });
+      if (activeId === id) setActiveId(null);
       onChanged();
     } catch { /* ignore */ }
   };
@@ -906,78 +961,101 @@ function MessagesManager({ messages, onChanged }) {
           {messages.length} pesan · {messages.filter((m) => !m.is_read).length} belum dibaca
         </p>
       </div>
-      <div className="relative max-w-xs mb-4">
-        <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-slate-500 text-sm" />
-        <input type="text" placeholder="Cari nama, email, pesan..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
-      </div>
 
-      <div className="space-y-3">
-        {filtered.map((m) => {
-          const isOpen = expanded === m.id;
-          const when = new Date(m.created_at).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
-          return (
-            <div key={m.id} className={`bg-white dark:bg-[#1a1a2e] rounded-3xl border p-4 transition-colors ${m.is_read ? "border-[#e5e5e5] dark:border-slate-700" : "border-orange-300 dark:border-orange-500/40 bg-orange-50/40 dark:bg-orange-500/5"}`}>
-              <div className="flex items-start gap-4">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white grid place-items-center font-semibold text-sm shrink-0">
-                  {m.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => { setExpanded(isOpen ? null : m.id); if (!m.is_read) markRead(m.id, true); }}>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-white">{m.name}</h3>
-                    {!m.is_read && <span className="text-[10px] bg-orange-500 text-white px-1.5 py-0.5 rounded-full font-semibold">BARU</span>}
-                    {m.subject && <span className="text-xs text-[#6e6e73] dark:text-slate-400">· {m.subject}</span>}
+      <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4">
+        {/* List */}
+        <div className="flex flex-col gap-3">
+          <div className="relative">
+            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-slate-500 text-sm" />
+            <input type="text" placeholder="Cari nama, email, pesan..." value={search} onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent" />
+          </div>
+
+          <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-1">
+            {filtered.map((m) => {
+              const when = new Date(m.created_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+              const isActive = activeId === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => openMessage(m)}
+                  className={`w-full text-left bg-white dark:bg-[#1a1a2e] rounded-2xl border p-3.5 transition-colors ${isActive ? "border-orange-400 dark:border-orange-500 ring-2 ring-orange-200 dark:ring-orange-500/30" : "border-[#e5e5e5] dark:border-slate-700 hover:border-orange-300 dark:hover:border-orange-500/40"} ${m.is_read ? "" : "bg-orange-50/40 dark:bg-orange-500/5"}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white grid place-items-center font-semibold text-xs shrink-0">
+                      {m.name.charAt(0).toUpperCase()}
+                    </div>
+                    <h3 className="text-sm font-semibold text-[#1d1d1f] dark:text-white truncate flex-1">{m.name}</h3>
+                    {!m.is_read && <span className="h-2 w-2 rounded-full bg-orange-500 shrink-0" />}
                   </div>
+                  <p className="text-[11px] text-[#6e6e73] dark:text-slate-400 mt-1 truncate">{when}</p>
+                  <p className="text-xs text-[#1d1d1f] dark:text-slate-200 mt-1.5 line-clamp-2">{m.message}</p>
+                </button>
+              );
+            })}
+            {filtered.length === 0 && (
+              <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-10 text-center">
+                <FiMail className="mx-auto text-3xl text-gray-200 dark:text-slate-600 mb-2" />
+                <p className="text-xs text-[#6e6e73] dark:text-slate-400 font-medium">
+                  {messages.length === 0 ? "Belum ada pesan masuk" : "Tidak ditemukan"}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Detail panel */}
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-6 min-h-[300px]">
+          {active ? (
+            <div className="flex flex-col h-full">
+              <div className="flex items-start gap-4 pb-4 border-b border-[#e5e5e5] dark:border-slate-700">
+                <div className="h-12 w-12 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 text-white grid place-items-center font-semibold text-base shrink-0">
+                  {active.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-bold text-[#1d1d1f] dark:text-white">{active.name}</h3>
                   <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-0.5">
-                    {m.email}{m.phone ? ` · ${m.phone}` : ""} · {when}
+                    {active.email}{active.phone ? ` · ${active.phone}` : ""}
                   </p>
-                  <p className="text-sm text-[#1d1d1f] dark:text-slate-200 mt-1.5 line-clamp-2">
-                    {m.message}
+                  {active.subject && <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5 font-medium">{active.subject}</p>}
+                  <p className="text-[11px] text-[#6e6e73] dark:text-slate-500 mt-1">
+                    {new Date(active.created_at).toLocaleString("id-ID", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
-                <div className="flex flex-col items-end gap-2 shrink-0">
-                  {m.is_read ? (
-                    <button onClick={() => markRead(m.id, false)} className="text-[11px] font-semibold text-[#6e6e73] dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 transition-colors" title="Tandai belum dibaca">
-                      Tandai Baru
-                    </button>
-                  ) : (
-                    <button onClick={() => markRead(m.id, true)} className="text-[11px] font-semibold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors" title="Tandai sudah dibaca">
-                      Tandai Dibaca
-                    </button>
-                  )}
-                  <button onClick={() => remove(m.id)} className="p-1.5 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Hapus">
-                    <FiTrash2 className="text-sm" />
+                <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => markRead(active.id, !active.is_read)} className="p-2 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-orange-600 dark:hover:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors" title={active.is_read ? "Tandai belum dibaca" : "Tandai sudah dibaca"}>
+                    {active.is_read ? <FiMessageSquare className="text-base" /> : <FiMail className="text-base" />}
+                  </button>
+                  <button onClick={() => remove(active.id)} className="p-2 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors" title="Hapus">
+                    <FiTrash2 className="text-base" />
                   </button>
                 </div>
               </div>
-              {isOpen && (
-                <div className="mt-4 pt-4 border-t border-[#e5e5e5] dark:border-slate-700">
-                  <p className="text-sm text-[#1d1d1f] dark:text-slate-100 whitespace-pre-wrap leading-relaxed">{m.message}</p>
-                  <div className="flex items-center gap-3 mt-3">
-                    {m.email && (
-                      <a href={`mailto:${m.email}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline">
-                        <FiMail /> Balas Email
-                      </a>
-                    )}
-                    {m.phone && (
-                      <a href={`https://wa.me/${m.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-600 dark:text-green-400 hover:underline">
-                        <FiSend /> Chat WA
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
+              <div className="flex-1 py-5">
+                <p className="text-sm text-[#1d1d1f] dark:text-slate-100 whitespace-pre-wrap leading-relaxed">{active.message}</p>
+              </div>
+              <div className="flex items-center gap-3 pt-4 border-t border-[#e5e5e5] dark:border-slate-700">
+                {active.email && (
+                  <a href={`mailto:${active.email}`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline">
+                    <FiMail /> Balas Email
+                  </a>
+                )}
+                {active.phone && (
+                  <a href={`https://wa.me/${active.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-600 dark:text-green-400 hover:underline">
+                    <FiSend /> Chat WA
+                  </a>
+                )}
+              </div>
             </div>
-          );
-        })}
-        {filtered.length === 0 && (
-          <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-12 text-center">
-            <FiMail className="mx-auto text-4xl text-gray-200 dark:text-slate-600 mb-3" />
-            <p className="text-sm text-[#6e6e73] dark:text-slate-400 font-medium">
-              {messages.length === 0 ? "Belum ada pesan masuk" : "Tidak ditemukan"}
-            </p>
-          </div>
-        )}
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center text-center">
+              <FiMail className="text-4xl text-gray-200 dark:text-slate-600 mb-3" />
+              <p className="text-sm text-[#6e6e73] dark:text-slate-400 font-medium">
+                {messages.length === 0 ? "Belum ada pesan masuk" : "Pilih pesan untuk dibaca"}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
