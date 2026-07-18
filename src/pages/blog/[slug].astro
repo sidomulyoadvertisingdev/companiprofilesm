@@ -1,17 +1,18 @@
 ---
 import MainLayout from "../../layouts/MainLayout.astro";
-import { getPostBySlug } from "../../lib/queries.js";
+import { getPostBySlug, getPublishedPosts } from "../../lib/queries.js";
 import BlogDetail from "../../react-pages/BlogDetail.jsx";
 
 export const prerender = false;
 
 const { slug } = Astro.params;
 const post = await getPostBySlug(slug);
+const allPosts = await getPublishedPosts();
 
 const title = post?.metaTitle || `${post?.title || "Blog"} - Sidomulyo Advertising`;
 const description = post?.metaDescription || post?.excerpt || "Baca artikel dari Sidomulyo Advertising.";
 ---
 
 <MainLayout title={title} description={description}>
-  <BlogDetail client:load initialData={post} />
+  <BlogDetail client:load initialData={post} allPosts={allPosts} />
 </MainLayout>

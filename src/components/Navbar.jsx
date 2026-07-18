@@ -10,7 +10,6 @@ import {
   FiX,
   FiShoppingBag,
 } from "react-icons/fi";
-import { getNav } from "../lib/content.js";
 import ThemeToggle from "./ui/ThemeToggle.jsx";
 
 export default function Navbar() {
@@ -18,38 +17,27 @@ export default function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
 
-  const [isClient, setIsClient] = useState(false);
-  const [pathname, setPathname] = useState("");
-  useEffect(() => {
-    setIsClient(true);
-    setPathname(window.location.pathname);
-  }, []);
+  const pathname =
+    typeof window !== "undefined" ? window.location.pathname : "";
 
   useMotionValueEvent(scrollY, "change", (latest) => {
-    const previous = scrollY.getPrevious();
-    if (latest > previous && latest > 80 && !open) {
+    const previous = scrollY.getPrevious() ?? 0;
+    if (!open && latest > 80 && latest - previous > 4) {
       setHidden(true);
-    } else {
+    } else if (latest < previous || latest <= 80) {
       setHidden(false);
     }
   });
 
-  const [navItems, setNavItems] = useState([]);
-  useEffect(() => {
-    getNav().then(setNavItems);
-  }, []);
-
-  const staticNavItems = [
+  const navItems = [
     { name: "Home", path: "/" },
     { name: "Services", path: "/services" },
     { name: "Portfolio", path: "/portfolio" },
     { name: "Catalog", path: "/catalog" },
     { name: "About", path: "/about" },
     { name: "Contact", path: "/contact" },
-    { name: "Marketplace", path: "/marketplace" },
     { name: "Blog", path: "/blog" },
   ];
-  const items = navItems.length ? navItems : staticNavItems;
 
   return (
     <>
@@ -83,7 +71,7 @@ export default function Navbar() {
 
           {/* DESKTOP MENU */}
           <ul className="hidden md:flex space-x-8 text-sm text-[#1d1d1f] dark:text-slate-200">
-              {items.map((item) => (
+              {navItems.map((item) => (
               <a
                 key={item.path}
                 href={item.path}
@@ -137,7 +125,7 @@ export default function Navbar() {
                        backdrop-blur bg-white/90 dark:bg-[#0a0a1a]/90 border-b border-[#e5e5e5] dark:border-slate-700/50"
           >
             <ul className="flex flex-col divide-y divide-[#e5e5e5] dark:divide-slate-700/50">
-            {items.map((item) => (
+            {navItems.map((item) => (
                 <li key={item.path}>
                   <a
                     href={item.path}
