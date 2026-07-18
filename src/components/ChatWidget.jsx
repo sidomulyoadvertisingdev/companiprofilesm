@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { FiMessageSquare, FiX, FiSend, FiUser, FiCpu, FiSmartphone } from "react-icons/fi";
+import { FiMessageSquare, FiX, FiSend, FiUser, FiSmartphone } from "react-icons/fi";
+import { CsAvatar } from "./ui/CsAvatar.jsx";
 
 const WHATSAPP_URL = "https://wa.me/6288808888880";
 
@@ -74,20 +75,21 @@ export default function ChatWidget() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Buka chat"
-        className="fixed bottom-5 right-5 z-[60] h-14 w-14 rounded-full bg-orange-500 hover:bg-orange-600 text-white shadow-lg flex items-center justify-center transition-colors"
+        className="fixed bottom-5 right-5 z-[60] h-14 w-14 rounded-full bg-orange-500 hover:bg-orange-600 shadow-lg flex items-center justify-center transition-colors overflow-hidden"
       >
-        {open ? <FiX size={22} /> : <FiMessageSquare size={22} />}
+        {open ? <FiX size={22} className="text-white" /> : <CsAvatar size={56} className="h-14 w-14" />}
       </button>
 
       {/* Panel */}
       {open && (
         <div className="fixed bottom-24 right-5 z-[60] w-[calc(100vw-2.5rem)] max-w-sm h-[28rem] bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 shadow-2xl flex flex-col overflow-hidden transition-colors">
-          <div className="px-4 py-3 bg-orange-500 text-white flex items-center justify-between">
-            <div>
+          <div className="px-4 py-3 bg-orange-500 text-white flex items-center gap-3">
+            <CsAvatar size={40} className="h-10 w-10 rounded-full shrink-0 ring-2 ring-white/40" />
+            <div className="min-w-0">
               <p className="font-bold text-sm">Hani</p>
               <p className="text-[11px] text-orange-50">Customer Service · Sidomulyo Advertising</p>
             </div>
-            <button onClick={() => setOpen(false)} aria-label="Tutup chat" className="text-white/90 hover:text-white">
+            <button onClick={() => setOpen(false)} aria-label="Tutup chat" className="ml-auto text-white/90 hover:text-white shrink-0">
               <FiX size={18} />
             </button>
           </div>
@@ -97,8 +99,8 @@ export default function ChatWidget() {
               const clean = m.content.replace(HANDOFF_PHRASE, "").trim();
               return (
                 <div key={i} className={`flex items-end gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
-                  <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 ${m.role === "user" ? "bg-slate-200 dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300" : "bg-orange-100 dark:bg-orange-500/20 text-orange-500"}`}>
-                    {m.role === "user" ? <FiUser size={14} /> : <FiCpu size={14} />}
+                  <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 overflow-hidden ${m.role === "user" ? "bg-slate-200 dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300" : ""}`}>
+                    {m.role === "user" ? <FiUser size={14} /> : <CsAvatar size={28} className="h-7 w-7" />}
                   </div>
                   <div className={`max-w-[78%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${m.role === "user" ? "bg-orange-500 text-white rounded-br-sm" : "bg-[#f5f5f7] dark:bg-slate-800 text-[#1d1d1f] dark:text-slate-200 rounded-bl-sm"}`}>
                     {clean}
@@ -108,7 +110,7 @@ export default function ChatWidget() {
             })}
             {loading && (
               <div className="flex items-end gap-2">
-                <div className="h-7 w-7 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-500 flex items-center justify-center"><FiCpu size={14} /></div>
+                <div className="h-7 w-7 rounded-full overflow-hidden flex items-center justify-center"><CsAvatar size={28} className="h-7 w-7" /></div>
                 <div className="px-3 py-2 rounded-2xl bg-[#f5f5f7] dark:bg-slate-800 text-[#6e6e73] dark:text-slate-400 text-sm">Mengetik…</div>
               </div>
             )}
