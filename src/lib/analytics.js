@@ -109,3 +109,64 @@ export async function getAnalyticsSnapshot(range = "30d") {
     maxEventId: maxId,
   };
 }
+
+// Aggregates analytics per campaign (landing page slug) for comparison / budget analysis.
+export async function getCampaignBreakdown(range = "30d", campaign = "") {
+  const days = rangeToDays(range);
+  const now = new Date();
+  const since = localDate(new Date(now.getTime() - days * 86400000));
+  const params = [since];
+  let campaignFilter = "";
+  if (campaign) {
+    campaignFilter = " AND campaign = ?";
+    params.push(campaign);
+  }
+
+  const [rows] = await db.execute(
+    `SELECT
+        campaign,
+        COUNT(DISTINCT CASE WHEN event_type = 'pageview' THEN visitor_id END) as unique_visits,
+        SUM(CASE WHEN event_type = 'pageview' THEN 1 ELSE 0 END) as total_pageviews,
+        SUM(CASE WHEN event_type = 'click' AND element_target = 'cta-hero' THEN 1 ELSE 0 END) as cta_hero_clicks,
+        SUM(CASE WHEN event_type = 'click' AND element_target = 'cta-bottom' THEN 1 ELSE 0 END) as cta_bottom_clicks,
+        SUM(CASE WHEN event_type = 'click' AND element_target = 'form-submit' AND form_submitted = 1 THEN 1 ELSE 0 END) as form_submits,
+        SUM(CASE WHEN event_type = 'scroll' AND element_text = '100' THEN 1 ELSE 0 END) as scroll100,
+        ROUND(AVG(CASE WHEN event_type = 'pageview' AND duration_ms IS NOT NULL THEN duration_ms END)) as avg_duration_ms
+      FROM analytics_events
+      WHERE campaign != '' AND created_at >= ?${campaignFilter}
+      GROUP BY campaign
+      ORDER BY total_pageviews DESC`,
+    params
+  );
+
+  const campaigns = rows.map((r) => {
+    const visits = Number(r.unique_visits || 0);
+    const ctaClicks = Number(r.cta_hero_clicks || 0) + Number(r.cta_bottom_clicks || 0);
+    const formSubmits = Number(r.form_submits || 0);
+    const scroll100 = Number(r.scroll100 || 0);
+    const conversion = visits > 0 ? Math.round((formSubmits / visits) * 100) : 0;
+    const scrollPct = visits > 0 ? Math.round((scroll100 / visits) * 100) : 0;
+    return {
+      campaign: r.campaign,
+      visits,
+      ctaClicks,
+      formSubmits,
+      scroll100,
+      conversion,
+      scrollPct,
+      avgDurationMs: Number(r.avg_duration_ms || 0),
+    };
+  });
+
+  // Recommendation score: blend of conversion % and scroll 100 %.
+  const avgConversion = campaigns.length
+    ? campaigns.reduce((s, c) => s + c.conversion, 0) / campaigns.length
+    : 0;
+  campaigns.forEach((c) => {
+    const score = c.conversion * 0.6 + c.scrollPct * 0.4;
+    const avgScore = avgConversion * 0.6 + 50 * 0.4; // scroll avg assumption 50
+    c.recommendation = c.visits > 0 && score >= avgScore ? "increase" : "improve";
+  });
+
+  return campaigns;
+}

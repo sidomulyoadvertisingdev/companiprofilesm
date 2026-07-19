@@ -1,0 +1,45 @@
+---
+import "../styles/index.css";
+import ChatWidget from "../components/ChatWidget.jsx";
+
+const {
+  title = "Sidomulyo Advertising",
+  description = "Sidomulyo Advertising - Jasa percetakan & advertising terpercaya di Salatiga.",
+  image = "/hero-product.webp",
+  accent = "#0A4DA6",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:url" content={Astro.url} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="id_ID" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+
+    <link rel="canonical" href={Astro.url} />
+
+    <style is:inline define:vars={{ accent }}>
+      :root { --lp-accent: {accent}; }
+    </style>
+  </head>
+  <body class="bg-white text-[#1d1d1f] dark:bg-[#0a0a1a] dark:text-slate-200">
+    <slot />
+    <ChatWidget client:load />
+    <script is:inline src="/tracker.js" defer></script>
+  </body>
+</html>

@@ -225,6 +225,24 @@ const TABLES = [
     INDEX idx_is_read (is_read),
     INDEX idx_created (created_at)
   )`,
+  `CREATE TABLE IF NOT EXISTS landing_pages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    meta_title VARCHAR(255),
+    meta_description TEXT,
+    hero_headline TEXT,
+    hero_subtext TEXT,
+    hero_image VARCHAR(500),
+    cta_text VARCHAR(100),
+    cta_target VARCHAR(500),
+    accent_color VARCHAR(20) DEFAULT '#0A4DA6',
+    sections_json TEXT,
+    form_enabled TINYINT(1) DEFAULT 0,
+    status ENUM('draft','published') DEFAULT 'draft',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`,
   `INSERT IGNORE INTO site_config (id) VALUES (1)`,
 ];
 
@@ -274,6 +292,41 @@ export async function initSchema() {
     "analytics_events",
     "locale",
     "VARCHAR(16) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "campaign",
+    "VARCHAR(255) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "utm_source",
+    "VARCHAR(100) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "utm_medium",
+    "VARCHAR(100) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "utm_campaign",
+    "VARCHAR(100) NOT NULL DEFAULT ''"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "scroll_depth",
+    "TINYINT DEFAULT NULL"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "duration_ms",
+    "INT DEFAULT NULL"
+  );
+  await ensureColumn(
+    "analytics_events",
+    "form_submitted",
+    "TINYINT(1) DEFAULT 0"
   );
 }
 

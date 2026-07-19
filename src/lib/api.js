@@ -27,3 +27,5 @@ export const getPosts = () => getJSON("/api/posts");
 export const getPublishedPosts = () => getJSON("/api/posts?status=published");
 export const getPost = (id) => getJSON(`/api/posts/${id}`);
 export const getPostBySlug = (slug) => getJSON(`/api/posts/slug/${slug}`);
+export const getLandingPages = () => getJSON("/api/landing-pages");
+export const getLandingPageBySlug = (slug) => getJSON(`/api/landing-pages/${slug}`);

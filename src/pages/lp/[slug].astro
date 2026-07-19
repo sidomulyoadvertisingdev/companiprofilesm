@@ -1,0 +1,22 @@
+---
+import LandingLayout from "../../layouts/LandingLayout.astro";
+import { getLandingPageBySlug } from "../../lib/queries.js";
+import LandingPage from "../../react-pages/LandingPage.jsx";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const page = await getLandingPageBySlug(slug);
+
+if (!page) {
+  return new Response("Landing page not found", { status: 404 });
+}
+
+const title = page.metaTitle || `${page.title} - Sidomulyo Advertising`;
+const description = page.metaDescription || page.heroSubtext || page.title;
+const image = page.heroImage || "/hero-product.webp";
+---
+
+<LandingLayout title={title} description={description} image={image} accent={page.accentColor}>
+  <LandingPage client:load initialData={page} />
+</LandingLayout>

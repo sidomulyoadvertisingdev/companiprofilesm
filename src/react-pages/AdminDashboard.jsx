@@ -12,6 +12,7 @@ import {
   FiBell, FiLogOut, FiChevronDown, FiChevronLeft, FiChevronRight,
   FiTag, FiPercent, FiPlus, FiTrash2,
   FiFileText, FiEdit3, FiSearch, FiCalendar, FiBarChart2, FiMapPin, FiMonitor,
+  FiLayout,
   FiSun, FiMoon, FiMail,
 } from "react-icons/fi";
 import {
@@ -29,6 +30,7 @@ const TABS = [
   { key: "products", label: "Produk", icon: FiBox, group: "Konten" },
   { key: "portfolio", label: "Portofolio", icon: FiBriefcase, group: "Konten" },
   { key: "posts", label: "Blog", icon: FiFileText, group: "Konten" },
+  { key: "landing", label: "Landing Page", icon: FiLayout, group: "Konten" },
   { key: "partners", label: "Mitra", icon: FiUsers, group: "Konten" },
   { key: "testimonials", label: "Testimoni", icon: FiMessageSquare, group: "Konten" },
   { key: "messages", label: "Pesan Masuk", icon: FiMail, group: "Konten" },
@@ -53,6 +55,7 @@ export default function AdminDashboard({ admin }) {
   const [marketplaceCodes, setMarketplaceCodes] = useState([]);
   const [redeemRules, setRedeemRules] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [landingPages, setLandingPages] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
@@ -104,15 +107,17 @@ export default function AdminDashboard({ admin }) {
   };
 
   const load = useCallback(async () => {
-    const [s, sv, p, pf, pt, t, mc, rr, po, msgs] = await Promise.all([
+    const [s, sv, p, pf, pt, t, mc, rr, po, lp, msgs] = await Promise.all([
       getSite(), getServices(), getProducts(), getPortfolio(), getPartners(), getTestimonials(),
       safeJson("/api/marketplace", []),
       safeJson("/api/admin/redeem-rules", []),
       safeJson("/api/posts", []),
+      safeJson("/api/admin/landing-pages", []),
       safeJsonFull("/api/admin/contact-messages", { data: [], unread: 0 }),
     ]);
     setSite(s); setServices(sv); setProducts(p); setPortfolio(pf); setPartners(pt);
     setTestimonials(t); setMarketplaceCodes(mc); setRedeemRules(rr); setPosts(po);
+    setLandingPages(lp);
     setMessages(msgs.data || []); setUnreadCount(msgs.unread || 0);
   }, []);
 
@@ -273,6 +278,7 @@ export default function AdminDashboard({ admin }) {
             ]} endpoint="portfolio" onChanged={load} />
           )}
           {tab === "posts" && <BlogManager posts={posts} onChanged={load} />}
+          {tab === "landing" && <LandingPageManager pages={landingPages} onChanged={load} />}
           {tab === "messages" && <MessagesManager messages={messages} onChanged={load} focusId={messageFocusId} onFocused={() => setMessageFocusId(null)} />}
           {tab === "partners" && (
             <CrudTable rows={partners} fields={[
@@ -336,6 +342,12 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark, messages =
   const [notifAllOpen, setNotifAllOpen] = useState(false);
   const ref = useRef(null);
   const notifRef = useRef(null);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30000);
+    return () => clearInterval(id);
+  }, []);
 
   const latest = [...messages]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -343,7 +355,7 @@ function Topbar({ title, admin, onLogout, onMenu, dark, onToggleDark, messages =
   const unreadCount = messages.filter((m) => !m.is_read).length;
 
   const relTime = (iso) => {
-    const diff = Date.now() - new Date(iso).getTime();
+    const diff = now - new Date(iso).getTime();
     const m = Math.floor(diff / 60000);
     if (m < 1) return "baru saja";
     if (m < 60) return `${m} menit lalu`;
@@ -1717,11 +1729,13 @@ function AnalyticsDashboard() {
   const [lastUpdate, setLastUpdate] = useState(null);
   const [live, setLive] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [campaignFilter, setCampaignFilter] = useState("");
 
   const loadAnalytics = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/analytics?range=${range}`);
+      const q = campaignFilter ? `&campaign=${encodeURIComponent(campaignFilter)}` : "";
+      const res = await fetch(`/api/admin/analytics?range=${range}${q}`);
       const d = await res.json();
       if (res.ok && d && d.summary) {
         setData(d);
@@ -1731,7 +1745,7 @@ function AnalyticsDashboard() {
       }
     } catch { setData(null); }
     setLoading(false);
-  }, [range]);
+  }, [range, campaignFilter]);
 
   const loadEvents = useCallback(async (page = 0) => {
     try {
@@ -1840,6 +1854,68 @@ function AnalyticsDashboard() {
             <StatCard icon={FiUsers} label="Unique Visitors" value={fmt(data.summary.uniqueVisitors)} sub={`${data.summary.todayVisits} hari ini`} />
             <StatCard icon={FiMonitor} label="Total Klik CTA" value={fmt(data.summary.totalClicks)} sub={`${data.summary.todayClicks} hari ini`} />
             <StatCard icon={FiMapPin} label="Kota Teratas" value={data.topCities[0]?.city || "-"} sub={data.topCities[0] ? `${data.topCities[0].count} pengunjung` : "Belum ada data"} />
+          </div>
+
+          {/* Campaign comparison / budget analysis */}
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-5 mb-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+              <div>
+                <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white">Perbandingan Kampanye Iklan</h3>
+                <p className="text-xs text-[#6e6e73] dark:text-slate-400">Posisi tertinggi = performa terbaik. Gunakan untuk menentukan budget iklan.</p>
+              </div>
+              <select
+                value={campaignFilter}
+                onChange={(e) => setCampaignFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-lg text-xs border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-[#1d1d1f] dark:text-white outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Semua Kampanye</option>
+                {(data.campaignBreakdown || []).map((c) => (
+                  <option key={c.campaign} value={c.campaign}>/lp/{c.campaign}</option>
+                ))}
+              </select>
+            </div>
+            {!data.campaignBreakdown || data.campaignBreakdown.length === 0 ? (
+              <p className="text-sm text-[#6e6e73] dark:text-slate-400 py-6 text-center">Belum ada data kampanye. Buat landing page di tab "Landing Page" lalu promosikan.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-[#6e6e73] dark:text-slate-400 border-b border-[#e5e5e5] dark:border-slate-700">
+                      <th className="px-3 py-2">#</th>
+                      <th className="px-3 py-2">Iklan</th>
+                      <th className="px-3 py-2 text-right">Kunjungan</th>
+                      <th className="px-3 py-2 text-right">CTA Klik</th>
+                      <th className="px-3 py-2 text-right">Scroll 100%</th>
+                      <th className="px-3 py-2 text-right">Form Submit</th>
+                      <th className="px-3 py-2 text-right">Konversi</th>
+                      <th className="px-3 py-2 text-center">Rekomendasi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.campaignBreakdown.map((c, i) => (
+                      <tr key={c.campaign} className="border-b border-[#f0f0f2] dark:border-slate-800">
+                        <td className="px-3 py-2 text-[#6e6e73] dark:text-slate-500">{i + 1}</td>
+                        <td className="px-3 py-2 font-medium text-[#1d1d1f] dark:text-white">
+                          <a href={`/lp/${c.campaign}`} target="_blank" rel="noreferrer" className="hover:underline">/lp/{c.campaign}</a>
+                        </td>
+                        <td className="px-3 py-2 text-right">{c.visits}</td>
+                        <td className="px-3 py-2 text-right">{c.ctaClicks}</td>
+                        <td className="px-3 py-2 text-right">{c.scrollPct}%</td>
+                        <td className="px-3 py-2 text-right">{c.formSubmits}</td>
+                        <td className="px-3 py-2 text-right font-semibold">{c.conversion}%</td>
+                        <td className="px-3 py-2 text-center">
+                          {c.recommendation === "increase" ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400">Naikkan Budget</span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400">Perlu Diperbaiki</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
@@ -2026,5 +2102,283 @@ function AnalyticsDashboard() {
         </div>
       )}
     </section>
+  );
+}
+
+/* ─── Landing Page Manager ───────────────────────────────────────────── */
+
+function LandingPageEditor({ page, onSaved, onCancel }) {
+  const [form, setForm] = useState({
+    id: page?.id || null,
+    title: page?.title || "",
+    slug: page?.slug || "",
+    metaTitle: page?.metaTitle || "",
+    metaDescription: page?.metaDescription || "",
+    heroHeadline: page?.heroHeadline || "",
+    heroSubtext: page?.heroSubtext || "",
+    heroImage: page?.heroImage || "",
+    ctaText: page?.ctaText || "",
+    ctaTarget: page?.ctaTarget || "",
+    accentColor: page?.accentColor || "#0A4DA6",
+    sections: page?.sections || [],
+    formEnabled: page?.formEnabled || false,
+    status: page?.status || "draft",
+  });
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [imgTab, setImgTab] = useState("url");
+  const [uploading, setUploading] = useState(false);
+
+  function update(key, val) { setForm((f) => ({ ...f, [key]: val })); }
+
+  function addSection() {
+    update("sections", [...form.sections, { type: "text", heading: "", body: "" }]);
+  }
+  function removeSection(i) {
+    update("sections", form.sections.filter((_, idx) => idx !== i));
+  }
+  function updateSection(i, patch) {
+    update("sections", form.sections.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
+  }
+
+  async function onUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await upload(file);
+      update("heroImage", url);
+      setImgTab("url");
+    } catch { setMsg("Upload gagal"); }
+    setUploading(false);
+  }
+
+  async function save() {
+    setSaving(true);
+    setMsg("");
+    try {
+      const body = { ...form };
+      if (form.id) await put(`/api/admin/landing-pages?id=${form.id}`, body);
+      else await post("/api/admin/landing-pages", body);
+      setMsg("Tersimpan");
+      onSaved();
+    } catch (err) {
+      setMsg("Gagal: " + (err?.message || "unknown"));
+    }
+    setSaving(false);
+  }
+
+  const inputCls = "w-full px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-[#1d1d1f] dark:text-white outline-none focus:ring-2 focus:ring-blue-500";
+  const labelCls = "block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1";
+
+  return (
+    <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-6">
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white">{form.id ? "Edit Landing Page" : "Landing Page Baru"}</h3>
+        <button onClick={onCancel} className="text-sm text-[#6e6e73] dark:text-slate-400 hover:underline">Batal</button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>Judul *</label>
+          <input className={inputCls} value={form.title} onChange={(e) => update("title", e.target.value)} placeholder="Promo Neon Box" />
+        </div>
+        <div>
+          <label className={labelCls}>Slug (url: /lp/...)</label>
+          <input className={inputCls} value={form.slug} onChange={(e) => update("slug", e.target.value)} placeholder="promo-neon-box" />
+        </div>
+        <div>
+          <label className={labelCls}>Meta Title</label>
+          <input className={inputCls} value={form.metaTitle} onChange={(e) => update("metaTitle", e.target.value)} />
+        </div>
+        <div>
+          <label className={labelCls}>Status</label>
+          <select className={inputCls} value={form.status} onChange={(e) => update("status", e.target.value)}>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+        <div className="md:col-span-2">
+          <label className={labelCls}>Meta Description</label>
+          <textarea className={inputCls} rows="2" value={form.metaDescription} onChange={(e) => update("metaDescription", e.target.value)} />
+        </div>
+        <div className="md:col-span-2">
+          <label className={labelCls}>Hero Headline</label>
+          <input className={inputCls} value={form.heroHeadline} onChange={(e) => update("heroHeadline", e.target.value)} />
+        </div>
+        <div className="md:col-span-2">
+          <label className={labelCls}>Hero Subtext</label>
+          <textarea className={inputCls} rows="2" value={form.heroSubtext} onChange={(e) => update("heroSubtext", e.target.value)} />
+        </div>
+        <div>
+          <label className={labelCls}>CTA Text</label>
+          <input className={inputCls} value={form.ctaText} onChange={(e) => update("ctaText", e.target.value)} placeholder="Hubungi Kami" />
+        </div>
+        <div>
+          <label className={labelCls}>CTA Target (url)</label>
+          <input className={inputCls} value={form.ctaTarget} onChange={(e) => update("ctaTarget", e.target.value)} placeholder="https://wa.me/..." />
+        </div>
+        <div>
+          <label className={labelCls}>Warna Aksen</label>
+          <input type="color" className="w-full h-10 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23]" value={form.accentColor} onChange={(e) => update("accentColor", e.target.value)} />
+        </div>
+        <div className="flex items-end gap-4">
+          <label className="flex items-center gap-2 text-sm text-[#1d1d1f] dark:text-white">
+            <input type="checkbox" checked={form.formEnabled} onChange={(e) => update("formEnabled", e.target.checked)} /> Aktifkan Form Lead
+          </label>
+        </div>
+        <div className="md:col-span-2">
+          <label className={labelCls}>Hero Image</label>
+          <div className="flex gap-2 mb-2">
+            <button onClick={() => setImgTab("url")} className={`px-3 py-1 rounded-lg text-xs ${imgTab === "url" ? "bg-blue-600 text-white" : "bg-[#f0f0f2] dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300"}`}>URL</button>
+            <button onClick={() => setImgTab("upload")} className={`px-3 py-1 rounded-lg text-xs ${imgTab === "upload" ? "bg-blue-600 text-white" : "bg-[#f0f0f2] dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300"}`}>Upload</button>
+          </div>
+          {imgTab === "url" ? (
+            <input className={inputCls} value={form.heroImage} onChange={(e) => update("heroImage", e.target.value)} placeholder="https://..." />
+          ) : (
+            <input type="file" accept="image/*" onChange={onUpload} disabled={uploading} className="text-sm" />
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-sm font-semibold text-[#1d1d1f] dark:text-white">Sections</h4>
+          <button onClick={addSection} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+            <FiPlus /> Tambah Section
+          </button>
+        </div>
+        {form.sections.map((s, i) => (
+          <div key={i} className="mb-3 p-3 rounded-xl border border-[#e5e5e5] dark:border-slate-700 bg-[#fafafa] dark:bg-slate-800/40">
+            <div className="flex items-center gap-2 mb-2">
+              <select className={inputCls} value={s.type} onChange={(e) => updateSection(i, { type: e.target.value })}>
+                <option value="text">Teks</option>
+                <option value="image">Gambar</option>
+                <option value="features">Fitur Grid</option>
+              </select>
+              <button onClick={() => removeSection(i)} className="p-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10">
+                <FiTrash2 />
+              </button>
+            </div>
+            {s.type === "text" && (
+              <>
+                <input className={`${inputCls} mb-2`} value={s.heading || ""} onChange={(e) => updateSection(i, { heading: e.target.value })} placeholder="Judul section" />
+                <textarea className={inputCls} rows="2" value={s.body || ""} onChange={(e) => updateSection(i, { body: e.target.value })} placeholder="Isi teks" />
+              </>
+            )}
+            {s.type === "image" && (
+              <>
+                <input className={`${inputCls} mb-2`} value={s.heading || ""} onChange={(e) => updateSection(i, { heading: e.target.value })} placeholder="Judul section" />
+                <input className={inputCls} value={s.image || ""} onChange={(e) => updateSection(i, { image: e.target.value })} placeholder="URL gambar" />
+              </>
+            )}
+            {s.type === "features" && (
+              <>
+                <input className={`${inputCls} mb-2`} value={s.heading || ""} onChange={(e) => updateSection(i, { heading: e.target.value })} placeholder="Judul section" />
+                <FeatureItemsEditor items={s.items || []} onChange={(items) => updateSection(i, { items })} />
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-3 mt-5">
+        <button onClick={save} disabled={saving} className="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60">
+          {saving ? "Menyimpan…" : "Simpan"}
+        </button>
+        {msg && <span className="text-sm text-[#6e6e73] dark:text-slate-400">{msg}</span>}
+      </div>
+    </div>
+  );
+}
+
+function FeatureItemsEditor({ items, onChange }) {
+  const update = (i, patch) => onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
+  const add = () => onChange([...items, { title: "", desc: "" }]);
+  const inputCls = "w-full px-2 py-1.5 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white outline-none focus:ring-2 focus:ring-blue-500";
+  return (
+    <div className="space-y-2">
+      {items.map((it, i) => (
+        <div key={i} className="flex gap-2 items-center">
+          <input className={inputCls} value={it.title || ""} onChange={(e) => update(i, { title: e.target.value })} placeholder="Judul fitur" />
+          <input className={inputCls} value={it.desc || ""} onChange={(e) => update(i, { desc: e.target.value })} placeholder="Deskripsi" />
+          <button onClick={() => remove(i)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"><FiTrash2 /></button>
+        </div>
+      ))}
+      <button onClick={add} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-[#f0f0f2] dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300 hover:text-[#1d1d1f]"><FiPlus /> Tambah Fitur</button>
+    </div>
+  );
+}
+
+function LandingPageManager({ pages, onChanged }) {
+  const [editing, setEditing] = useState(null);
+  const [creating, setCreating] = useState(false);
+
+  async function remove(id) {
+    if (!confirm("Hapus landing page ini?")) return;
+    try {
+      await del(`/api/admin/landing-pages?id=${id}`);
+      onChanged();
+    } catch (err) {
+      console.error("Gagal hapus landing page:", err);
+    }
+  }
+
+  if (creating || editing) {
+    return (
+      <LandingPageEditor
+        page={editing}
+        onSaved={() => { setEditing(null); setCreating(false); onChanged(); }}
+        onCancel={() => { setEditing(null); setCreating(false); }}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-[#1d1d1f] dark:text-white">Landing Page Iklan</h2>
+        <button onClick={() => setCreating(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700">
+          <FiPlus /> Buat Baru
+        </button>
+      </div>
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[#6e6e73] dark:text-slate-400 border-b border-[#e5e5e5] dark:border-slate-700">
+              <th className="px-4 py-3">Judul</th>
+              <th className="px-4 py-3">Slug</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Link</th>
+              <th className="px-4 py-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pages.length === 0 && (
+              <tr><td colSpan="5" className="px-4 py-8 text-center text-[#6e6e73] dark:text-slate-400">Belum ada landing page</td></tr>
+            )}
+            {pages.map((p) => (
+              <tr key={p.id} className="border-b border-[#f0f0f2] dark:border-slate-800">
+                <td className="px-4 py-3 font-medium text-[#1d1d1f] dark:text-white">{p.title}</td>
+                <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-400">/lp/{p.slug}</td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${p.status === "published" ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400" : "bg-gray-100 dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300"}`}>
+                    {p.status}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <a href={`/lp/${p.slug}`} target="_blank" rel="noreferrer" className="text-blue-700 hover:underline">Buka</a>
+                </td>
+                <td className="px-4 py-3 text-right whitespace-nowrap">
+                  <button onClick={() => setEditing(p)} className="p-2 rounded-lg text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-500/10" title="Edit"><FiEdit3 /></button>
+                  <button onClick={() => remove(p.id)} className="p-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10" title="Hapus"><FiTrash2 /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

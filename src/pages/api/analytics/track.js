@@ -7,7 +7,7 @@ export const prerender = false;
 export async function POST({ request }) {
   try {
     const b = await request.json();
-    const { visitorId, fingerprint, eventType, pageUrl, elementTarget, elementText, screenWidth, screenHeight, timezone, locale } = b;
+    const { visitorId, fingerprint, eventType, pageUrl, elementTarget, elementText, screenWidth, screenHeight, timezone, locale, campaign, utmSource, utmMedium, utmCampaign, scrollDepth, durationMs, formSubmitted } = b;
     if (!visitorId || !eventType) {
       return new Response(JSON.stringify({ message: "Missing visitorId or eventType" }), { status: 400 });
     }
@@ -23,10 +23,17 @@ export async function POST({ request }) {
     const fingerprintClean = (fingerprint || "").slice(0, 64);
     const timezoneClean = (timezone || "").slice(0, 64);
     const localeClean = (locale || "").slice(0, 16);
+    const campaignClean = (campaign || "").slice(0, 255);
+    const utmSourceClean = (utmSource || "").slice(0, 100);
+    const utmMediumClean = (utmMedium || "").slice(0, 100);
+    const utmCampaignClean = (utmCampaign || "").slice(0, 100);
+    const scrollDepthVal = scrollDepth != null ? Number(scrollDepth) : null;
+    const durationVal = durationMs != null ? Number(durationMs) : null;
+    const formSubmittedVal = formSubmitted ? 1 : 0;
 
     await db.execute(
-      `INSERT INTO analytics_events (visitor_id, fingerprint, event_type, page_url, element_target, element_text, city, region, country, device_type, browser, os, screen_width, screen_height, timezone, locale, user_agent, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [visitorId, fingerprintClean, eventType, pageUrlClean, elementTargetClean, elementTextClean, geo.city, geo.region, geo.country, ua.deviceType, ua.browser, ua.os, screenWidth || null, screenHeight || null, timezoneClean, localeClean, userAgent, ip]
+      `INSERT INTO analytics_events (visitor_id, fingerprint, event_type, page_url, element_target, element_text, city, region, country, device_type, browser, os, screen_width, screen_height, timezone, locale, campaign, utm_source, utm_medium, utm_campaign, scroll_depth, duration_ms, form_submitted, user_agent, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [visitorId, fingerprintClean, eventType, pageUrlClean, elementTargetClean, elementTextClean, geo.city, geo.region, geo.country, ua.deviceType, ua.browser, ua.os, screenWidth || null, screenHeight || null, timezoneClean, localeClean, campaignClean, utmSourceClean, utmMediumClean, utmCampaignClean, scrollDepthVal, durationVal, formSubmittedVal, userAgent, ip]
     );
 
     const isClick = eventType === "click" ? 1 : 0;

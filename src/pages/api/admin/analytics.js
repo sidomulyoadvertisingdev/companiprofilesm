@@ -1,5 +1,5 @@
 import { getSessionAdmin, SESSION_COOKIE } from "../../../lib/auth.js";
-import { getAnalyticsSnapshot } from "../../../lib/analytics.js";
+import { getAnalyticsSnapshot, getCampaignBreakdown } from "../../../lib/analytics.js";
 
 export const prerender = false;
 
@@ -11,8 +11,10 @@ export async function GET({ url, cookies }) {
     }
 
     const range = url.searchParams.get("range") || "30d";
+    const campaign = url.searchParams.get("campaign") || "";
     const snapshot = await getAnalyticsSnapshot(range);
-    return new Response(JSON.stringify(snapshot), {
+    const campaignBreakdown = await getCampaignBreakdown(range, campaign);
+    return new Response(JSON.stringify({ ...snapshot, campaignBreakdown }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

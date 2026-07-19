@@ -138,3 +138,76 @@ export async function getPostBySlug(slug) {
     createdAt: r.created_at, updatedAt: r.updated_at,
   };
 }
+
+function mapLandingPage(r) {
+  if (!r) return null;
+  return {
+    id: r.id, slug: r.slug, title: r.title,
+    metaTitle: r.meta_title, metaDescription: r.meta_description,
+    heroHeadline: r.hero_headline, heroSubtext: r.hero_subtext, heroImage: r.hero_image,
+    ctaText: r.cta_text, ctaTarget: r.cta_target, accentColor: r.accent_color || "#0A4DA6",
+    sections: JSON.parse(r.sections_json || "[]"),
+    formEnabled: !!r.form_enabled,
+    status: r.status,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  };
+}
+
+export async function getLandingPages() {
+  const [rows] = await db.execute("SELECT * FROM landing_pages WHERE status = 'published' ORDER BY updated_at DESC");
+  return rows.map(mapLandingPage);
+}
+
+export async function getAdminLandingPages() {
+  const [rows] = await db.execute("SELECT * FROM landing_pages ORDER BY updated_at DESC");
+  return rows.map(mapLandingPage);
+}
+
+export async function getLandingPageBySlug(slug) {
+  const [rows] = await db.execute("SELECT * FROM landing_pages WHERE slug = ? AND status = 'published'", [slug]);
+  return mapLandingPage(rows[0]);
+}
+
+export async function getLandingPageById(id) {
+  const [rows] = await db.execute("SELECT * FROM landing_pages WHERE id = ?", [id]);
+  return mapLandingPage(rows[0]);
+}
+
+export async function upsertLandingPage(data) {
+  const {
+    id, slug, title, metaTitle, metaDescription,
+    heroHeadline, heroSubtext, heroImage, ctaText, ctaTarget,
+    accentColor, sections, formEnabled, status,
+  } = data;
+  const sectionsJson = JSON.stringify(sections || []);
+  const v = {
+    slug, title,
+    metaTitle: metaTitle || null,
+    metaDescription: metaDescription || null,
+    heroHeadline: heroHeadline || null,
+    heroSubtext: heroSubtext || null,
+    heroImage: heroImage || null,
+    ctaText: ctaText || null,
+    ctaTarget: ctaTarget || null,
+    accentColor: accentColor || "#0A4DA6",
+    sectionsJson,
+    formEnabled: formEnabled ? 1 : 0,
+    status: status || "draft",
+  };
+  if (id) {
+    await db.execute(
+      `UPDATE landing_pages SET slug=?, title=?, meta_title=?, meta_description=?, hero_headline=?, hero_subtext=?, hero_image=?, cta_text=?, cta_target=?, accent_color=?, sections_json=?, form_enabled=?, status=? WHERE id=?`,
+      [v.slug, v.title, v.metaTitle, v.metaDescription, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.formEnabled, v.status, id]
+    );
+    return id;
+  }
+  const [res] = await db.execute(
+    `INSERT INTO landing_pages (slug, title, meta_title, meta_description, hero_headline, hero_subtext, hero_image, cta_text, cta_target, accent_color, sections_json, form_enabled, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [v.slug, v.title, v.metaTitle, v.metaDescription, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.formEnabled, v.status]
+  );
+  return res.insertId;
+}
+
+export async function deleteLandingPage(id) {
+  await db.execute("DELETE FROM landing_pages WHERE id = ?", [id]);
+}

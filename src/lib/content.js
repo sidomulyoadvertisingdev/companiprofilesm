@@ -65,3 +65,11 @@ export async function getPostBySlug(slug) {
   if (import.meta.env.SSR) return (await import("./queries.js")).getPostBySlug(slug);
   return (await import("./api.js")).getPostBySlug(slug);
 }
+export async function getLandingPages() {
+  if (import.meta.env.SSR) return (await import("./queries.js")).getLandingPages();
+  return (await import("./api.js")).getLandingPages();
+}
+export async function getLandingPageBySlug(slug) {
+  if (import.meta.env.SSR) return (await import("./queries.js")).getLandingPageBySlug(slug);
+  return (await import("./api.js")).getLandingPageBySlug(slug);
+}
