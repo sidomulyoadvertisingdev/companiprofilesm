@@ -231,6 +231,7 @@ const TABLES = [
     title VARCHAR(255) NOT NULL,
     meta_title VARCHAR(255),
     meta_description TEXT,
+    badge_text VARCHAR(120),
     hero_headline TEXT,
     hero_subtext TEXT,
     hero_image VARCHAR(500),
@@ -238,6 +239,11 @@ const TABLES = [
     cta_target VARCHAR(500),
     accent_color VARCHAR(20) DEFAULT '#0A4DA6',
     sections_json TEXT,
+    trust_badges_json TEXT,
+    cta_band_heading TEXT,
+    cta_band_text TEXT,
+    form_title VARCHAR(160),
+    form_subtext TEXT,
     form_enabled TINYINT(1) DEFAULT 0,
     status ENUM('draft','published') DEFAULT 'draft',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -328,6 +334,14 @@ export async function initSchema() {
     "form_submitted",
     "TINYINT(1) DEFAULT 0"
   );
+
+  // Landing page dynamic fields (added after initial schema).
+  await ensureColumn("landing_pages", "badge_text", "VARCHAR(120) DEFAULT NULL");
+  await ensureColumn("landing_pages", "trust_badges_json", "TEXT");
+  await ensureColumn("landing_pages", "cta_band_heading", "TEXT");
+  await ensureColumn("landing_pages", "cta_band_text", "TEXT");
+  await ensureColumn("landing_pages", "form_title", "VARCHAR(160) DEFAULT NULL");
+  await ensureColumn("landing_pages", "form_subtext", "TEXT");
 }
 
 async function ensureColumn(table, column, definition) {

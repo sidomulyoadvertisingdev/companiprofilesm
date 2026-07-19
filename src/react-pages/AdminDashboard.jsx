@@ -12,9 +12,15 @@ import {
   FiBell, FiLogOut, FiChevronDown, FiChevronLeft, FiChevronRight,
   FiTag, FiPercent, FiPlus, FiTrash2,
   FiFileText, FiEdit3, FiSearch, FiCalendar, FiBarChart2, FiMapPin, FiMonitor,
-  FiLayout,
+  FiLayout, FiShield, FiClock, FiTruck, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiAward, FiCheck, FiStar,
   FiSun, FiMoon, FiMail,
 } from "react-icons/fi";
+
+// Icon map for landing page trust badges (editable from admin).
+const LP_ICONS = {
+  FiShield, FiClock, FiTruck, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiMapPin, FiAward, FiCheck, FiStar,
+};
+
 import {
   TbBold, TbItalic, TbStrikethrough, TbCode, TbH1, TbH2, TbH3,
   TbList, TbListNumbers, TbBlockquote, TbLink, TbPhoto, TbArrowBackUp, TbArrowForwardUp,
@@ -2114,6 +2120,7 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
     slug: page?.slug || "",
     metaTitle: page?.metaTitle || "",
     metaDescription: page?.metaDescription || "",
+    badgeText: page?.badgeText || "",
     heroHeadline: page?.heroHeadline || "",
     heroSubtext: page?.heroSubtext || "",
     heroImage: page?.heroImage || "",
@@ -2121,6 +2128,11 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
     ctaTarget: page?.ctaTarget || "",
     accentColor: page?.accentColor || "#0A4DA6",
     sections: page?.sections || [],
+    trustBadges: page?.trustBadges || [],
+    ctaBandHeading: page?.ctaBandHeading || "",
+    ctaBandText: page?.ctaBandText || "",
+    formTitle: page?.formTitle || "",
+    formSubtext: page?.formSubtext || "",
     formEnabled: page?.formEnabled || false,
     status: page?.status || "draft",
   });
@@ -2203,6 +2215,10 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
           <textarea className={inputCls} rows="2" value={form.metaDescription} onChange={(e) => update("metaDescription", e.target.value)} />
         </div>
         <div className="md:col-span-2">
+          <label className={labelCls}>Badge Hero (cth: Promo Terbatas)</label>
+          <input className={inputCls} value={form.badgeText} onChange={(e) => update("badgeText", e.target.value)} placeholder="Promo Terbatas Sidomulyo" />
+        </div>
+        <div className="md:col-span-2">
           <label className={labelCls}>Hero Headline</label>
           <input className={inputCls} value={form.heroHeadline} onChange={(e) => update("heroHeadline", e.target.value)} />
         </div>
@@ -2238,6 +2254,49 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
           ) : (
             <input type="file" accept="image/*" onChange={onUpload} disabled={uploading} className="text-sm" />
           )}
+        </div>
+      </div>
+
+      {/* CTA Band */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>Judul CTA Band</label>
+          <input className={inputCls} value={form.ctaBandHeading} onChange={(e) => update("ctaBandHeading", e.target.value)} placeholder="Jangan lewatkan promo ini!" />
+        </div>
+        <div>
+          <label className={labelCls}>Teks CTA Band</label>
+          <input className={inputCls} value={form.ctaBandText} onChange={(e) => update("ctaBandText", e.target.value)} placeholder="Stok promo terbatas, hubungi kami sekarang." />
+        </div>
+      </div>
+
+      {/* Trust Badges */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-sm font-semibold text-[#1d1d1f] dark:text-white">Trust Badges (di bawah hero)</h4>
+          <button onClick={() => update("trustBadges", [...form.trustBadges, { icon: "FiShield", label: "" }])} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+            <FiPlus /> Tambah Badge
+          </button>
+        </div>
+        {form.trustBadges.map((b, i) => (
+          <div key={i} className="flex gap-2 items-center mb-2">
+            <select className={inputCls} value={b.icon || "FiCheck"} onChange={(e) => update("trustBadges", form.trustBadges.map((x, idx) => idx === i ? { ...x, icon: e.target.value } : x))}>
+              {Object.keys(LP_ICONS).map((k) => <option key={k} value={k}>{k}</option>)}
+            </select>
+            <input className={inputCls} value={b.label || ""} onChange={(e) => update("trustBadges", form.trustBadges.map((x, idx) => idx === i ? { ...x, label: e.target.value } : x))} placeholder="Label badge" />
+            <button onClick={() => update("trustBadges", form.trustBadges.filter((_, idx) => idx !== i))} className="p-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"><FiTrash2 /></button>
+          </div>
+        ))}
+      </div>
+
+      {/* Form Lead */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className={labelCls}>Judul Form</label>
+          <input className={inputCls} value={form.formTitle} onChange={(e) => update("formTitle", e.target.value)} placeholder="Tertarik? Hubungi kami" />
+        </div>
+        <div>
+          <label className={labelCls}>Subtext Form</label>
+          <input className={inputCls} value={form.formSubtext} onChange={(e) => update("formSubtext", e.target.value)} placeholder="Isi form, tim kami akan menghubungi Anda." />
         </div>
       </div>
 
@@ -2295,14 +2354,44 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
 function FeatureItemsEditor({ items, onChange }) {
   const update = (i, patch) => onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
   const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
-  const add = () => onChange([...items, { title: "", desc: "" }]);
+  const add = () => onChange([...items, { title: "", desc: "", icon: "" }]);
+  const [busy, setBusy] = useState(-1);
   const inputCls = "w-full px-2 py-1.5 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white outline-none focus:ring-2 focus:ring-blue-500";
+
+  async function onUpload(e, i) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(i);
+    try {
+      const d = await upload(file);
+      update(i, { icon: d.url });
+    } catch (err) {
+      console.error("Upload icon gagal:", err);
+    }
+    setBusy(-1);
+  }
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {items.map((it, i) => (
-        <div key={i} className="flex gap-2 items-center">
-          <input className={inputCls} value={it.title || ""} onChange={(e) => update(i, { title: e.target.value })} placeholder="Judul fitur" />
-          <input className={inputCls} value={it.desc || ""} onChange={(e) => update(i, { desc: e.target.value })} placeholder="Deskripsi" />
+        <div key={i} className="flex gap-2 items-start">
+          <div className="shrink-0">
+            <label className="block w-14 h-14 rounded-xl border border-dashed border-[#e5e5e5] dark:border-slate-600 cursor-pointer overflow-hidden bg-[#fafafa] dark:bg-slate-800 flex items-center justify-center relative">
+              {it.icon ? (
+                <img src={it.icon} alt="" className="w-full h-full object-contain p-1" />
+              ) : (
+                <FiPlus className="text-[#9ca3af]" />
+              )}
+              <input type="file" accept="image/*" className="hidden" onChange={(e) => onUpload(e, i)} disabled={busy === i} />
+            </label>
+            {it.icon && (
+              <button onClick={() => update(i, { icon: "" })} className="block mx-auto mt-1 text-[10px] text-red-600 hover:underline">hapus</button>
+            )}
+          </div>
+          <div className="flex-1 space-y-2">
+            <input className={inputCls} value={it.title || ""} onChange={(e) => update(i, { title: e.target.value })} placeholder="Judul fitur" />
+            <input className={inputCls} value={it.desc || ""} onChange={(e) => update(i, { desc: e.target.value })} placeholder="Deskripsi" />
+          </div>
           <button onClick={() => remove(i)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"><FiTrash2 /></button>
         </div>
       ))}

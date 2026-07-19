@@ -144,9 +144,13 @@ function mapLandingPage(r) {
   return {
     id: r.id, slug: r.slug, title: r.title,
     metaTitle: r.meta_title, metaDescription: r.meta_description,
+    badgeText: r.badge_text,
     heroHeadline: r.hero_headline, heroSubtext: r.hero_subtext, heroImage: r.hero_image,
     ctaText: r.cta_text, ctaTarget: r.cta_target, accentColor: r.accent_color || "#0A4DA6",
     sections: JSON.parse(r.sections_json || "[]"),
+    trustBadges: JSON.parse(r.trust_badges_json || "[]"),
+    ctaBandHeading: r.cta_band_heading, ctaBandText: r.cta_band_text,
+    formTitle: r.form_title, formSubtext: r.form_subtext,
     formEnabled: !!r.form_enabled,
     status: r.status,
     createdAt: r.created_at, updatedAt: r.updated_at,
@@ -176,14 +180,17 @@ export async function getLandingPageById(id) {
 export async function upsertLandingPage(data) {
   const {
     id, slug, title, metaTitle, metaDescription,
-    heroHeadline, heroSubtext, heroImage, ctaText, ctaTarget,
-    accentColor, sections, formEnabled, status,
+    badgeText, heroHeadline, heroSubtext, heroImage, ctaText, ctaTarget,
+    accentColor, sections, trustBadges, ctaBandHeading, ctaBandText,
+    formTitle, formSubtext, formEnabled, status,
   } = data;
   const sectionsJson = JSON.stringify(sections || []);
+  const trustBadgesJson = JSON.stringify(trustBadges || []);
   const v = {
     slug, title,
     metaTitle: metaTitle || null,
     metaDescription: metaDescription || null,
+    badgeText: badgeText || null,
     heroHeadline: heroHeadline || null,
     heroSubtext: heroSubtext || null,
     heroImage: heroImage || null,
@@ -191,19 +198,24 @@ export async function upsertLandingPage(data) {
     ctaTarget: ctaTarget || null,
     accentColor: accentColor || "#0A4DA6",
     sectionsJson,
+    trustBadgesJson,
+    ctaBandHeading: ctaBandHeading || null,
+    ctaBandText: ctaBandText || null,
+    formTitle: formTitle || null,
+    formSubtext: formSubtext || null,
     formEnabled: formEnabled ? 1 : 0,
     status: status || "draft",
   };
   if (id) {
     await db.execute(
-      `UPDATE landing_pages SET slug=?, title=?, meta_title=?, meta_description=?, hero_headline=?, hero_subtext=?, hero_image=?, cta_text=?, cta_target=?, accent_color=?, sections_json=?, form_enabled=?, status=? WHERE id=?`,
-      [v.slug, v.title, v.metaTitle, v.metaDescription, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.formEnabled, v.status, id]
+      `UPDATE landing_pages SET slug=?, title=?, meta_title=?, meta_description=?, badge_text=?, hero_headline=?, hero_subtext=?, hero_image=?, cta_text=?, cta_target=?, accent_color=?, sections_json=?, trust_badges_json=?, cta_band_heading=?, cta_band_text=?, form_title=?, form_subtext=?, form_enabled=?, status=? WHERE id=?`,
+      [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.formEnabled, v.status, id]
     );
     return id;
   }
   const [res] = await db.execute(
-    `INSERT INTO landing_pages (slug, title, meta_title, meta_description, hero_headline, hero_subtext, hero_image, cta_text, cta_target, accent_color, sections_json, form_enabled, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-    [v.slug, v.title, v.metaTitle, v.metaDescription, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.formEnabled, v.status]
+    `INSERT INTO landing_pages (slug, title, meta_title, meta_description, badge_text, hero_headline, hero_subtext, hero_image, cta_text, cta_target, accent_color, sections_json, trust_badges_json, cta_band_heading, cta_band_text, form_title, form_subtext, form_enabled, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.formEnabled, v.status]
   );
   return res.insertId;
 }

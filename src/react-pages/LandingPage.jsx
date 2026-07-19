@@ -1,42 +1,119 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FiArrowRight, FiCheck, FiSend } from "react-icons/fi";
+import {
+  FiArrowRight, FiCheck, FiSend, FiStar, FiShield, FiClock,
+  FiTruck, FiAward, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiMapPin,
+} from "react-icons/fi";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+};
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } },
+};
+
+// Map nama ikon (dari admin) ke komponen Fi agar trust badge dinamis.
+const ICONS = {
+  FiShield, FiClock, FiTruck, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiMapPin, FiAward, FiCheck, FiStar,
+};
 
 function SectionRenderer({ section }) {
   if (!section) return null;
   if (section.type === "text") {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-10">
-        {section.heading && <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[#1d1d1f] dark:text-white" style={{ color: section.headingColor || undefined }}>{section.heading}</h2>}
-        <p className="text-base leading-relaxed text-[#6e6e73] dark:text-slate-300" style={{ whiteSpace: "pre-line" }}>{section.body}</p>
-      </div>
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="max-w-3xl mx-auto px-6 py-12"
+      >
+        {section.heading && (
+          <h2 className="text-2xl md:text-3xl font-bold mb-4 text-center text-[#1d1d1f] dark:text-white">
+            {section.heading}
+          </h2>
+        )}
+        <p className="text-base leading-relaxed text-[#6e6e73] dark:text-slate-300 text-center" style={{ whiteSpace: "pre-line" }}>
+          {section.body}
+        </p>
+      </motion.div>
     );
   }
   if (section.type === "image") {
     return (
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        {section.heading && <h2 className="text-2xl md:text-3xl font-bold mb-4 text-center text-[#1d1d1f] dark:text-white">{section.heading}</h2>}
-        {section.image && <img src={section.image} alt={section.heading || "Gambar"} className="w-full rounded-2xl shadow-lg" loading="lazy" />}
-      </div>
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="max-w-4xl mx-auto px-6 py-10"
+      >
+        {section.heading && (
+          <h2 className="text-2xl md:text-3xl font-bold mb-5 text-center text-[#1d1d1f] dark:text-white">
+            {section.heading}
+          </h2>
+        )}
+        {section.image && (
+          <img
+            src={section.image}
+            alt={section.heading || "Gambar"}
+            className="w-full rounded-3xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10"
+            loading="lazy"
+          />
+        )}
+      </motion.div>
     );
   }
   if (section.type === "features") {
     const items = section.items || [];
     return (
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        {section.heading && <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-[#1d1d1f] dark:text-white">{section.heading}</h2>}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true }}
+        className="max-w-5xl mx-auto px-6 py-12"
+      >
+        {section.heading && (
+          <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-[#1d1d1f] dark:text-white">
+            {section.heading}
+          </h2>
+        )}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
+        >
           {items.map((it, i) => (
-            <div key={i} className="bg-[#f5f5f7] dark:bg-slate-800/60 rounded-2xl p-5" data-track="section-feature">
-              <div className="flex items-center gap-2 mb-2">
-                <FiCheck className="text-green-600 dark:text-green-400" />
-                <h3 className="font-semibold text-[#1d1d1f] dark:text-white">{it.title}</h3>
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              data-track="section-feature"
+              className="group relative flex flex-col items-center text-center bg-white dark:bg-slate-800/60 rounded-2xl p-6 shadow-sm hover:shadow-xl transition-shadow border border-[#eef0f3] dark:border-slate-700/50"
+            >
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden shadow-md bg-[#f5f5f7] dark:bg-slate-700/50">
+                {it.icon ? (
+                  <img src={it.icon} alt={it.title || "icon"} className="w-full h-full object-contain p-2" loading="lazy" />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center text-white"
+                    style={{ background: "linear-gradient(135deg, var(--lp-accent), #0a0a1a)" }}
+                  >
+                    <FiCheck className="text-xl" />
+                  </div>
+                )}
               </div>
-              {it.desc && <p className="text-sm text-[#6e6e73] dark:text-slate-300">{it.desc}</p>}
-            </div>
+              <h3 className="font-semibold text-[#1d1d1f] dark:text-white mb-1">{it.title}</h3>
+              {it.desc && <p className="text-sm text-[#6e6e73] dark:text-slate-300 leading-relaxed">{it.desc}</p>}
+            </motion.div>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     );
   }
   return null;
@@ -74,31 +151,99 @@ export default function LandingPage({ initialData }) {
   return (
     <main className="min-h-screen bg-white dark:bg-[#0a0a1a]">
       {/* HERO */}
-      <section className="relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${accent} 0%, #0a0a1a 120%)` }}>
-        <div className="max-w-5xl mx-auto px-6 py-20 md:py-28 text-center text-white">
+      <section
+        className="relative overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${accent} 0%, #07142b 100%)` }}
+      >
+        {/* decorative blobs */}
+        <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -right-16 w-80 h-80 rounded-full bg-white/10 blur-3xl" />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px)",
+            backgroundSize: "44px 44px",
+          }}
+        />
+
+        <div className="relative max-w-5xl mx-auto px-6 py-20 md:py-28 text-center text-white">
+          {page.badgeText && (
+            <motion.span
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur text-xs font-medium mb-6 ring-1 ring-white/20"
+            >
+              <FiStar className="text-yellow-300" /> {page.badgeText}
+            </motion.span>
+          )}
+
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-3xl md:text-5xl font-bold leading-tight mb-5"
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-5 drop-shadow"
           >
             {page.heroHeadline}
           </motion.h1>
+
           {page.heroSubtext && (
-            <p className="text-base md:text-lg max-w-2xl mx-auto mb-8 text-white/85">{page.heroSubtext}</p>
-          )}
-          {page.heroImage && (
-            <img src={page.heroImage} alt={page.title} className="mx-auto mb-8 rounded-2xl shadow-2xl max-h-80 object-cover" loading="lazy" />
-          )}
-          {page.ctaText && (
-            <button
-              onClick={handleCta}
-              data-track="cta-hero"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-lg bg-white text-[#0a0a1a] hover:scale-105 transition-transform"
-              style={{ color: accent }}
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.12 }}
+              className="text-base md:text-lg max-w-2xl mx-auto mb-9 text-white/85 leading-relaxed"
             >
-              {page.ctaText} <FiArrowRight />
-            </button>
+              {page.heroSubtext}
+            </motion.p>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.18 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
+          >
+            {page.ctaText && (
+              <button
+                onClick={handleCta}
+                data-track="cta-hero"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-lg bg-white shadow-lg hover:scale-105 hover:shadow-xl transition-all"
+                style={{ color: accent }}
+              >
+                {page.ctaText} <FiArrowRight />
+              </button>
+            )}
+          </motion.div>
+
+          {page.heroImage && (
+            <motion.img
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.24 }}
+              src={page.heroImage}
+              alt={page.title}
+              className="mx-auto rounded-3xl shadow-2xl ring-1 ring-white/15 max-h-80 object-cover"
+              loading="lazy"
+            />
+          )}
+
+          {/* trust badges (dinamis dari admin) */}
+          {page.trustBadges && page.trustBadges.length > 0 && (
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+              {page.trustBadges.map((b, i) => {
+                const Icon = ICONS[b.icon] || FiCheck;
+                return (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur text-xs font-medium ring-1 ring-white/15"
+                  >
+                    <Icon className="text-sm" /> {b.label}
+                  </span>
+                );
+              })}
+            </div>
           )}
         </div>
       </section>
@@ -108,30 +253,65 @@ export default function LandingPage({ initialData }) {
         <SectionRenderer key={i} section={s} />
       ))}
 
-      {/* CTA MIDDLE */}
-      {page.ctaText && (
-        <div className="max-w-3xl mx-auto px-6 py-10 text-center">
-          <button
-            onClick={handleCta}
-            data-track="cta-bottom"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-lg text-white hover:scale-105 transition-transform"
-            style={{ background: accent }}
+      {/* CTA BAND (dinamis dari admin) */}
+      {page.ctaText && (page.ctaBandHeading || page.ctaBandText) && (
+        <div className="px-6 py-12">
+          <div
+            className="max-w-4xl mx-auto rounded-3xl px-8 py-10 text-center text-white shadow-xl"
+            style={{ background: `linear-gradient(135deg, ${accent}, #07142b)` }}
           >
-            {page.ctaText} <FiArrowRight />
-          </button>
+            <FiAward className="mx-auto text-4xl mb-3 text-white/90" />
+            {page.ctaBandHeading && (
+              <h3 className="text-2xl md:text-3xl font-bold mb-2">{page.ctaBandHeading}</h3>
+            )}
+            {page.ctaBandText && (
+              <p className="text-white/80 mb-6 max-w-xl mx-auto">{page.ctaBandText}</p>
+            )}
+            <button
+              onClick={handleCta}
+              data-track="cta-bottom"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-lg bg-white hover:scale-105 transition-transform"
+              style={{ color: accent }}
+            >
+              {page.ctaText} <FiArrowRight />
+            </button>
+          </div>
         </div>
       )}
 
       {/* LEAD FORM */}
       {page.formEnabled && (
         <section className="max-w-xl mx-auto px-6 py-12">
-          <div className="bg-[#f5f5f7] dark:bg-slate-800/60 rounded-3xl p-8">
-            <h2 className="text-2xl font-bold mb-2 text-[#1d1d1f] dark:text-white">Tertarik? Hubungi kami</h2>
-            <p className="text-sm text-[#6e6e73] dark:text-slate-300 mb-6">Isi form, tim kami akan segera menghubungi Anda.</p>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="relative bg-white dark:bg-slate-800/70 rounded-3xl p-8 shadow-xl ring-1 ring-black/5 dark:ring-white/10"
+          >
+            {page.formTitle && (
+              <div
+                className="absolute -top-5 left-8 inline-flex items-center gap-2 px-4 py-2 rounded-full text-white text-sm font-semibold shadow-lg"
+                style={{ background: accent }}
+              >
+                <FiSend /> {page.formTitle}
+              </div>
+            )}
+            <h2 className="text-2xl font-bold mt-3 mb-2 text-[#1d1d1f] dark:text-white">
+              {page.formTitle || "Tertarik? Hubungi kami"}
+            </h2>
+            <p className="text-sm text-[#6e6e73] dark:text-slate-300 mb-6">
+              {page.formSubtext || "Isi form, tim kami akan segera menghubungi Anda."}
+            </p>
             {sent ? (
-              <div className="text-center py-8">
-                <FiCheck className="mx-auto text-4xl text-green-600 dark:text-green-400 mb-3" />
+              <div className="text-center py-10">
+                <div
+                  className="mx-auto w-16 h-16 rounded-full flex items-center justify-center text-white mb-4"
+                  style={{ background: "linear-gradient(135deg, #16a34a, #15803d)" }}
+                >
+                  <FiCheck className="text-3xl" />
+                </div>
                 <p className="font-semibold text-[#1d1d1f] dark:text-white">Terima kasih! Pesan Anda terkirim.</p>
+                <p className="text-sm text-[#6e6e73] dark:text-slate-400 mt-1">Tim kami akan menghubungi Anda secepatnya.</p>
               </div>
             ) : (
               <form data-track-form="lead" onSubmit={submitForm} className="space-y-4">
@@ -141,7 +321,7 @@ export default function LandingPage({ initialData }) {
                   placeholder="Nama Anda"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-[#1d1d1f] dark:text-white outline-none focus:ring-2"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#fafafa] dark:bg-slate-900 text-[#1d1d1f] dark:text-white outline-none focus:ring-2"
                   style={{ "--tw-ring-color": accent }}
                 />
                 <input
@@ -150,7 +330,7 @@ export default function LandingPage({ initialData }) {
                   placeholder="No. WhatsApp / HP"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-[#1d1d1f] dark:text-white outline-none focus:ring-2"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#fafafa] dark:bg-slate-900 text-[#1d1d1f] dark:text-white outline-none focus:ring-2"
                   style={{ "--tw-ring-color": accent }}
                 />
                 <textarea
@@ -158,20 +338,23 @@ export default function LandingPage({ initialData }) {
                   rows="3"
                   value={form.message}
                   onChange={(e) => setForm({ ...form, message: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-[#1d1d1f] dark:text-white outline-none focus:ring-2"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-[#fafafa] dark:bg-slate-900 text-[#1d1d1f] dark:text-white outline-none focus:ring-2"
                   style={{ "--tw-ring-color": accent }}
                 />
                 <button
                   type="submit"
                   disabled={sending}
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-white disabled:opacity-60"
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-white shadow-md hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-60 disabled:hover:scale-100"
                   style={{ background: accent }}
                 >
                   <FiSend /> {sending ? "Mengirim…" : "Kirim Pesan"}
                 </button>
+                <p className="text-xs text-center text-[#6e6e73] dark:text-slate-500">
+                  Data Anda aman dan hanya digunakan untuk follow-up penawaran.
+                </p>
               </form>
             )}
-          </div>
+          </motion.div>
         </section>
       )}
     </main>
