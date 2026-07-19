@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
   FiArrowRight, FiCheck, FiSend, FiStar, FiShield, FiClock,
   FiTruck, FiAward, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiMapPin,
+  FiChevronLeft, FiChevronRight,
 } from "react-icons/fi";
 
 const fadeUp = {
@@ -19,6 +20,152 @@ const container = {
 const ICONS = {
   FiShield, FiClock, FiTruck, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiMapPin, FiAward, FiCheck, FiStar,
 };
+
+function TestimonialSlider({ page }) {
+  const items = page.testimonials || [];
+  const [idx, setIdx] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  useEffect(() => {
+    if (paused || items.length <= 1) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % items.length), 4500);
+    return () => clearInterval(t);
+  }, [paused, items.length]);
+
+  if (items.length === 0) return null;
+  const accent = page.accentColor || "#0A4DA6";
+  const go = (n) => setIdx((n + items.length) % items.length);
+
+  return (
+    <motion.section
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true }}
+      className="max-w-3xl mx-auto px-6 py-12"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      <h2 className="text-2xl md:text-3xl font-bold mb-8 text-center text-[#1d1d1f] dark:text-white">
+        Apa Kata Pelanggan Kami
+      </h2>
+      <div className="relative">
+        <div className="overflow-hidden rounded-3xl">
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${idx * 100}%)` }}
+          >
+            {items.map((t, i) => (
+              <div key={i} className="w-full shrink-0 px-1">
+                <div className="bg-white dark:bg-slate-800/60 rounded-3xl p-8 shadow-sm ring-1 ring-black/5 dark:ring-white/10 text-center">
+                  {t.avatar ? (
+                    <img src={t.avatar} alt={t.name} className="w-16 h-16 rounded-full mx-auto mb-4 object-cover" loading="lazy" />
+                  ) : (
+                    <div
+                      className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-xl font-bold"
+                      style={{ background: `linear-gradient(135deg, ${accent}, #0a0a1a)` }}
+                    >
+                      {(t.name || "?").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  {t.rating > 0 && (
+                    <div className="flex items-center justify-center gap-0.5 mb-3 text-yellow-400">
+                      {Array.from({ length: 5 }).map((_, s) => (
+                        <FiStar key={s} className={s < t.rating ? "text-yellow-400" : "text-slate-300 dark:text-slate-600"} />
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-[#1d1d1f] dark:text-white leading-relaxed mb-4" style={{ whiteSpace: "pre-line" }}>
+                    “{t.quote}”
+                  </p>
+                  <p className="font-semibold text-[#1d1d1f] dark:text-white">{t.name}</p>
+                  {t.role && <p className="text-sm text-[#6e6e73] dark:text-slate-400">{t.role}</p>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {items.length > 1 && (
+          <>
+            <button
+              onClick={() => go(idx - 1)}
+              aria-label="Sebelumnya"
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 dark:bg-slate-700 shadow flex items-center justify-center text-[#1d1d1f] dark:text-white hover:scale-110 transition"
+            >
+              <FiChevronLeft />
+            </button>
+            <button
+              onClick={() => go(idx + 1)}
+              aria-label="Berikutnya"
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 dark:bg-slate-700 shadow flex items-center justify-center text-[#1d1d1f] dark:text-white hover:scale-110 transition"
+            >
+              <FiChevronRight />
+            </button>
+            <div className="flex items-center justify-center gap-2 mt-5">
+              {items.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setIdx(i)}
+                  aria-label={`Testimoni ${i + 1}`}
+                  className={`w-2.5 h-2.5 rounded-full transition-all ${i === idx ? "bg-[#0A4DA6] w-6" : "bg-slate-300 dark:bg-slate-600"}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </motion.section>
+  );
+}
+
+function MapSection({ page }) {
+  if (!page.mapEnabled) return null;
+  const hasCoords = page.mapLat != null && page.mapLng != null;
+  const q = hasCoords ? `${page.mapLat},${page.mapLng}` : encodeURIComponent(page.mapAddress || "");
+  if (!q) return null;
+  const src = `https://maps.google.com/maps?q=${q}&z=15&output=embed`;
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
+  return (
+    <motion.section
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true }}
+      className="max-w-4xl mx-auto px-6 py-12"
+    >
+      <h2 className="text-2xl md:text-3xl font-bold mb-2 text-center text-[#1d1d1f] dark:text-white">Lokasi Kami</h2>
+      {page.mapAddress && (
+        <p className="text-center text-[#6e6e73] dark:text-slate-300 mb-5 flex items-center justify-center gap-2">
+          <FiMapPin /> {page.mapAddress}
+        </p>
+      )}
+      <div className="rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5 dark:ring-white/10">
+        <iframe
+          title="Lokasi usaha"
+          src={src}
+          width="100%"
+          height="360"
+          style={{ border: 0 }}
+          loading="lazy"
+          allowFullScreen
+          referrerPolicy="no-referrer-when-downgrade"
+        />
+      </div>
+      <div className="text-center mt-4">
+        <a
+          href={mapsUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-white text-sm hover:scale-105 transition-transform"
+          style={{ background: page.accentColor || "#0A4DA6" }}
+        >
+          <FiMapPin /> Buka di Google Maps
+        </a>
+      </div>
+    </motion.section>
+  );
+}
 
 function SectionRenderer({ section }) {
   if (!section) return null;
@@ -252,6 +399,12 @@ export default function LandingPage({ initialData }) {
       {(page.sections || []).map((s, i) => (
         <SectionRenderer key={i} section={s} />
       ))}
+
+      {/* MAP / LOCATION */}
+      <MapSection page={page} />
+
+      {/* TESTIMONI SLIDER */}
+      <TestimonialSlider page={page} />
 
       {/* CTA BAND (dinamis dari admin) */}
       {page.ctaText && (page.ctaBandHeading || page.ctaBandText) && (

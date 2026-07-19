@@ -342,6 +342,13 @@ export async function initSchema() {
   await ensureColumn("landing_pages", "cta_band_text", "TEXT");
   await ensureColumn("landing_pages", "form_title", "VARCHAR(160) DEFAULT NULL");
   await ensureColumn("landing_pages", "form_subtext", "TEXT");
+
+  // Landing page map / location.
+  await ensureColumn("landing_pages", "map_enabled", "TINYINT(1) DEFAULT 0");
+  await ensureColumn("landing_pages", "map_lat", "DOUBLE DEFAULT NULL");
+  await ensureColumn("landing_pages", "map_lng", "DOUBLE DEFAULT NULL");
+  await ensureColumn("landing_pages", "map_address", "VARCHAR(255) DEFAULT NULL");
+  await ensureColumn("landing_pages", "testimonials_json", "TEXT");
 }
 
 async function ensureColumn(table, column, definition) {

@@ -2134,6 +2134,11 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
     formTitle: page?.formTitle || "",
     formSubtext: page?.formSubtext || "",
     formEnabled: page?.formEnabled || false,
+    mapEnabled: page?.mapEnabled || false,
+    mapLat: page?.mapLat ?? "",
+    mapLng: page?.mapLng ?? "",
+    mapAddress: page?.mapAddress || "",
+    testimonials: page?.testimonials || [],
     status: page?.status || "draft",
   });
   const [saving, setSaving] = useState(false);
@@ -2298,6 +2303,59 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
           <label className={labelCls}>Subtext Form</label>
           <input className={inputCls} value={form.formSubtext} onChange={(e) => update("formSubtext", e.target.value)} placeholder="Isi form, tim kami akan menghubungi Anda." />
         </div>
+      </div>
+
+      {/* Lokasi / Peta */}
+      <div className="mt-6">
+        <div className="flex items-center gap-2 mb-3">
+          <input type="checkbox" id="mapEnabled" checked={form.mapEnabled} onChange={(e) => update("mapEnabled", e.target.checked)} />
+          <label htmlFor="mapEnabled" className="text-sm font-semibold text-[#1d1d1f] dark:text-white">Tampilkan Peta Lokasi Usaha</label>
+        </div>
+        {form.mapEnabled && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className={labelCls}>Latitude</label>
+              <input className={inputCls} value={form.mapLat} onChange={(e) => update("mapLat", e.target.value)} placeholder="-7.3329" />
+            </div>
+            <div>
+              <label className={labelCls}>Longitude</label>
+              <input className={inputCls} value={form.mapLng} onChange={(e) => update("mapLng", e.target.value)} placeholder="110.5048" />
+            </div>
+            <div>
+              <label className={labelCls}>Alamat</label>
+              <input className={inputCls} value={form.mapAddress} onChange={(e) => update("mapAddress", e.target.value)} placeholder="Jl. Kartini No.108, Salatiga" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Testimoni Pelanggan */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-sm font-semibold text-[#1d1d1f] dark:text-white">Testimoni Pelanggan (slider)</h4>
+          <button onClick={() => update("testimonials", [...form.testimonials, { name: "", role: "", quote: "", avatar: "", rating: 5 }])} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700">
+            <FiPlus /> Tambah Testimoni
+          </button>
+        </div>
+        {form.testimonials.map((t, i) => (
+          <div key={i} className="mb-3 p-3 rounded-xl border border-[#e5e5e5] dark:border-slate-700 bg-[#fafafa] dark:bg-slate-800/40 grid grid-cols-1 md:grid-cols-2 gap-2">
+            <input className={inputCls} value={t.name || ""} onChange={(e) => update("testimonials", form.testimonials.map((x, idx) => idx === i ? { ...x, name: e.target.value } : x))} placeholder="Nama pelanggan" />
+            <input className={inputCls} value={t.role || ""} onChange={(e) => update("testimonials", form.testimonials.map((x, idx) => idx === i ? { ...x, role: e.target.value } : x))} placeholder="Peran / usaha" />
+            <input className={inputCls} value={t.avatar || ""} onChange={(e) => update("testimonials", form.testimonials.map((x, idx) => idx === i ? { ...x, avatar: e.target.value } : x))} placeholder="URL avatar (opsional)" />
+            <div className="flex items-center gap-2">
+              <label className={labelCls}>Rating</label>
+              <select className={inputCls} value={t.rating || 0} onChange={(e) => update("testimonials", form.testimonials.map((x, idx) => idx === i ? { ...x, rating: Number(e.target.value) } : x))}>
+                {[0,1,2,3,4,5].map((r) => <option key={r} value={r}>{r} bintang</option>)}
+              </select>
+            </div>
+            <div className="md:col-span-2">
+              <textarea className={inputCls} rows="2" value={t.quote || ""} onChange={(e) => update("testimonials", form.testimonials.map((x, idx) => idx === i ? { ...x, quote: e.target.value } : x))} placeholder="Kutipan testimoni" />
+            </div>
+            <div className="md:col-span-2 text-right">
+              <button onClick={() => update("testimonials", form.testimonials.filter((_, idx) => idx !== i))} className="text-xs text-red-600 hover:underline">Hapus</button>
+            </div>
+          </div>
+        ))}
       </div>
 
       <div className="mt-6">

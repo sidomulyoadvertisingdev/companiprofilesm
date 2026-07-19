@@ -151,6 +151,11 @@ function mapLandingPage(r) {
     trustBadges: JSON.parse(r.trust_badges_json || "[]"),
     ctaBandHeading: r.cta_band_heading, ctaBandText: r.cta_band_text,
     formTitle: r.form_title, formSubtext: r.form_subtext,
+    mapEnabled: !!r.map_enabled,
+    mapLat: r.map_lat != null ? Number(r.map_lat) : null,
+    mapLng: r.map_lng != null ? Number(r.map_lng) : null,
+    mapAddress: r.map_address,
+    testimonials: JSON.parse(r.testimonials_json || "[]"),
     formEnabled: !!r.form_enabled,
     status: r.status,
     createdAt: r.created_at, updatedAt: r.updated_at,
@@ -183,9 +188,12 @@ export async function upsertLandingPage(data) {
     badgeText, heroHeadline, heroSubtext, heroImage, ctaText, ctaTarget,
     accentColor, sections, trustBadges, ctaBandHeading, ctaBandText,
     formTitle, formSubtext, formEnabled, status,
+    mapEnabled, mapLat, mapLng, mapAddress,
+    testimonials,
   } = data;
   const sectionsJson = JSON.stringify(sections || []);
   const trustBadgesJson = JSON.stringify(trustBadges || []);
+  const testimonialsJson = JSON.stringify(testimonials || []);
   const v = {
     slug, title,
     metaTitle: metaTitle || null,
@@ -203,19 +211,24 @@ export async function upsertLandingPage(data) {
     ctaBandText: ctaBandText || null,
     formTitle: formTitle || null,
     formSubtext: formSubtext || null,
+    mapEnabled: mapEnabled ? 1 : 0,
+    mapLat: mapLat != null && mapLat !== "" ? Number(mapLat) : null,
+    mapLng: mapLng != null && mapLng !== "" ? Number(mapLng) : null,
+    mapAddress: mapAddress || null,
+    testimonialsJson,
     formEnabled: formEnabled ? 1 : 0,
     status: status || "draft",
   };
   if (id) {
     await db.execute(
-      `UPDATE landing_pages SET slug=?, title=?, meta_title=?, meta_description=?, badge_text=?, hero_headline=?, hero_subtext=?, hero_image=?, cta_text=?, cta_target=?, accent_color=?, sections_json=?, trust_badges_json=?, cta_band_heading=?, cta_band_text=?, form_title=?, form_subtext=?, form_enabled=?, status=? WHERE id=?`,
-      [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.formEnabled, v.status, id]
+      `UPDATE landing_pages SET slug=?, title=?, meta_title=?, meta_description=?, badge_text=?, hero_headline=?, hero_subtext=?, hero_image=?, cta_text=?, cta_target=?, accent_color=?, sections_json=?, trust_badges_json=?, cta_band_heading=?, cta_band_text=?, form_title=?, form_subtext=?, map_enabled=?, map_lat=?, map_lng=?, map_address=?, testimonials_json=?, form_enabled=?, status=? WHERE id=?`,
+      [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.mapEnabled, v.mapLat, v.mapLng, v.mapAddress, v.testimonialsJson, v.formEnabled, v.status, id]
     );
     return id;
   }
   const [res] = await db.execute(
-    `INSERT INTO landing_pages (slug, title, meta_title, meta_description, badge_text, hero_headline, hero_subtext, hero_image, cta_text, cta_target, accent_color, sections_json, trust_badges_json, cta_band_heading, cta_band_text, form_title, form_subtext, form_enabled, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-    [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.formEnabled, v.status]
+    `INSERT INTO landing_pages (slug, title, meta_title, meta_description, badge_text, hero_headline, hero_subtext, hero_image, cta_text, cta_target, accent_color, sections_json, trust_badges_json, cta_band_heading, cta_band_text, form_title, form_subtext, map_enabled, map_lat, map_lng, map_address, testimonials_json, form_enabled, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.mapEnabled, v.mapLat, v.mapLng, v.mapAddress, v.testimonialsJson, v.formEnabled, v.status]
   );
   return res.insertId;
 }
