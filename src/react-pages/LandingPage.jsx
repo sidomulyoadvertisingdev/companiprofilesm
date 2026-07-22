@@ -6,6 +6,10 @@ import {
   FiChevronLeft, FiChevronRight,
 } from "react-icons/fi";
 
+import { CardContainer, CardBody, CardItem } from "../components/ui/3d-card.jsx";
+import { HeroParallax } from "../components/ui/hero-parallax.jsx";
+import { getProducts } from "../lib/content.js";
+
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
@@ -266,12 +270,40 @@ function SectionRenderer({ section }) {
   return null;
 }
 
-export default function LandingPage({ initialData }) {
+export default function LandingPage({ initialData, productsData }) {
   const page = initialData || {};
   const accent = page.accentColor || "#0A4DA6";
+  const [products, setProducts] = useState(productsData || []);
   const [form, setForm] = useState({ name: "", phone: "", message: "" });
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (!productsData || productsData.length === 0) {
+      getProducts().then((res) => {
+        if (res && res.length > 0) {
+          setProducts(
+            res.map((p) => ({
+              title: p.title,
+              category: p.category,
+              priceText: p.priceText,
+              thumbnail: p.image || "/catalog-1.webp",
+              link: "/catalog",
+            }))
+          );
+        }
+      });
+    }
+  }, [productsData]);
+
+  const heroProducts = products.length > 0 ? products : [
+    { title: page.title || "Hero Product", thumbnail: page.heroImage || "/catalog-1.webp", link: page.ctaTarget || "#" },
+    { title: "Neon Box Akrilik LED", thumbnail: "/catalog-1.webp", link: "/catalog" },
+    { title: "Banner Flexi High Res", thumbnail: "/catalog-2.webp", link: "/catalog" },
+    { title: "Huruf Timbul Stainless", thumbnail: "/catalog-3.webp", link: "/catalog" },
+    { title: "Buku & Brosur Profil", thumbnail: "/catalog-4.webp", link: "/catalog" },
+    { title: "Stiker & Label Custom", thumbnail: "/catalog-5.webp", link: "/catalog" },
+  ];
 
   function handleCta() {
     if (page.ctaTarget) {
@@ -297,103 +329,35 @@ export default function LandingPage({ initialData }) {
 
   return (
     <main className="min-h-screen bg-white dark:bg-[#0a0a1a]">
-      {/* HERO */}
-      <section
-        className="relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${accent} 0%, #07142b 100%)` }}
-      >
-        {/* decorative blobs */}
-        <div className="pointer-events-none absolute -top-24 -left-24 w-72 h-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-32 -right-16 w-80 h-80 rounded-full bg-white/10 blur-3xl" />
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px)",
-            backgroundSize: "44px 44px",
-          }}
-        />
+      {/* HERO PARALLAX */}
+      <HeroParallax
+        title={page.heroHeadline}
+        subtitle={page.heroSubtext}
+        badgeText={page.badgeText}
+        ctaText={page.ctaText}
+        ctaLink={page.ctaTarget}
+        accentColor={accent}
+        products={heroProducts}
+      />
 
-        <div className="relative max-w-5xl mx-auto px-6 py-20 md:py-28 text-center text-white">
-          {page.badgeText && (
-            <motion.span
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 backdrop-blur text-xs font-medium mb-6 ring-1 ring-white/20"
-            >
-              <FiStar className="text-yellow-300" /> {page.badgeText}
-            </motion.span>
-          )}
-
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.05 }}
-            className="text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-5 drop-shadow"
-          >
-            {page.heroHeadline}
-          </motion.h1>
-
-          {page.heroSubtext && (
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.12 }}
-              className="text-base md:text-lg max-w-2xl mx-auto mb-9 text-white/85 leading-relaxed"
-            >
-              {page.heroSubtext}
-            </motion.p>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.18 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-10"
-          >
-            {page.ctaText && (
-              <button
-                onClick={handleCta}
-                data-track="cta-hero"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-lg bg-white shadow-lg hover:scale-105 hover:shadow-xl transition-all"
-                style={{ color: accent }}
-              >
-                {page.ctaText} <FiArrowRight />
-              </button>
-            )}
-          </motion.div>
-
-          {page.heroImage && (
-            <motion.img
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.24 }}
-              src={page.heroImage}
-              alt={page.title}
-              className="mx-auto rounded-3xl shadow-2xl ring-1 ring-white/15 max-h-80 object-cover"
-              loading="lazy"
-            />
-          )}
-
-          {/* trust badges (dinamis dari admin) */}
-          {page.trustBadges && page.trustBadges.length > 0 && (
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-              {page.trustBadges.map((b, i) => {
-                const Icon = ICONS[b.icon] || FiCheck;
-                return (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur text-xs font-medium ring-1 ring-white/15"
-                  >
-                    <Icon className="text-sm" /> {b.label}
-                  </span>
-                );
-              })}
-            </div>
-          )}
+      {/* TRUST BADGES */}
+      {page.trustBadges && page.trustBadges.length > 0 && (
+        <div className="bg-slate-900/90 backdrop-blur py-6 px-6 border-y border-white/10 relative z-30">
+          <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-center gap-4 text-white">
+            {page.trustBadges.map((b, i) => {
+              const Icon = ICONS[b.icon] || FiCheck;
+              return (
+                <span
+                  key={i}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur text-xs font-semibold ring-1 ring-white/15"
+                >
+                  <Icon className="text-sm text-blue-400" /> {b.label}
+                </span>
+              );
+            })}
+          </div>
         </div>
-      </section>
+      )}
 
       {/* SECTIONS */}
       {(page.sections || []).map((s, i) => (

@@ -42,7 +42,7 @@ export default function CatalogPage({ initialData, siteData }) {
 
       <section className="py-24 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch">
             {products.map((item, i) => (
               <motion.div
                 key={item.id}
@@ -50,37 +50,62 @@ export default function CatalogPage({ initialData, siteData }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: i * 0.08 }}
                 viewport={{ once: true }}
-                className="group rounded-3xl bg-white dark:bg-slate-800 overflow-hidden shadow-sm hover:shadow-lg transition-colors"
+                className="h-full flex flex-col"
               >
-                <div className="overflow-hidden">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full aspect-[4/3] object-cover transition-transform duration-500 group-hover:scale-[1.05]"
-                  />
-                </div>
-                <div className="p-6">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-blue-700">
-                    {item.category}
-                  </span>
-                  <h3 className="text-xl font-semibold text-[#1d1d1f] dark:text-white mt-1">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm text-[#6e6e73] dark:text-slate-400 mt-2 leading-relaxed">
-                    {item.shortDesc}
-                  </p>
-                  <p className="text-sm font-semibold text-[#1d1d1f] dark:text-slate-200 mt-4">
-                    {item.priceText}
-                  </p>
-                  <a
-                    href={wa}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-track="cta-tanya-produk-catalog"
-                    className="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-blue-800 dark:text-blue-400 hover:gap-2 transition-all"
-                  >
-                    Tanya Produk <FiArrowRight />
-                  </a>
+                <div className="flex flex-col h-full rounded-3xl border border-[#e5e5e5] dark:border-slate-700/80 overflow-hidden shadow-sm hover:shadow-xl hover:border-blue-500/30 transition-all duration-300 bg-white dark:bg-slate-800/50">
+                  <div className="overflow-hidden aspect-[4/3] bg-slate-100 dark:bg-slate-900 relative">
+                    <img
+                      src={item.image || "/catalog-1.webp"}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="p-6 flex flex-col flex-1 justify-between">
+                    <div>
+                      <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 block mb-1">
+                        {item.category || "Produk"}
+                      </span>
+                      <h3
+                        className="text-lg font-bold text-[#1d1d1f] dark:text-white line-clamp-2 leading-snug min-h-[3rem]"
+                        title={item.title}
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {item.title}
+                      </h3>
+                      <p
+                        className="text-sm text-[#6e6e73] dark:text-slate-400 mt-2 leading-relaxed line-clamp-2 overflow-hidden h-[2.6rem]"
+                        title={item.shortDesc}
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {item.shortDesc}
+                      </p>
+                    </div>
+                    <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700/50 flex flex-col gap-2">
+                      <p className="text-sm font-bold text-[#1d1d1f] dark:text-slate-200">
+                        {item.priceText}
+                      </p>
+                      <a
+                        href={wa}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-track="cta-tanya-produk-catalog"
+                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-700 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:gap-2.5 transition-all w-fit"
+                      >
+                        Tanya Produk <FiArrowRight />
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             ))}
