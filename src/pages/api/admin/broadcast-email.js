@@ -52,6 +52,21 @@ function resolveUrl(baseUrl, path) {
   return `${cleanBase}${cleanPath}`;
 }
 
+function sanitizeBodyHtml(html) {
+  if (!html) return "";
+  return html
+    .replace(/#f1f5f9/g, "#000000")
+    .replace(/#cbd5e1/g, "#000000")
+    .replace(/#94a3b8/g, "#000000")
+    .replace(/#0f172a/g, "#000000")
+    .replace(/#334155/g, "#000000")
+    .replace(/#4b5563/g, "#000000")
+    .replace(/#1e293b/g, "#f8fafc")
+    .replace(/rgba\(255,\s*255,\s*255,\s*0\.0[86]\)/gi, "#e2e8f0")
+    .replace(/#60a5fa/g, "#2563eb")
+    .replace(/#34d399/g, "#10b981");
+}
+
 function renderTemplate(template, user, site, siteUrl) {
   const logoSrc = resolveUrl(siteUrl, template.logo_url || site.logo);
   const accent = template.accent_color || "#2563eb";
@@ -98,7 +113,7 @@ function renderTemplate(template, user, site, siteUrl) {
             <td style="padding:32px;background-color:#ffffff;">
               <p style="color:#000000;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${user.name || "User"},</p>
               <div style="color:#000000;font-size:14px;line-height:1.6;margin:0 0 24px;">
-                ${template.body_html || ""}
+                ${sanitizeBodyHtml(template.body_html)}
               </div>
 
               ${template.button_text && template.button_url ? `

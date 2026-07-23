@@ -59,6 +59,21 @@ function resolveUrl(baseUrl, path) {
   return `${cleanBase}${cleanPath}`;
 }
 
+function sanitizeBodyHtml(html) {
+  if (!html) return "";
+  return html
+    .replace(/#f1f5f9/g, "#000000")
+    .replace(/#cbd5e1/g, "#000000")
+    .replace(/#94a3b8/g, "#000000")
+    .replace(/#0f172a/g, "#000000")
+    .replace(/#334155/g, "#000000")
+    .replace(/#4b5563/g, "#000000")
+    .replace(/#1e293b/g, "#f8fafc")
+    .replace(/rgba\(255,\s*255,\s*255,\s*0\.0[86]\)/gi, "#e2e8f0")
+    .replace(/#60a5fa/g, "#2563eb")
+    .replace(/#34d399/g, "#10b981");
+}
+
 async function getSiteConfig() {
   const [rows] = await db.execute("SELECT * FROM site_config WHERE id = 1");
   const r = rows[0];
@@ -236,7 +251,7 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
             <td style="padding:32px;background-color:#ffffff;">
               <p style="color:#000000;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${name || "User"},</p>
               <div style="color:#000000;font-size:14px;line-height:1.6;margin:0 0 24px;">
-                ${bodyWithCode}
+                ${sanitizeBodyHtml(bodyWithCode)}
               </div>
 
               ${tpl.button_text && tpl.button_url ? `
