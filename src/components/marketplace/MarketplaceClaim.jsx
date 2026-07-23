@@ -24,11 +24,13 @@ function TurnstileWidget({ siteKey, onVerify }) {
     if (window.turnstile) {
       renderWidget();
     } else {
-      const script = document.createElement("script");
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.onload = renderWidget;
-      document.head.appendChild(script);
+      const checkInterval = setInterval(() => {
+        if (window.turnstile) {
+          clearInterval(checkInterval);
+          renderWidget();
+        }
+      }, 100);
+      return () => clearInterval(checkInterval);
     }
 
     return () => {
