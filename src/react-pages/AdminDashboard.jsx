@@ -1784,7 +1784,6 @@ function EmailTemplatesManager({ templates, onChanged }) {
   const [isCreating, setIsCreating] = useState(false);
   const [broadcasting, setBroadcasting] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState(null);
 
   const emptyTemplate = {
     name: "", type: "marketing", subject: "",
@@ -1837,6 +1836,7 @@ function EmailTemplatesManager({ templates, onChanged }) {
       subject: tpl.subject,
       headerText: tpl.header_text,
       logoUrl: tpl.logo_url,
+      bannerImage: tpl.banner_image,
       description: tpl.description,
       bodyHtml: tpl.body_html,
       footerText: tpl.footer_text,

@@ -149,10 +149,29 @@ function renderTemplate(template, user, site, siteUrl) {
 }
 
 export async function POST({ request }) {
-  const { templateId, recipientFilter, customEmails, subject, headerText, logoUrl, description, bodyHtml, footerText, accentColor, buttonText, buttonUrl } = await request.json();
+  const body = await request.json();
   const siteUrl = getSiteUrl(request);
 
-  if (!subject || !bodyHtml) {
+  const {
+    templateId,
+    recipientFilter,
+    customEmails,
+    subject,
+    headerText,
+    logoUrl,
+    bannerImage,
+    description,
+    bodyHtml,
+    footerText,
+    accentColor,
+    buttonText,
+    buttonUrl
+  } = body;
+
+  const finalSubject = subject || body.subject;
+  const finalBodyHtml = bodyHtml || body.body_html;
+
+  if (!finalSubject || !finalBodyHtml) {
     return new Response(JSON.stringify({ message: "Subject dan body wajib diisi" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },
@@ -169,14 +188,15 @@ export async function POST({ request }) {
 
   // Build template object
   const template = {
-    header_text: headerText || "",
-    logo_url: logoUrl || "",
-    description: description || "",
-    body_html: bodyHtml || "",
-    footer_text: footerText || "",
-    accent_color: accentColor || "#2563eb",
-    button_text: buttonText || "",
-    button_url: buttonUrl || "",
+    header_text: headerText || body.header_text || "",
+    logo_url: logoUrl || body.logo_url || "",
+    banner_image: bannerImage || body.banner_image || "",
+    description: description || body.description || "",
+    body_html: finalBodyHtml || "",
+    footer_text: footerText || body.footer_text || "",
+    accent_color: accentColor || body.accent_color || "#2563eb",
+    button_text: buttonText || body.button_text || "",
+    button_url: buttonUrl || body.button_url || "",
   };
 
   // Get recipients
