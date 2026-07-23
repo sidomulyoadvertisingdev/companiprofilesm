@@ -21,6 +21,43 @@ function getTransporter() {
   });
 }
 
+function getSiteUrl(request) {
+  let siteUrl = process.env.SITE_URL;
+
+  if (!siteUrl) {
+    const reqUrl = new URL(request.url);
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || reqUrl.host;
+    const cleanHost = host.split(":")[0];
+    const isLocal = cleanHost === "localhost" || cleanHost === "127.0.0.1" || cleanHost === "::1" || cleanHost === "";
+
+    if (isLocal) {
+      if (import.meta.env.PROD || process.env.NODE_ENV === "production") {
+        siteUrl = "https://sidomulyoproject.com";
+      } else {
+        siteUrl = `${reqUrl.protocol}//${reqUrl.host}`;
+      }
+    } else {
+      const proto = request.headers.get("x-forwarded-proto") || "https";
+      siteUrl = `${proto}://${host}`;
+    }
+  }
+
+  if (siteUrl && siteUrl.endsWith("/")) {
+    siteUrl = siteUrl.slice(0, -1);
+  }
+
+  return siteUrl;
+}
+
+function resolveUrl(baseUrl, path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+
+  const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
 async function getSiteConfig() {
   const [rows] = await db.execute("SELECT * FROM site_config WHERE id = 1");
   const r = rows[0];
@@ -38,9 +75,7 @@ async function getSiteConfig() {
 }
 
 function verificationEmailHTML(code, name, site, siteUrl) {
-  const logoSrc = site.logo
-    ? (site.logo.startsWith("http") ? site.logo : `${siteUrl}${site.logo}`)
-    : "";
+  const logoSrc = resolveUrl(siteUrl, site.logo);
   const addressParts = [site.addressStreet, site.addressCity, site.addressRegion].filter(Boolean).join(", ");
 
   return `
@@ -184,9 +219,7 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
 
   if (tpl) {
     // Use custom template from admin, inject code into body_html
-    const logoSrc = tpl.logo_url
-      ? (tpl.logo_url.startsWith("http") ? tpl.logo_url : `${siteUrl}${tpl.logo_url}`)
-      : (site.logo ? (site.logo.startsWith("http") ? site.logo : `${siteUrl}${site.logo}`) : "");
+    const logoSrc = resolveUrl(siteUrl, tpl.logo_url || site.logo);
     const accent = tpl.accent_color || "#2563eb";
     const bodyWithCode = (tpl.body_html || "").replace(/\{\{code\}\}/g, code).replace(/\{\{name\}\}/g, name || "User");
 
@@ -218,7 +251,7 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="padding:0;">
-                    <img src="${tpl.banner_image.startsWith('http') ? tpl.banner_image : `${siteUrl}${tpl.banner_image}`}" alt="Banner" style="width:100%;display:block;" />
+                    <img src="${resolveUrl(siteUrl, tpl.banner_image)}" alt="Banner" style="width:100%;display:block;" />
                   </td>
                 </tr>
               </table>
@@ -262,9 +295,8 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
 }
 
 export async function POST({ request }) {
-  const { action, userId, email, code, turnstileToken } = await request.json();
-  const reqUrl = new URL(request.url);
-  const siteUrl = process.env.SITE_URL || `${reqUrl.protocol}//${reqUrl.host}`;
+  const { action, email, code, turnstileToken } = await request.json();
+  const siteUrl = getSiteUrl(request);
 
   if (action === "send") {
     if (!email) {

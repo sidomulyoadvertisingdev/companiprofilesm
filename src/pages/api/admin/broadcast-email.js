@@ -15,10 +15,45 @@ function getTransporter() {
   });
 }
 
+function getSiteUrl(request) {
+  let siteUrl = process.env.SITE_URL;
+
+  if (!siteUrl) {
+    const reqUrl = new URL(request.url);
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || reqUrl.host;
+    const cleanHost = host.split(":")[0];
+    const isLocal = cleanHost === "localhost" || cleanHost === "127.0.0.1" || cleanHost === "::1" || cleanHost === "";
+
+    if (isLocal) {
+      if (import.meta.env.PROD || process.env.NODE_ENV === "production") {
+        siteUrl = "https://sidomulyoproject.com";
+      } else {
+        siteUrl = `${reqUrl.protocol}//${reqUrl.host}`;
+      }
+    } else {
+      const proto = request.headers.get("x-forwarded-proto") || "https";
+      siteUrl = `${proto}://${host}`;
+    }
+  }
+
+  if (siteUrl && siteUrl.endsWith("/")) {
+    siteUrl = siteUrl.slice(0, -1);
+  }
+
+  return siteUrl;
+}
+
+function resolveUrl(baseUrl, path) {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+
+  const cleanBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
 function renderTemplate(template, user, site, siteUrl) {
-  const logoSrc = template.logo_url
-    ? (template.logo_url.startsWith("http") ? template.logo_url : `${siteUrl}${template.logo_url}`)
-    : (site.logo ? (site.logo.startsWith("http") ? site.logo : `${siteUrl}${site.logo}`) : "");
+  const logoSrc = resolveUrl(siteUrl, template.logo_url || site.logo);
   const accent = template.accent_color || "#2563eb";
 
   return `
@@ -52,7 +87,7 @@ function renderTemplate(template, user, site, siteUrl) {
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
                 <tr>
                   <td style="padding:0;">
-                    <img src="${template.banner_image.startsWith('http') ? template.banner_image : siteUrl + template.banner_image}" alt="Banner" style="width:100%;display:block;" />
+                    <img src="${resolveUrl(siteUrl, template.banner_image)}" alt="Banner" style="width:100%;display:block;" />
                   </td>
                 </tr>
               </table>
@@ -71,7 +106,7 @@ function renderTemplate(template, user, site, siteUrl) {
                     <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
                       <tr>
                         <td style="background:${accent};border-radius:12px;">
-                          <a href="${template.button_url.startsWith('http') ? template.button_url : siteUrl + template.button_url}" target="_blank" style="display:inline-block;padding:14px 40px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;">
+                          <a href="${resolveUrl(siteUrl, template.button_url)}" target="_blank" style="display:inline-block;padding:14px 40px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;">
                             ${template.button_text} &rarr;
                           </a>
                         </td>
@@ -115,8 +150,7 @@ function renderTemplate(template, user, site, siteUrl) {
 
 export async function POST({ request }) {
   const { templateId, recipientFilter, customEmails, subject, headerText, logoUrl, description, bodyHtml, footerText, accentColor, buttonText, buttonUrl } = await request.json();
-  const reqUrl = new URL(request.url);
-  const siteUrl = process.env.SITE_URL || `${reqUrl.protocol}//${reqUrl.host}`;
+  const siteUrl = getSiteUrl(request);
 
   if (!subject || !bodyHtml) {
     return new Response(JSON.stringify({ message: "Subject dan body wajib diisi" }), {
