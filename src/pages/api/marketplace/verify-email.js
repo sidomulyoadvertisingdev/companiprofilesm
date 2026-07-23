@@ -1,6 +1,7 @@
 import db from "../../../lib/db.js";
 import nodemailer from "nodemailer";
 import { createHash } from "crypto";
+import { verifyTurnstile } from "../../../lib/turnstile.js";
 
 export const prerender = false;
 
@@ -261,7 +262,7 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
 }
 
 export async function POST({ request }) {
-  const { action, userId, email, code } = await request.json();
+  const { action, userId, email, code, turnstileToken } = await request.json();
   const reqUrl = new URL(request.url);
   const siteUrl = process.env.SITE_URL || `${reqUrl.protocol}//${reqUrl.host}`;
 
@@ -269,6 +270,15 @@ export async function POST({ request }) {
     if (!email) {
       return new Response(JSON.stringify({ message: "Email wajib diisi" }), {
         status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const clientIp = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "";
+    const turnstileOk = await verifyTurnstile(turnstileToken, clientIp);
+    if (!turnstileOk) {
+      return new Response(JSON.stringify({ message: "Verifikasi keamanan gagal, silakan coba lagi" }), {
+        status: 403,
         headers: { "Content-Type": "application/json" },
       });
     }

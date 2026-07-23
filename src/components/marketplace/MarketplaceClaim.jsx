@@ -1,10 +1,48 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   FiCheck, FiCopy, FiUser, FiMail, FiPhone,
   FiMapPin, FiLock, FiEye, FiEyeOff, FiLogOut, FiArrowLeft, FiTag,
 } from "react-icons/fi";
 
-export default function MarketplaceClaim() {
+function TurnstileWidget({ siteKey, onVerify }) {
+  const ref = useRef(null);
+  const widgetId = useRef(null);
+
+  useEffect(() => {
+    if (!siteKey || !ref.current) return;
+
+    const renderWidget = () => {
+      if (window.turnstile && ref.current && !widgetId.current) {
+        widgetId.current = window.turnstile.render(ref.current, {
+          sitekey: siteKey,
+          callback: onVerify,
+          theme: "dark",
+        });
+      }
+    };
+
+    if (window.turnstile) {
+      renderWidget();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.onload = renderWidget;
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      if (widgetId.current && window.turnstile) {
+        try { window.turnstile.remove(widgetId.current); } catch {}
+        widgetId.current = null;
+      }
+    };
+  }, [siteKey, onVerify]);
+
+  return <div ref={ref} className="flex justify-center" />;
+}
+
+export default function MarketplaceClaim({ turnstileSiteKey = "" }) {
   const [step, setStep] = useState("register");
   const [pendingEmail, setPendingEmail] = useState("");
 
@@ -24,13 +62,13 @@ export default function MarketplaceClaim() {
   if (step === "result") return <ResultStep />;
   if (step === "claiming") return <ClaimingStep onDone={goResult} onFallback={goRegister} />;
   if (step === "verify") return <EmailVerifyStep email={pendingEmail} onVerified={goClaiming} onBack={goRegister} />;
-  if (step === "login") return <LoginStep onDone={goClaiming} onRegister={goRegister} />;
-  return <RegisterStep onVerified={goVerify} onLogin={goLogin} />;
+  if (step === "login") return <LoginStep onDone={goClaiming} onRegister={goRegister} turnstileSiteKey={turnstileSiteKey} />;
+  return <RegisterStep onVerified={goVerify} onLogin={goLogin} turnstileSiteKey={turnstileSiteKey} />;
 }
 
 /* ── Register ── */
 
-function RegisterStep({ onVerified, onLogin }) {
+function RegisterStep({ onVerified, onLogin, turnstileSiteKey }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", address: "", password: "" });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,6 +76,7 @@ function RegisterStep({ onVerified, onLogin }) {
   const [phase, setPhase] = useState("");
   const [location, setLocation] = useState({ lat: null, lng: null });
   const [locStatus, setLocStatus] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
@@ -62,7 +101,7 @@ function RegisterStep({ onVerified, onLogin }) {
       const regRes = await fetch("/api/marketplace/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, latitude: location.lat, longitude: location.lng }),
+        body: JSON.stringify({ ...form, latitude: location.lat, longitude: location.lng, turnstileToken }),
       });
       const regData = await regRes.json();
       if (!regRes.ok) { setError(regData.message); setLoading(false); return; }
@@ -71,7 +110,7 @@ function RegisterStep({ onVerified, onLogin }) {
       const verifyRes = await fetch("/api/marketplace/verify-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "send", email: form.email }),
+        body: JSON.stringify({ action: "send", email: form.email, turnstileToken }),
       });
       const verifyData = await verifyRes.json();
       if (!verifyRes.ok) { setError(verifyData.message); setLoading(false); return; }
@@ -106,7 +145,13 @@ function RegisterStep({ onVerified, onLogin }) {
         {phase && <p className="text-xs text-blue-400 text-center">Mengirim kode verifikasi...</p>}
         {error && <p className="text-xs text-red-400 text-center">{error}</p>}
 
-        <button type="submit" disabled={loading} className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-50">
+        {turnstileSiteKey && (
+          <div className="py-2">
+            <TurnstileWidget siteKey={turnstileSiteKey} onVerify={setTurnstileToken} />
+          </div>
+        )}
+
+        <button type="submit" disabled={loading || (turnstileSiteKey && !turnstileToken)} className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-50">
           {loading ? "Memproses..." : "Daftar"}
         </button>
       </form>
@@ -306,13 +351,14 @@ function ClaimingStep({ onDone, onFallback }) {
 
 /* ── Login ── */
 
-function LoginStep({ onDone, onRegister }) {
+function LoginStep({ onDone, onRegister, turnstileSiteKey }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [needsVerification, setNeedsVerification] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -323,7 +369,7 @@ function LoginStep({ onDone, onRegister }) {
       const loginRes = await fetch("/api/marketplace/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, turnstileToken }),
       });
       const loginData = await loginRes.json();
 
@@ -373,7 +419,13 @@ function LoginStep({ onDone, onRegister }) {
 
         {error && <p className="text-xs text-red-400 text-center">{error}</p>}
 
-        <button type="submit" disabled={loading} className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-50">
+        {turnstileSiteKey && (
+          <div className="py-2">
+            <TurnstileWidget siteKey={turnstileSiteKey} onVerify={setTurnstileToken} />
+          </div>
+        )}
+
+        <button type="submit" disabled={loading || (turnstileSiteKey && !turnstileToken)} className="w-full py-3 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-400 disabled:opacity-50">
           {loading ? "Memproses..." : "Login"}
         </button>
       </form>

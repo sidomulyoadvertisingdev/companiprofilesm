@@ -1,5 +1,6 @@
 import db from "../../../lib/db.js";
 import { createHash } from "crypto";
+import { verifyTurnstile } from "../../../lib/turnstile.js";
 
 export const prerender = false;
 
@@ -8,10 +9,19 @@ function hashPw(pw) {
 }
 
 export async function POST({ request }) {
-  const { email, password } = await request.json();
+  const { email, password, turnstileToken } = await request.json();
   if (!email || !password) {
     return new Response(JSON.stringify({ message: "Email dan password wajib diisi" }), {
       status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const clientIp = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "";
+  const turnstileOk = await verifyTurnstile(turnstileToken, clientIp);
+  if (!turnstileOk) {
+    return new Response(JSON.stringify({ message: "Verifikasi keamanan gagal, silakan coba lagi" }), {
+      status: 403,
       headers: { "Content-Type": "application/json" },
     });
   }
