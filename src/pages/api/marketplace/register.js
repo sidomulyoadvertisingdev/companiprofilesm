@@ -8,7 +8,7 @@ function hashPw(pw) {
 }
 
 export async function POST({ request }) {
-  const { name, email, phone, address, password } = await request.json();
+  const { name, email, phone, address, password, latitude, longitude } = await request.json();
   if (!name || !email || !phone || !password) {
     return new Response(JSON.stringify({ message: "Nama, email, nomor handphone, dan password wajib diisi" }), {
       status: 400,
@@ -25,8 +25,8 @@ export async function POST({ request }) {
   }
 
   const [result] = await db.execute(
-    "INSERT INTO marketplace_users (name, email, phone, address, password_hash) VALUES (?, ?, ?, ?, ?)",
-    [name, email, phone, address || "", hashPw(password)]
+    "INSERT INTO marketplace_users (name, email, phone, address, password_hash, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [name, email, phone, address || "", hashPw(password), latitude || null, longitude || null]
   );
 
   return new Response(JSON.stringify({ id: result.insertId, message: "Registrasi berhasil" }), {

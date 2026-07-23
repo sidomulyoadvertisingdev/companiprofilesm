@@ -15,7 +15,7 @@ async function send(method, path, body) {
 
 export const post = (path, body) => send("POST", path, body);
 export const put = (path, body) => send("PUT", path, body);
-export const del = (path) => send("DELETE", path);
+export const del = (path, body) => send("DELETE", path, body);
 
 export async function upload(file) {
   const fd = new FormData();

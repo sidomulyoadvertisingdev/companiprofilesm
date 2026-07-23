@@ -13,7 +13,7 @@ import {
   FiTag, FiPercent, FiPlus, FiTrash2,
   FiFileText, FiEdit3, FiSearch, FiCalendar, FiBarChart2, FiMapPin, FiMonitor,
   FiLayout, FiShield, FiClock, FiTruck, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiAward, FiCheck, FiStar,
-  FiSun, FiMoon, FiMail,
+  FiSun, FiMoon, FiMail, FiToggleLeft, FiToggleRight,
 } from "react-icons/fi";
 
 // Icon map for landing page trust badges (editable from admin).
@@ -42,6 +42,8 @@ const TABS = [
   { key: "messages", label: "Pesan Masuk", icon: FiMail, group: "Konten" },
   { key: "marketplace", label: "Kode Redeem", icon: FiTag, group: "Marketplace" },
   { key: "redeem-rules", label: "Aturan Redeem", icon: FiPercent, group: "Marketplace" },
+  { key: "marketplace-users", label: "User Marketplace", icon: FiUsers, group: "Marketplace" },
+  { key: "email-templates", label: "Email Templates", icon: FiMail, group: "Marketplace" },
   { key: "site", label: "Profil Usaha", icon: FiSettings, group: "Pengaturan" },
 ];
 
@@ -60,6 +62,9 @@ export default function AdminDashboard({ admin }) {
   const [messageFocusId, setMessageFocusId] = useState(null);
   const [marketplaceCodes, setMarketplaceCodes] = useState([]);
   const [redeemRules, setRedeemRules] = useState([]);
+  const [marketplaceUsers, setMarketplaceUsers] = useState([]);
+  const [marketplaceStats, setMarketplaceStats] = useState(null);
+  const [emailTemplates, setEmailTemplates] = useState([]);
   const [posts, setPosts] = useState([]);
   const [landingPages, setLandingPages] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -113,18 +118,23 @@ export default function AdminDashboard({ admin }) {
   };
 
   const load = useCallback(async () => {
-    const [s, sv, p, pf, pt, t, mc, rr, po, lp, msgs] = await Promise.all([
+    const [s, sv, p, pf, pt, t, mc, rr, po, lp, msgs, mu, ms, et] = await Promise.all([
       getSite(), getServices(), getProducts(), getPortfolio(), getPartners(), getTestimonials(),
       safeJson("/api/marketplace", []),
       safeJson("/api/admin/redeem-rules", []),
       safeJson("/api/posts", []),
       safeJson("/api/admin/landing-pages", []),
       safeJsonFull("/api/admin/contact-messages", { data: [], unread: 0 }),
+      safeJson("/api/admin/marketplace-users", []),
+      safeJson("/api/admin/marketplace-stats", {}),
+      safeJson("/api/admin/email-templates", []),
     ]);
     setSite(s); setServices(sv); setProducts(p); setPortfolio(pf); setPartners(pt);
     setTestimonials(t); setMarketplaceCodes(mc); setRedeemRules(rr); setPosts(po);
     setLandingPages(lp);
     setMessages(msgs.data || []); setUnreadCount(msgs.unread || 0);
+    setMarketplaceUsers(mu); setMarketplaceStats(ms?.data || {});
+    setEmailTemplates(et);
   }, []);
 
   // Lightweight poll: refresh only the contact messages so the bell badge and
@@ -302,6 +312,8 @@ export default function AdminDashboard({ admin }) {
           )}
           {tab === "marketplace" && <MarketplaceCodesTable codes={marketplaceCodes} />}
           {tab === "redeem-rules" && <RedeemRulesTable rules={redeemRules} products={products} onChanged={load} />}
+          {tab === "marketplace-users" && <MarketplaceUsersTable users={marketplaceUsers} stats={marketplaceStats} onChanged={load} />}
+          {tab === "email-templates" && <EmailTemplatesManager templates={emailTemplates} onChanged={load} />}
           {tab === "site" && site && (
             <>
               <SiteForm site={site} onChanged={load} />
@@ -1582,6 +1594,481 @@ function MarketplaceCodesTable({ codes }) {
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Marketplace Users Table ─────────────────────────────────────────── */
+
+function MarketplaceUsersTable({ users, stats, onChanged }) {
+  const [search, setSearch] = useState("");
+  const [editingUser, setEditingUser] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const filtered = users.filter((u) =>
+    u.name?.toLowerCase().includes(search.toLowerCase()) ||
+    u.email?.toLowerCase().includes(search.toLowerCase()) ||
+    u.phone?.includes(search)
+  );
+
+  const handleBan = async (user) => {
+    const action = user.banned ? "aktifkan" : "blokir";
+    if (!confirm(`Yakin ingin ${action} user "${user.name}"?`)) return;
+    setLoading(true);
+    await put("/api/admin/marketplace-users", { id: user.id, banned: !user.banned });
+    setLoading(false);
+    onChanged();
+  };
+
+  const handleDelete = async (user) => {
+    if (!confirm(`Yakin ingin menghapus user "${user.name}"? Semua kode redeem juga akan dihapus.`)) return;
+    setLoading(true);
+    await del("/api/admin/marketplace-users", { id: user.id });
+    setLoading(false);
+    onChanged();
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingUser) return;
+    setLoading(true);
+    await put("/api/admin/marketplace-users", {
+      id: editingUser.id,
+      name: editingUser.name,
+      email: editingUser.email,
+      phone: editingUser.phone,
+      address: editingUser.address,
+    });
+    setLoading(false);
+    setEditingUser(null);
+    onChanged();
+  };
+
+  return (
+    <section>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl border border-[#e5e5e5] dark:border-slate-700 p-4">
+          <p className="text-xs text-[#6e6e73] dark:text-slate-400 uppercase font-semibold">Total User</p>
+          <p className="text-2xl font-bold text-[#1d1d1f] dark:text-white">{stats?.users?.total || 0}</p>
+        </div>
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl border border-[#e5e5e5] dark:border-slate-700 p-4">
+          <p className="text-xs text-[#6e6e73] dark:text-slate-400 uppercase font-semibold">Terverifikasi</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats?.users?.verified || 0}</p>
+        </div>
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl border border-[#e5e5e5] dark:border-slate-700 p-4">
+          <p className="text-xs text-[#6e6e73] dark:text-slate-400 uppercase font-semibold">Kode Ditukar</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats?.codes?.redeemed || 0}</p>
+        </div>
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl border border-[#e5e5e5] dark:border-slate-700 p-4">
+          <p className="text-xs text-[#6e6e73] dark:text-slate-400 uppercase font-semibold">Kode Belum Ditukar</p>
+          <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats?.codes?.unredeemed || 0}</p>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="mb-4">
+        <div className="relative">
+          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e6e73] dark:text-slate-500 text-sm" />
+          <input type="text" placeholder="Cari nama, email, atau telepon..." value={search} onChange={(e) => setSearch(e.target.value)}
+            className="w-full sm:w-72 pl-9 pr-4 py-2.5 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" />
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-[#f5f5f7] dark:bg-slate-800 text-left">
+              <tr>
+                <th className="px-4 py-3 text-xs font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Nama</th>
+                <th className="px-4 py-3 text-xs font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Email</th>
+                <th className="px-4 py-3 text-xs font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Telepon</th>
+                <th className="px-4 py-3 text-xs font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Status</th>
+                <th className="px-4 py-3 text-xs font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Kode</th>
+                <th className="px-4 py-3 text-xs font-semibold text-[#6e6e73] dark:text-slate-400 uppercase">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((u) => (
+                <tr key={u.id} className="border-t border-gray-100 dark:border-slate-700/50 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/30 transition-colors">
+                  <td className="px-4 py-3 font-medium text-[#1d1d1f] dark:text-white">{u.name}</td>
+                  <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-400">{u.email}</td>
+                  <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-400">{u.phone}</td>
+                  <td className="px-4 py-3">
+                    {u.banned ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-medium">Diblokir</span>
+                    ) : u.verified ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-xs font-medium">Aktif</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-yellow-50 dark:bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 text-xs font-medium">Belum Verifikasi</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-[#6e6e73] dark:text-slate-400">
+                    {u.total_codes} kode · {u.redeemed_codes} ditukar
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setEditingUser({ ...u })} className="p-1.5 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 text-blue-600 dark:text-blue-400 transition" title="Edit">
+                        <FiEdit3 className="text-sm" />
+                      </button>
+                      <button onClick={() => handleBan(u)} className={`p-1.5 rounded-lg transition ${u.banned ? "hover:bg-green-50 dark:hover:bg-green-500/10 text-green-600 dark:text-green-400" : "hover:bg-yellow-50 dark:hover:bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"}`} title={u.banned ? "Aktifkan" : "Blokir"}>
+                        {u.banned ? <FiCheck className="text-sm" /> : <FiZap className="text-sm" />}
+                      </button>
+                      <button onClick={() => handleDelete(u)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 transition" title="Hapus">
+                        <FiTrash2 className="text-sm" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filtered.length === 0 && (
+                <tr><td colSpan={6} className="px-4 py-10 text-center text-[#6e6e73] dark:text-slate-500 text-sm">{users.length === 0 ? "Belum ada user terdaftar" : "Tidak ditemukan"}</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Edit Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setEditingUser(null)}>
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 w-full max-w-lg p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white">Edit User</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Nama</label>
+                <input type="text" value={editingUser.name || ""} onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Email</label>
+                <input type="email" value={editingUser.email || ""} onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Telepon</label>
+                <input type="text" value={editingUser.phone || ""} onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Alamat</label>
+                <textarea value={editingUser.address || ""} onChange={(e) => setEditingUser({ ...editingUser, address: e.target.value })} rows={2}
+                  className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none" />
+              </div>
+              {editingUser.latitude && editingUser.longitude && (
+                <div>
+                  <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Lokasi</label>
+                  <a href={`https://www.google.com/maps?q=${editingUser.latitude},${editingUser.longitude}`} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                    <FiMapPin /> Lihat di Maps ({editingUser.latitude}, {editingUser.longitude})
+                  </a>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setEditingUser(null)} className="px-4 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 text-sm text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700 transition">Batal</button>
+              <button onClick={handleSaveEdit} disabled={loading} className="px-4 py-2 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-800 transition disabled:opacity-50">Simpan</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+/* ─── Email Templates Manager ────────────────────────────────────────── */
+
+function EmailTemplatesManager({ templates, onChanged }) {
+  const [editing, setEditing] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [broadcasting, setBroadcasting] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState(null);
+
+  const emptyTemplate = {
+    name: "", type: "marketing", subject: "",
+    header_text: "", logo_url: "", description: "",
+    body_html: "", footer_text: "", accent_color: "#2563eb",
+    button_text: "", button_url: "", banner_image: "", is_active: true,
+  };
+
+  const handleCreate = () => {
+    setEditing({ ...emptyTemplate });
+    setIsCreating(true);
+  };
+
+  const handleEdit = (tpl) => {
+    setEditing({ ...tpl });
+    setIsCreating(false);
+  };
+
+  const handleSave = async () => {
+    if (!editing.name || !editing.subject) return alert("Nama dan Subject wajib diisi");
+    setLoading(true);
+    if (isCreating) {
+      await post("/api/admin/email-templates", editing);
+    } else {
+      await put("/api/admin/email-templates", editing);
+    }
+    setLoading(false);
+    setEditing(null);
+    onChanged();
+  };
+
+  const handleDelete = async (tpl) => {
+    if (!confirm(`Hapus template "${tpl.name}"?`)) return;
+    setLoading(true);
+    await del("/api/admin/email-templates", { id: tpl.id });
+    setLoading(false);
+    onChanged();
+  };
+
+  const handleToggleActive = async (tpl) => {
+    setLoading(true);
+    await put("/api/admin/email-templates", { ...tpl, is_active: !tpl.is_active });
+    setLoading(false);
+    onChanged();
+  };
+
+  const handleBroadcast = (tpl) => {
+    setBroadcasting({
+      templateId: tpl.id,
+      subject: tpl.subject,
+      headerText: tpl.header_text,
+      logoUrl: tpl.logo_url,
+      description: tpl.description,
+      bodyHtml: tpl.body_html,
+      footerText: tpl.footer_text,
+      accentColor: tpl.accent_color,
+      buttonText: tpl.button_text,
+      buttonUrl: tpl.button_url,
+      recipientFilter: "all",
+      customEmails: "",
+    });
+  };
+
+  const handleSendBroadcast = async () => {
+    if (!broadcasting.subject || !broadcasting.bodyHtml) return alert("Subject dan Body wajib diisi");
+    setLoading(true);
+    const payload = {
+      ...broadcasting,
+      customEmails: broadcasting.customEmails
+        ? broadcasting.customEmails.split(",").map((e) => e.trim()).filter(Boolean)
+        : [],
+    };
+    const res = await post("/api/admin/broadcast-email", payload);
+    setLoading(false);
+    setBroadcasting(null);
+    alert(res.message || "Email terkirim");
+  };
+
+  const typeBadge = (type) => {
+    const colors = {
+      verification: "bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400",
+      marketing: "bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400",
+      notification: "bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-400",
+    };
+    return colors[type] || colors.marketing;
+  };
+
+  // Edit/Create Modal
+  if (editing) {
+    return (
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white">{isCreating ? "Buat Template Baru" : "Edit Template"}</h3>
+          <button onClick={() => setEditing(null)} className="text-sm text-[#6e6e73] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white">Batal</button>
+        </div>
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Nama Template *</label>
+              <input type="text" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Tipe *</label>
+              <select value={editing.type} onChange={(e) => setEditing({ ...editing, type: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="verification">Verifikasi</option>
+                <option value="marketing">Marketing</option>
+                <option value="notification">Notifikasi</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Subject Email *</label>
+            <input type="text" value={editing.subject} onChange={(e) => setEditing({ ...editing, subject: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Header Text</label>
+              <input type="text" value={editing.header_text} onChange={(e) => setEditing({ ...editing, header_text: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+            <div>
+              <ImageField label="Logo" value={editing.logo_url} onChange={(url) => setEditing({ ...editing, logo_url: url })} />
+            </div>
+          </div>
+          <div>
+            <ImageField label={`Banner Promosi${editing.type === "marketing" ? " (tampil di atas body email)" : ""}`} value={editing.banner_image} onChange={(url) => setEditing({ ...editing, banner_image: url })} />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Deskripsi (muncul di bawah header)</label>
+            <input type="text" value={editing.description} onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">
+              Body HTML <span className="text-[#6e6e73] dark:text-slate-500 font-normal">— gunarkan <code className="bg-[#f5f5f7] dark:bg-slate-700 px-1 rounded">{"{{code}}"}</code> untuk kode verifikasi, <code className="bg-[#f5f5f7] dark:bg-slate-700 px-1 rounded">{"{{name}}"}</code> untuk nama user</span>
+            </label>
+            <textarea value={editing.body_html} onChange={(e) => setEditing({ ...editing, body_html: e.target.value })} rows={8}
+              className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 resize-y" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Warna Aksen</label>
+              <div className="flex items-center gap-2">
+                <input type="color" value={editing.accent_color} onChange={(e) => setEditing({ ...editing, accent_color: e.target.value })}
+                  className="w-10 h-10 rounded-lg border border-[#e5e5e5] dark:border-slate-600 cursor-pointer" />
+                <input type="text" value={editing.accent_color} onChange={(e) => setEditing({ ...editing, accent_color: e.target.value })}
+                  className="flex-1 px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Footer Text</label>
+              <input type="text" value={editing.footer_text} onChange={(e) => setEditing({ ...editing, footer_text: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Tombol CTA Text</label>
+              <input type="text" value={editing.button_text} onChange={(e) => setEditing({ ...editing, button_text: e.target.value })}
+                placeholder="Buka Marketplace"
+                className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Tombol CTA URL</label>
+              <input type="text" value={editing.button_url} onChange={(e) => setEditing({ ...editing, button_url: e.target.value })}
+                placeholder="/marketplace atau https://..."
+                className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setEditing({ ...editing, is_active: !editing.is_active })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${editing.is_active ? "bg-blue-600" : "bg-gray-300 dark:bg-slate-600"}`}>
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${editing.is_active ? "translate-x-6" : "translate-x-1"}`} />
+            </button>
+            <span className="text-sm text-[#6e6e73] dark:text-slate-400">{editing.is_active ? "Aktif" : "Nonaktif"}</span>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button onClick={() => setEditing(null)} className="px-4 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 text-sm text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700">Batal</button>
+            <button onClick={handleSave} disabled={loading} className="px-4 py-2 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-800 disabled:opacity-50">{isCreating ? "Buat" : "Simpan"}</button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Broadcast Modal
+  if (broadcasting) {
+    return (
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-[#1d1d1f] dark:text-white">Broadcast Email</h3>
+          <button onClick={() => setBroadcasting(null)} className="text-sm text-[#6e6e73] dark:text-slate-400 hover:text-[#1d1d1f] dark:hover:text-white">Batal</button>
+        </div>
+        <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-6 space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Subject *</label>
+            <input type="text" value={broadcasting.subject} onChange={(e) => setBroadcasting({ ...broadcasting, subject: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">
+              Body HTML * <span className="text-[#6e6e73] dark:text-slate-500 font-normal">— gunakan <code className="bg-[#f5f5f7] dark:bg-slate-700 px-1 rounded">{"{{name}}"}</code> untuk nama user</span>
+            </label>
+            <textarea value={broadcasting.bodyHtml} onChange={(e) => setBroadcasting({ ...broadcasting, bodyHtml: e.target.value })} rows={8}
+              className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 resize-y" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Penerima</label>
+              <select value={broadcasting.recipientFilter} onChange={(e) => setBroadcasting({ ...broadcasting, recipientFilter: e.target.value })}
+                className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                <option value="all">Semua User</option>
+                <option value="verified">Terverifikasi Saja</option>
+                <option value="unverified">Belum Verifikasi</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#6e6e73] dark:text-slate-400 mb-1">Email Khusus (pisahkan koma)</label>
+              <input type="text" value={broadcasting.customEmails} onChange={(e) => setBroadcasting({ ...broadcasting, customEmails: e.target.value })}
+                placeholder="email1@test.com, email2@test.com"
+                className="w-full px-3 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <button onClick={() => setBroadcasting(null)} className="px-4 py-2 rounded-xl border border-[#e5e5e5] dark:border-slate-600 text-sm text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700">Batal</button>
+            <button onClick={handleSendBroadcast} disabled={loading} className="px-4 py-2 rounded-xl bg-green-600 text-white text-sm font-semibold hover:bg-green-700 disabled:opacity-50">
+              {loading ? "Mengirim..." : "Kirim Broadcast"}
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Template List
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm text-[#6e6e73] dark:text-slate-400">{templates.length} template</p>
+        </div>
+        <button onClick={handleCreate} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-700 text-white text-sm font-semibold hover:bg-blue-800 transition">
+          <FiPlus /> Buat Template
+        </button>
+      </div>
+      <div className="space-y-3">
+        {templates.map((tpl) => (
+          <div key={tpl.id} className="bg-white dark:bg-[#1a1a2e] rounded-2xl border border-[#e5e5e5] dark:border-slate-700 p-5 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h4 className="font-bold text-[#1d1d1f] dark:text-white truncate">{tpl.name}</h4>
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${typeBadge(tpl.type)}`}>{tpl.type}</span>
+                  {!tpl.is_active && <span className="inline-flex px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400 text-xs font-medium">Nonaktif</span>}
+                </div>
+                <p className="text-xs text-[#6e6e73] dark:text-slate-400 truncate">Subject: {tpl.subject}</p>
+                {tpl.description && <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-1 truncate">{tpl.description}</p>}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                <button onClick={() => handleBroadcast(tpl)} className="p-2 rounded-lg hover:bg-green-50 dark:hover:bg-green-500/10 text-green-600 dark:text-green-400 transition" title="Broadcast">
+                  <FiMail className="text-sm" />
+                </button>
+                <button onClick={() => handleToggleActive(tpl)} className={`p-2 rounded-lg transition ${tpl.is_active ? "hover:bg-yellow-50 dark:hover:bg-yellow-500/10 text-yellow-600 dark:text-yellow-400" : "hover:bg-green-50 dark:hover:bg-green-500/10 text-green-600 dark:text-green-400"}`} title={tpl.is_active ? "Nonaktifkan" : "Aktifkan"}>
+                  {tpl.is_active ? <FiToggleRight className="text-sm" /> : <FiToggleLeft className="text-sm" />}
+                </button>
+                <button onClick={() => handleEdit(tpl)} className="p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-500/10 text-blue-600 dark:text-blue-400 transition" title="Edit">
+                  <FiEdit3 className="text-sm" />
+                </button>
+                <button onClick={() => handleDelete(tpl)} className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 dark:text-red-400 transition" title="Hapus">
+                  <FiTrash2 className="text-sm" />
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {templates.length === 0 && (
+          <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl border border-[#e5e5e5] dark:border-slate-700 p-10 text-center">
+            <FiMail className="text-3xl text-[#6e6e73] dark:text-slate-500 mx-auto mb-3" />
+            <p className="text-sm text-[#6e6e73] dark:text-slate-500">Belum ada template email. Klik "Buat Template" untuk memulai.</p>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -17,13 +17,20 @@ export async function POST({ request }) {
   }
 
   const [[user]] = await db.execute(
-    "SELECT id, name, email, phone, address FROM marketplace_users WHERE email = ? AND password_hash = ?",
+    "SELECT id, name, email, phone, address, verified FROM marketplace_users WHERE email = ? AND password_hash = ?",
     [email, hashPw(password)]
   );
 
   if (!user) {
     return new Response(JSON.stringify({ message: "Email atau password salah" }), {
       status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (!user.verified) {
+    return new Response(JSON.stringify({ message: "Email belum diverifikasi, silakan cek inbox Anda", needsVerification: true }), {
+      status: 403,
       headers: { "Content-Type": "application/json" },
     });
   }
