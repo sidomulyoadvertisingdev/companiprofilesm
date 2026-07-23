@@ -23,12 +23,16 @@ export async function GET({ params }) {
   const ext = extname(file).toLowerCase();
   try {
     const buf = await readFile(join(UPLOAD_DIR, file));
+    const headers = {
+      "Content-Type": MIME[ext] || "application/octet-stream",
+      "Cache-Control": "public, max-age=31536000, immutable",
+    };
+    if (ext === ".svg") {
+      headers["Content-Security-Policy"] = "default-src 'none';";
+    }
     return new Response(buf, {
       status: 200,
-      headers: {
-        "Content-Type": MIME[ext] || "application/octet-stream",
-        "Cache-Control": "public, max-age=31536000, immutable",
-      },
+      headers,
     });
   } catch {
     return new Response("Not found", { status: 404 });
