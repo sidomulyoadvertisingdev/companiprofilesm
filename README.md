@@ -28,6 +28,12 @@ Website resmi **Sidomulyo Advertising & Printing** (Salatiga) yang dirancang sec
    * Pelacakan pengunjung secara real-time yang aman dan menghormati privasi (tanpa cookies pihak ketiga).
    * Menganalisis statistik jumlah tayangan halaman (*pageviews*), tipe perangkat, browser, negara/kota asal, referer (Google, Medsos, dll), hingga pelacakan klik tautan.
 
+5. **Fitur Keamanan Terintegrasi (Security Upgrades)**:
+   * **Secure Cookies**: Sesi admin menggunakan cookie dengan flag `HttpOnly`, `SameSite`, dan secara dinamis menyertakan flag `Secure` di lingkungan produksi (HTTPS) untuk mencegah pencurian token sesi.
+   * **Sanitisasi XSS (Cross-Site Scripting)**: Konten input HTML kaya (seperti artikel blog) dibersihkan secara otomatis di sisi backend menggunakan helper `cleanHtml` berbasis `sanitize-html` sebelum disimpan ke database, mencegah penyusupan skrip berbahaya.
+   * **Pembatasan Request (Rate Limiting)**: Pengaman brute-force in-memory pada endpoint sensitif (seperti login admin, login marketplace, pengiriman kode OTP email, dan percobaan verifikasi OTP) untuk meredam serangan otomatis.
+   * **HTTP Security Headers**: Middleware aplikasi menyuntikkan header keamanan secara global (`X-Frame-Options: SAMEORIGIN`, `X-Content-Type-Options: nosniff`, dan `Referrer-Policy: strict-origin-when-cross-origin`) untuk meningkatkan proteksi browser pengunjung.
+
 ---
 
 ## 🛠️ Teknologi yang Digunakan
@@ -38,6 +44,7 @@ Website resmi **Sidomulyo Advertising & Printing** (Salatiga) yang dirancang sec
 * **Animasi 3D**: [Three.js](https://threejs.org/) & [Three-Globe](https://github.com/vasturiano/three-globe) untuk render globe interaktif pada halaman beranda.
 * **Email & SMTP**: [Nodemailer](https://nodemailer.com/) untuk pengiriman OTP verifikasi akun dan email blast marketing dengan dukungan pelarasan URL gambar absolut.
 * **Keamanan & Proteksi Bot**: Integrasi [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) pada halaman pendaftaran & login untuk mencegah serangan spam/bot.
+* **Sanitisasi XSS**: Pustaka [sanitize-html](https://www.npmjs.com/package/sanitize-html) untuk membersihkan tag script/event handler inline pada input teks editor HTML.
 * **Process Manager (Production)**: [PM2](https://pm2.keymetrics.io/) untuk menjaga aplikasi tetap aktif berjalan di server produksi.
 
 ---
