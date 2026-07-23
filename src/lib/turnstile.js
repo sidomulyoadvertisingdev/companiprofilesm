@@ -1,9 +1,9 @@
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET;
 const VERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
 
 export async function verifyTurnstile(token, ip) {
   if (!TURNSTILE_SECRET) {
-    console.warn("[turnstile] TURNSTILE_SECRET_KEY not set, skipping verification");
+    console.warn("[turnstile] TURNSTILE_SECRET not set, skipping verification");
     return true;
   }
 

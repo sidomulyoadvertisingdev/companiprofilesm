@@ -16,6 +16,7 @@ function TurnstileWidget({ siteKey, onVerify }) {
         widgetId.current = window.turnstile.render(ref.current, {
           sitekey: siteKey,
           callback: onVerify,
+          action: "turnstile-spin-v2",
           theme: "dark",
         });
       }
@@ -41,7 +42,7 @@ function TurnstileWidget({ siteKey, onVerify }) {
     };
   }, [siteKey, onVerify]);
 
-  return <div ref={ref} className="flex justify-center" />;
+  return <div ref={ref} data-action="turnstile-spin-v2" className="cf-turnstile flex justify-center" />;
 }
 
 export default function MarketplaceClaim({ turnstileSiteKey = "" }) {
