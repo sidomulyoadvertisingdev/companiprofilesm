@@ -55,6 +55,7 @@ function resolveUrl(baseUrl, path) {
 function renderTemplate(template, user, site, siteUrl) {
   const logoSrc = resolveUrl(siteUrl, template.logo_url || site.logo);
   const accent = template.accent_color || "#2563eb";
+  const addressParts = [site.addressStreet, site.addressCity, site.addressRegion].filter(Boolean).join(", ");
 
   return `
 <!DOCTYPE html>
@@ -63,83 +64,82 @@ function renderTemplate(template, user, site, siteUrl) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;-webkit-font-smoothing:antialiased;">
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f1f5f9;padding:40px 16px;">
     <tr>
-      <td align="center" style="padding:40px 16px;">
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:480px;">
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.03);">
+
+          <!-- Banner / Top Border -->
+          ${template.banner_image ? `
           <tr>
-            <td style="background:#1e293b;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+            <td style="padding:0;">
+              <img src="${resolveUrl(siteUrl, template.banner_image)}" alt="Banner" style="width:100%;max-width:100%;display:block;border-top-left-radius:12px;border-top-right-radius:12px;" />
+            </td>
+          </tr>
+          ` : `
+          <tr>
+            <td style="height:4px;background-color:${accent};"></td>
+          </tr>
+          `}
 
-              <!-- Header -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="background:linear-gradient(135deg,${accent}dd,${accent});padding:36px 32px;text-align:center;">
-                    ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:48px;margin:0 auto 12px;display:block;border-radius:8px;" />` : ""}
-                    <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0;">${template.header_text || site.name}</h1>
-                    ${template.description ? `<p style="color:rgba(255,255,255,0.75);font-size:13px;margin:8px 0 0;">${template.description}</p>` : ""}
-                  </td>
-                </tr>
-              </table>
+          <!-- Header Title & Description -->
+          ${(template.header_text || template.description) ? `
+          <tr>
+            <td style="padding:32px 32px 16px;text-align:center;">
+              ${template.header_text ? `<h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${template.header_text}</h1>` : ""}
+              ${template.description ? `<p style="color:#64748b;font-size:14px;margin:8px 0 0;line-height:1.5;">${template.description}</p>` : ""}
+            </td>
+          </tr>
+          ` : ""}
 
-              ${template.banner_image ? `
-              <!-- Banner -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <!-- Body Content -->
+          <tr>
+            <td style="padding:32px;background-color:#ffffff;">
+              <p style="color:#0f172a;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${user.name || "User"},</p>
+              <div style="color:#334155;font-size:14px;line-height:1.6;margin:0 0 24px;">
+                ${template.body_html || ""}
+              </div>
+
+              ${template.button_text && template.button_url ? `
+              <table cellpadding="0" cellspacing="0" role="presentation" style="margin:24px auto 0;">
                 <tr>
-                  <td style="padding:0;">
-                    <img src="${resolveUrl(siteUrl, template.banner_image)}" alt="Banner" style="width:100%;display:block;" />
+                  <td style="background-color:${accent};border-radius:8px;">
+                    <a href="${resolveUrl(siteUrl, template.button_url)}" target="_blank" style="display:inline-block;padding:12px 32px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:8px;">
+                      ${template.button_text} &rarr;
+                    </a>
                   </td>
                 </tr>
               </table>
               ` : ""}
-
-              <!-- Body -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding:36px 32px;text-align:center;">
-                    <p style="color:#cbd5e1;font-size:15px;margin:0 0 6px;">Halo <strong style="color:#f1f5f9;">${user.name || "User"}</strong>,</p>
-                    <div style="color:#94a3b8;font-size:14px;line-height:1.7;margin:12px 0 28px;text-align:left;">
-                      ${template.body_html || ""}
-                    </div>
-
-                    ${template.button_text && template.button_url ? `
-                    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
-                      <tr>
-                        <td style="background:${accent};border-radius:12px;">
-                          <a href="${resolveUrl(siteUrl, template.button_url)}" target="_blank" style="display:inline-block;padding:14px 40px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;">
-                            ${template.button_text} &rarr;
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                    ` : ""}
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Footer -->
-              ${template.footer_text ? `
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding:0 32px;">
-                    <div style="border-top:1px solid rgba(255,255,255,0.06);"></div>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:20px 32px 28px;text-align:center;">
-                    <p style="color:#64748b;font-size:12px;margin:0;line-height:1.6;">${template.footer_text}</p>
-                  </td>
-                </tr>
-              </table>
-              ` : ""}
-
             </td>
           </tr>
+
+          <!-- Footer -->
           <tr>
-            <td style="padding:16px 0;text-align:center;">
-              <p style="color:#475569;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
+            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:32px;text-align:center;">
+              <!-- Logo at the bottom -->
+              ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:36px;margin:0 auto 16px;display:block;" />` : ""}
+
+              <p style="color:#0f172a;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
+
+              ${template.footer_text ? `<p style="color:#64748b;font-size:11px;margin:0 0 16px;line-height:1.6;">${template.footer_text}</p>` : ""}
+
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;">
+                <tr>
+                  <td style="text-align:center;color:#64748b;font-size:11px;line-height:1.5;">
+                    ${addressParts ? `<p style="margin:0 0 4px;">&#128205; ${addressParts}</p>` : ""}
+                    ${site.phone ? `<p style="margin:0 0 4px;">&#128222; ${site.phone}</p>` : ""}
+                    ${site.email ? `<p style="margin:0 0 4px;">&#9993; ${site.email}</p>` : ""}
+                    ${site.operationalHours ? `<p style="margin:0 0 4px;">&#128336; ${site.operationalHours}</p>` : ""}
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color:#94a3b8;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
             </td>
           </tr>
+
         </table>
       </td>
     </tr>
@@ -184,6 +184,12 @@ export async function POST({ request }) {
   const site = {
     name: sr.name || "Sidomulyo Advertising",
     logo: sr.logo || "",
+    phone: sr.phone_display || sr.phone || "",
+    email: sr.email || "",
+    addressStreet: sr.address_street || "",
+    addressCity: sr.address_city || "",
+    addressRegion: sr.address_region || "",
+    operationalHours: sr.operational_hours || "",
   };
 
   // Build template object

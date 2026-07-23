@@ -85,115 +85,85 @@ function verificationEmailHTML(code, name, site, siteUrl) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark">
-  <meta name="supported-color-schemes" content="dark">
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;-webkit-font-smoothing:antialiased;">
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f1f5f9;padding:40px 16px;">
     <tr>
-      <td align="center" style="padding:40px 16px;">
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:480px;">
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.03);">
 
-          <!-- Card -->
+          <!-- Top Border -->
           <tr>
-            <td style="background:#1e293b;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+            <td style="height:4px;background-color:#2563eb;"></td>
+          </tr>
 
-              <!-- Header -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="background:linear-gradient(135deg,#1e40af 0%,#2563eb 50%,#3b82f6 100%);padding:36px 32px;text-align:center;">
-                    ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:48px;margin:0 auto 12px;display:block;border-radius:8px;" />` : ""}
-                    <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0;letter-spacing:-0.3px;">${site.name}</h1>
-                    <p style="color:rgba(255,255,255,0.75);font-size:13px;margin:6px 0 0;font-weight:400;">Verifikasi Akun Marketplace</p>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Body -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding:36px 32px 8px;text-align:center;">
-                    <p style="color:#cbd5e1;font-size:15px;margin:0 0 6px;">Halo <strong style="color:#f1f5f9;">${name || "User"}</strong>,</p>
-                    <p style="color:#94a3b8;font-size:14px;margin:0 0 28px;line-height:1.6;">
-                      Gunakan kode verifikasi di bawah ini untuk menyelesaikan pendaftaran akun marketplace Anda.
-                    </p>
-
-                    <!-- Code Box -->
-                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                      <tr>
-                        <td style="background:linear-gradient(135deg,#1e293b,#0f172a);border:2px dashed #3b82f6;border-radius:14px;padding:24px 20px;text-align:center;">
-                          <p style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:2px;margin:0 0 10px;font-weight:600;">Kode Verifikasi</p>
-                          <span style="font-size:40px;font-weight:800;letter-spacing:14px;color:#60a5fa;font-family:'Courier New',Courier,monospace;display:inline-block;">${code}</span>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <p style="color:#64748b;font-size:12px;margin:20px 0 0;">Kode ini kedaluwarsa dalam <strong style="color:#94a3b8;">10 menit</strong>.</p>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- CTA Button -->
-              ${siteUrl ? `
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding:8px 32px 32px;text-align:center;">
-                    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
-                      <tr>
-                        <td style="background:linear-gradient(135deg,#2563eb,#3b82f6);border-radius:12px;">
-                          <a href="${siteUrl}/marketplace" target="_blank" style="display:inline-block;padding:14px 40px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;letter-spacing:0.3px;">
-                            Buka Marketplace &rarr;
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              ` : ""}
-
-              <!-- Divider -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding:0 32px;">
-                    <div style="border-top:1px solid rgba(255,255,255,0.06);"></div>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Footer -->
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="padding:24px 32px 32px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                      <tr>
-                        <td style="text-align:center;">
-                          ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:28px;margin:0 auto 12px;display:block;opacity:0.7;border-radius:4px;" />` : ""}
-                          <p style="color:#475569;font-size:12px;margin:0 0 10px;font-weight:600;">${site.name}</p>
-                          <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                            <tr>
-                              <td style="text-align:center;">
-                                ${addressParts ? `<p style="color:#64748b;font-size:11px;margin:0 0 4px;line-height:1.5;">&#128205; ${addressParts}</p>` : ""}
-                                ${site.phone ? `<p style="color:#64748b;font-size:11px;margin:0 0 4px;">&#128222; ${site.phone}</p>` : ""}
-                                ${site.email ? `<p style="color:#64748b;font-size:11px;margin:0 0 4px;">&#9993; ${site.email}</p>` : ""}
-                                ${site.operationalHours ? `<p style="color:#64748b;font-size:11px;margin:0 0 4px;">&#128336; ${site.operationalHours}</p>` : ""}
-                              </td>
-                            </tr>
-                          </table>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-
+          <!-- Header -->
+          <tr>
+            <td style="padding:32px 32px 16px;text-align:center;">
+              <h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${site.name}</h1>
+              <p style="color:#64748b;font-size:14px;margin:8px 0 0;line-height:1.5;">Verifikasi Akun Marketplace</p>
             </td>
           </tr>
 
-          <!-- Copyright -->
+          <!-- Body -->
           <tr>
-            <td style="padding:16px 0;text-align:center;">
-              <p style="color:#475569;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
+            <td style="padding:32px;background-color:#ffffff;">
+              <p style="color:#0f172a;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${name || "User"},</p>
+              <p style="color:#334155;font-size:14px;line-height:1.6;margin:0 0 24px;">
+                Gunakan kode verifikasi di bawah ini untuk menyelesaikan pendaftaran akun marketplace Anda.
+              </p>
+
+              <!-- Code Box -->
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
+                <tr>
+                  <td style="background-color:#f8fafc;border:2px dashed #3b82f6;border-radius:12px;padding:24px 20px;text-align:center;">
+                    <p style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;font-weight:600;">Kode Verifikasi</p>
+                    <span style="font-size:36px;font-weight:800;letter-spacing:10px;color:#2563eb;font-family:'Courier New',Courier,monospace;display:inline-block;">${code}</span>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color:#64748b;font-size:12px;margin:20px 0 0;text-align:center;">Kode ini kedaluwarsa dalam <strong style="color:#1e293b;">10 menit</strong>.</p>
+            </td>
+          </tr>
+
+          <!-- CTA Button -->
+          ${siteUrl ? `
+          <tr>
+            <td style="padding:0 32px 32px;text-align:center;">
+              <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto;">
+                <tr>
+                  <td style="background-color:#2563eb;border-radius:8px;">
+                    <a href="${siteUrl}/marketplace" target="_blank" style="display:inline-block;padding:12px 32px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:8px;">
+                      Buka Marketplace &rarr;
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          ` : ""}
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:32px;text-align:center;">
+              <!-- Logo at the bottom -->
+              ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:36px;margin:0 auto 16px;display:block;" />` : ""}
+
+              <p style="color:#0f172a;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
+
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;">
+                <tr>
+                  <td style="text-align:center;color:#64748b;font-size:11px;line-height:1.5;">
+                    ${addressParts ? `<p style="margin:0 0 4px;">&#128205; ${addressParts}</p>` : ""}
+                    ${site.phone ? `<p style="margin:0 0 4px;">&#128222; ${site.phone}</p>` : ""}
+                    ${site.email ? `<p style="margin:0 0 4px;">&#9993; ${site.email}</p>` : ""}
+                    ${site.operationalHours ? `<p style="margin:0 0 4px;">&#128336; ${site.operationalHours}</p>` : ""}
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color:#94a3b8;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
             </td>
           </tr>
 
@@ -223,6 +193,7 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
     const logoSrc = resolveUrl(siteUrl, tpl.logo_url || site.logo);
     const accent = tpl.accent_color || "#2563eb";
     const bodyWithCode = (tpl.body_html || "").replace(/\{\{code\}\}/g, code).replace(/\{\{name\}\}/g, name || "User");
+    const addressParts = [site.addressStreet, site.addressCity, site.addressRegion].filter(Boolean).join(", ");
 
     html = `
 <!DOCTYPE html>
@@ -231,48 +202,82 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#0f172a;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;-webkit-font-smoothing:antialiased;">
-  <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+  <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f1f5f9;padding:40px 16px;">
     <tr>
-      <td align="center" style="padding:40px 16px;">
-        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:480px;">
-          <tr>
-            <td style="background:#1e293b;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);box-shadow:0 8px 32px rgba(0,0,0,0.4);">
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr>
-                  <td style="background:linear-gradient(135deg,${accent}dd,${accent});padding:36px 32px;text-align:center;">
-                    ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:48px;margin:0 auto 12px;display:block;border-radius:8px;" />` : ""}
-                    <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0;">${tpl.header_text || site.name}</h1>
-                    ${tpl.description ? `<p style="color:rgba(255,255,255,0.75);font-size:13px;margin:8px 0 0;">${tpl.description}</p>` : ""}
-                  </td>
-                </tr>
-              </table>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.03);">
 
-              ${tpl.banner_image ? `
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <!-- Banner / Top Border -->
+          ${tpl.banner_image ? `
+          <tr>
+            <td style="padding:0;">
+              <img src="${resolveUrl(siteUrl, tpl.banner_image)}" alt="Banner" style="width:100%;max-width:100%;display:block;border-top-left-radius:12px;border-top-right-radius:12px;" />
+            </td>
+          </tr>
+          ` : `
+          <tr>
+            <td style="height:4px;background-color:${accent};"></td>
+          </tr>
+          `}
+
+          <!-- Header Title & Description -->
+          ${(tpl.header_text || tpl.description) ? `
+          <tr>
+            <td style="padding:32px 32px 16px;text-align:center;">
+              ${tpl.header_text ? `<h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${tpl.header_text}</h1>` : ""}
+              ${tpl.description ? `<p style="color:#64748b;font-size:14px;margin:8px 0 0;line-height:1.5;">${tpl.description}</p>` : ""}
+            </td>
+          </tr>
+          ` : ""}
+
+          <!-- Body Content -->
+          <tr>
+            <td style="padding:32px;background-color:#ffffff;">
+              <p style="color:#0f172a;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${name || "User"},</p>
+              <div style="color:#334155;font-size:14px;line-height:1.6;margin:0 0 24px;">
+                ${bodyWithCode}
+              </div>
+
+              ${tpl.button_text && tpl.button_url ? `
+              <table cellpadding="0" cellspacing="0" role="presentation" style="margin:24px auto 0;">
                 <tr>
-                  <td style="padding:0;">
-                    <img src="${resolveUrl(siteUrl, tpl.banner_image)}" alt="Banner" style="width:100%;display:block;" />
+                  <td style="background-color:${accent};border-radius:8px;">
+                    <a href="${resolveUrl(siteUrl, tpl.button_url)}" target="_blank" style="display:inline-block;padding:12px 32px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;border-radius:8px;">
+                      ${tpl.button_text} &rarr;
+                    </a>
                   </td>
                 </tr>
               </table>
               ` : ""}
+            </td>
+          </tr>
 
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f8fafc;border-top:1px solid #e2e8f0;padding:32px;text-align:center;">
+              <!-- Logo at the bottom -->
+              ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:36px;margin:0 auto 16px;display:block;" />` : ""}
+
+              <p style="color:#0f172a;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
+
+              ${tpl.footer_text ? `<p style="color:#64748b;font-size:11px;margin:0 0 16px;line-height:1.6;">${tpl.footer_text}</p>` : ""}
+
+              <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;">
                 <tr>
-                  <td style="padding:36px 32px;text-align:center;">
-                    <div style="color:#94a3b8;font-size:14px;line-height:1.7;text-align:left;">${bodyWithCode}</div>
+                  <td style="text-align:center;color:#64748b;font-size:11px;line-height:1.5;">
+                    ${addressParts ? `<p style="margin:0 0 4px;">&#128205; ${addressParts}</p>` : ""}
+                    ${site.phone ? `<p style="margin:0 0 4px;">&#128222; ${site.phone}</p>` : ""}
+                    ${site.email ? `<p style="margin:0 0 4px;">&#9993; ${site.email}</p>` : ""}
+                    ${site.operationalHours ? `<p style="margin:0 0 4px;">&#128336; ${site.operationalHours}</p>` : ""}
                   </td>
                 </tr>
               </table>
-              ${tpl.footer_text ? `
-              <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
-                <tr><td style="padding:0 32px;"><div style="border-top:1px solid rgba(255,255,255,0.06);"></div></td></tr>
-                <tr><td style="padding:20px 32px 28px;text-align:center;"><p style="color:#64748b;font-size:12px;margin:0;line-height:1.6;">${tpl.footer_text}</p></td></tr>
-              </table>` : ""}
+
+              <p style="color:#94a3b8;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
             </td>
           </tr>
-          <tr><td style="padding:16px 0;text-align:center;"><p style="color:#475569;font-size:11px;margin:0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p></td></tr>
+
         </table>
       </td>
     </tr>
