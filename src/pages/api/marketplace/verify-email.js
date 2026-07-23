@@ -100,16 +100,16 @@ function verificationEmailHTML(code, name, site, siteUrl) {
           <!-- Header -->
           <tr>
             <td style="padding:32px 32px 16px;text-align:center;">
-              <h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${site.name}</h1>
-              <p style="color:#64748b;font-size:14px;margin:8px 0 0;line-height:1.5;">Verifikasi Akun Marketplace</p>
+              <h1 style="color:#000000;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${site.name}</h1>
+              <p style="color:#000000;font-size:14px;margin:8px 0 0;line-height:1.5;">Verifikasi Akun Marketplace</p>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
             <td style="padding:32px;background-color:#ffffff;">
-              <p style="color:#0f172a;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${name || "User"},</p>
-              <p style="color:#334155;font-size:14px;line-height:1.6;margin:0 0 24px;">
+              <p style="color:#000000;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${name || "User"},</p>
+              <p style="color:#000000;font-size:14px;line-height:1.6;margin:0 0 24px;">
                 Gunakan kode verifikasi di bawah ini untuk menyelesaikan pendaftaran akun marketplace Anda.
               </p>
 
@@ -117,13 +117,13 @@ function verificationEmailHTML(code, name, site, siteUrl) {
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:24px 0;">
                 <tr>
                   <td style="background-color:#f8fafc;border:2px dashed #3b82f6;border-radius:12px;padding:24px 20px;text-align:center;">
-                    <p style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;font-weight:600;">Kode Verifikasi</p>
+                    <p style="color:#000000;font-size:11px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;font-weight:600;">Kode Verifikasi</p>
                     <span style="font-size:36px;font-weight:800;letter-spacing:10px;color:#2563eb;font-family:'Courier New',Courier,monospace;display:inline-block;">${code}</span>
                   </td>
                 </tr>
               </table>
 
-              <p style="color:#64748b;font-size:12px;margin:20px 0 0;text-align:center;">Kode ini kedaluwarsa dalam <strong style="color:#1e293b;">10 menit</strong>.</p>
+              <p style="color:#000000;font-size:12px;margin:20px 0 0;text-align:center;">Kode ini kedaluwarsa dalam <strong style="color:#000000;">10 menit</strong>.</p>
             </td>
           </tr>
 
@@ -150,11 +150,11 @@ function verificationEmailHTML(code, name, site, siteUrl) {
               <!-- Logo at the bottom -->
               ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:36px;margin:0 auto 16px;display:block;" />` : ""}
 
-              <p style="color:#0f172a;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
+              <p style="color:#000000;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
 
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;">
                 <tr>
-                  <td style="text-align:center;color:#64748b;font-size:11px;line-height:1.5;">
+                  <td style="text-align:center;color:#000000;font-size:11px;line-height:1.5;">
                     ${addressParts ? `<p style="margin:0 0 4px;">&#128205; ${addressParts}</p>` : ""}
                     ${site.phone ? `<p style="margin:0 0 4px;">&#128222; ${site.phone}</p>` : ""}
                     ${site.email ? `<p style="margin:0 0 4px;">&#9993; ${site.email}</p>` : ""}
@@ -163,7 +163,7 @@ function verificationEmailHTML(code, name, site, siteUrl) {
                 </tr>
               </table>
 
-              <p style="color:#94a3b8;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
+              <p style="color:#000000;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
             </td>
           </tr>
 
@@ -225,8 +225,8 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
           ${(tpl.header_text || tpl.description) ? `
           <tr>
             <td style="padding:32px 32px 16px;text-align:center;">
-              ${tpl.header_text ? `<h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${tpl.header_text}</h1>` : ""}
-              ${tpl.description ? `<p style="color:#64748b;font-size:14px;margin:8px 0 0;line-height:1.5;">${tpl.description}</p>` : ""}
+              ${tpl.header_text ? `<h1 style="color:#000000;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${tpl.header_text}</h1>` : ""}
+              ${tpl.description ? `<p style="color:#000000;font-size:14px;margin:8px 0 0;line-height:1.5;">${tpl.description}</p>` : ""}
             </td>
           </tr>
           ` : ""}
@@ -234,8 +234,8 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
           <!-- Body Content -->
           <tr>
             <td style="padding:32px;background-color:#ffffff;">
-              <p style="color:#0f172a;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${name || "User"},</p>
-              <div style="color:#334155;font-size:14px;line-height:1.6;margin:0 0 24px;">
+              <p style="color:#000000;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${name || "User"},</p>
+              <div style="color:#000000;font-size:14px;line-height:1.6;margin:0 0 24px;">
                 ${bodyWithCode}
               </div>
 
@@ -259,13 +259,13 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
               <!-- Logo at the bottom -->
               ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:36px;margin:0 auto 16px;display:block;" />` : ""}
 
-              <p style="color:#0f172a;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
+              <p style="color:#000000;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
 
-              ${tpl.footer_text ? `<p style="color:#64748b;font-size:11px;margin:0 0 16px;line-height:1.6;">${tpl.footer_text}</p>` : ""}
+              ${tpl.footer_text ? `<p style="color:#000000;font-size:11px;margin:0 0 16px;line-height:1.6;">${tpl.footer_text}</p>` : ""}
 
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;">
                 <tr>
-                  <td style="text-align:center;color:#64748b;font-size:11px;line-height:1.5;">
+                  <td style="text-align:center;color:#000000;font-size:11px;line-height:1.5;">
                     ${addressParts ? `<p style="margin:0 0 4px;">&#128205; ${addressParts}</p>` : ""}
                     ${site.phone ? `<p style="margin:0 0 4px;">&#128222; ${site.phone}</p>` : ""}
                     ${site.email ? `<p style="margin:0 0 4px;">&#9993; ${site.email}</p>` : ""}
@@ -274,7 +274,7 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
                 </tr>
               </table>
 
-              <p style="color:#94a3b8;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
+              <p style="color:#000000;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
             </td>
           </tr>
 

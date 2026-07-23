@@ -87,8 +87,8 @@ function renderTemplate(template, user, site, siteUrl) {
           ${(template.header_text || template.description) ? `
           <tr>
             <td style="padding:32px 32px 16px;text-align:center;">
-              ${template.header_text ? `<h1 style="color:#0f172a;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${template.header_text}</h1>` : ""}
-              ${template.description ? `<p style="color:#64748b;font-size:14px;margin:8px 0 0;line-height:1.5;">${template.description}</p>` : ""}
+              ${template.header_text ? `<h1 style="color:#000000;font-size:24px;font-weight:700;margin:0;line-height:1.3;">${template.header_text}</h1>` : ""}
+              ${template.description ? `<p style="color:#000000;font-size:14px;margin:8px 0 0;line-height:1.5;">${template.description}</p>` : ""}
             </td>
           </tr>
           ` : ""}
@@ -96,8 +96,8 @@ function renderTemplate(template, user, site, siteUrl) {
           <!-- Body Content -->
           <tr>
             <td style="padding:32px;background-color:#ffffff;">
-              <p style="color:#0f172a;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${user.name || "User"},</p>
-              <div style="color:#334155;font-size:14px;line-height:1.6;margin:0 0 24px;">
+              <p style="color:#000000;font-size:15px;margin:0 0 16px;font-weight:600;">Halo ${user.name || "User"},</p>
+              <div style="color:#000000;font-size:14px;line-height:1.6;margin:0 0 24px;">
                 ${template.body_html || ""}
               </div>
 
@@ -121,13 +121,13 @@ function renderTemplate(template, user, site, siteUrl) {
               <!-- Logo at the bottom -->
               ${logoSrc ? `<img src="${logoSrc}" alt="${site.name}" style="height:36px;margin:0 auto 16px;display:block;" />` : ""}
 
-              <p style="color:#0f172a;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
+              <p style="color:#000000;font-size:13px;font-weight:700;margin:0 0 6px;">${site.name}</p>
 
-              ${template.footer_text ? `<p style="color:#64748b;font-size:11px;margin:0 0 16px;line-height:1.6;">${template.footer_text}</p>` : ""}
+              ${template.footer_text ? `<p style="color:#000000;font-size:11px;margin:0 0 16px;line-height:1.6;">${template.footer_text}</p>` : ""}
 
               <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:12px;">
                 <tr>
-                  <td style="text-align:center;color:#64748b;font-size:11px;line-height:1.5;">
+                  <td style="text-align:center;color:#000000;font-size:11px;line-height:1.5;">
                     ${addressParts ? `<p style="margin:0 0 4px;">&#128205; ${addressParts}</p>` : ""}
                     ${site.phone ? `<p style="margin:0 0 4px;">&#128222; ${site.phone}</p>` : ""}
                     ${site.email ? `<p style="margin:0 0 4px;">&#9993; ${site.email}</p>` : ""}
@@ -136,7 +136,7 @@ function renderTemplate(template, user, site, siteUrl) {
                 </tr>
               </table>
 
-              <p style="color:#94a3b8;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
+              <p style="color:#000000;font-size:10px;margin:24px 0 0;">&copy; ${new Date().getFullYear()} ${site.name}. All rights reserved.</p>
             </td>
           </tr>
 
