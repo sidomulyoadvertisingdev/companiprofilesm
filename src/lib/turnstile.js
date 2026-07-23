@@ -7,7 +7,10 @@ export async function verifyTurnstile(token, ip) {
     return true;
   }
 
-  if (!token) return false;
+  if (!token) {
+    console.warn("[turnstile] No token provided");
+    return false;
+  }
 
   try {
     const res = await fetch(VERIFY_URL, {
@@ -21,9 +24,12 @@ export async function verifyTurnstile(token, ip) {
     });
 
     const data = await res.json();
+    if (!data.success) {
+      console.error("[turnstile] Verification failed:", JSON.stringify(data["error-codes"]));
+    }
     return data.success === true;
   } catch (err) {
-    console.error("[turnstile] verification failed:", err.message);
+    console.error("[turnstile] Request error:", err.message);
     return false;
   }
 }
