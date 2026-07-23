@@ -2,6 +2,7 @@ import db from "../../../lib/db.js";
 import nodemailer from "nodemailer";
 import { createHash } from "crypto";
 import { verifyTurnstile } from "../../../lib/turnstile.js";
+import { rateLimit } from "../../../lib/rate-limiter.js";
 
 export const prerender = false;
 
@@ -295,8 +296,10 @@ async function sendVerificationEmail(email, code, name, siteUrl) {
 }
 
 export async function POST({ request }) {
-  const { action, email, code, turnstileToken } = await request.json();
+  const body = await request.json();
+  const { action, email, code, turnstileToken } = body;
   const siteUrl = getSiteUrl(request);
+  const clientIp = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "127.0.0.1";
 
   if (action === "send") {
     if (!email) {
@@ -306,7 +309,18 @@ export async function POST({ request }) {
       });
     }
 
-    const clientIp = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "";
+    const { allowed, resetTime } = await rateLimit(`otp-send:${clientIp}`, 3, 2 * 60 * 1000);
+    if (!allowed) {
+      const secondsLeft = Math.ceil((resetTime - Date.now()) / 1000);
+      return new Response(JSON.stringify({ message: `Terlalu banyak permintaan verifikasi, coba lagi dalam ${secondsLeft} detik` }), {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(secondsLeft),
+        },
+      });
+    }
+
     const turnstileOk = await verifyTurnstile(turnstileToken, clientIp);
     if (!turnstileOk) {
       return new Response(JSON.stringify({ message: "Verifikasi keamanan gagal, silakan coba lagi" }), {
@@ -361,6 +375,18 @@ export async function POST({ request }) {
       return new Response(JSON.stringify({ message: "Email dan kode wajib diisi" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const { allowed, resetTime } = await rateLimit(`otp-verify:${clientIp}`, 5, 2 * 60 * 1000);
+    if (!allowed) {
+      const secondsLeft = Math.ceil((resetTime - Date.now()) / 1000);
+      return new Response(JSON.stringify({ message: `Terlalu banyak kegagalan verifikasi, coba lagi dalam ${secondsLeft} detik` }), {
+        status: 429,
+        headers: {
+          "Content-Type": "application/json",
+          "Retry-After": String(secondsLeft),
+        },
       });
     }
 

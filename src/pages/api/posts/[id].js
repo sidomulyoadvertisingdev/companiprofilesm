@@ -1,4 +1,5 @@
 import db from "../../../lib/db.js";
+import { cleanHtml } from "../../../lib/sanitize.js";
 
 export const prerender = false;
 
@@ -47,7 +48,7 @@ export async function PUT({ params, request }) {
   await db.execute(
     "UPDATE posts SET title=?, slug=?, excerpt=?, content=?, featured_image=?, tags_json=?, meta_title=?, meta_description=?, status=?, author=? WHERE id=?",
     [
-      b.title, b.slug, b.excerpt || "", b.content || "", b.featuredImage || "",
+      b.title, b.slug, b.excerpt || "", cleanHtml(b.content), b.featuredImage || "",
       JSON.stringify(b.tags || []), b.metaTitle || "", b.metaDescription || "",
       b.status || "draft", b.author || "", Number(params.id),
     ]

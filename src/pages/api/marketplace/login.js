@@ -1,6 +1,7 @@
 import db from "../../../lib/db.js";
 import { createHash } from "crypto";
 import { verifyTurnstile } from "../../../lib/turnstile.js";
+import { rateLimit } from "../../../lib/rate-limiter.js";
 
 export const prerender = false;
 
@@ -9,7 +10,8 @@ function hashPw(pw) {
 }
 
 export async function POST({ request }) {
-  const { email, password, turnstileToken } = await request.json();
+  const b = await request.json();
+  const { email, password, turnstileToken } = b;
   if (!email || !password) {
     return new Response(JSON.stringify({ message: "Email dan password wajib diisi" }), {
       status: 400,
@@ -18,6 +20,19 @@ export async function POST({ request }) {
   }
 
   const clientIp = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "";
+  const { allowed, resetTime } = await rateLimit(`mp-login:${clientIp}`, 10, 60 * 1000);
+
+  if (!allowed) {
+    const secondsLeft = Math.ceil((resetTime - Date.now()) / 1000);
+    return new Response(JSON.stringify({ message: `Terlalu banyak percobaan masuk, silakan coba lagi dalam ${secondsLeft} detik` }), {
+      status: 429,
+      headers: {
+        "Content-Type": "application/json",
+        "Retry-After": String(secondsLeft),
+      },
+    });
+  }
+
   const turnstileOk = await verifyTurnstile(turnstileToken, clientIp);
   if (!turnstileOk) {
     return new Response(JSON.stringify({ message: "Verifikasi keamanan gagal, silakan coba lagi" }), {

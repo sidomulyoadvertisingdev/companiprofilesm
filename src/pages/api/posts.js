@@ -1,4 +1,5 @@
 import db from "../../lib/db.js";
+import { cleanHtml } from "../../lib/sanitize.js";
 
 export const prerender = false;
 
@@ -57,7 +58,7 @@ export async function POST({ request }) {
   const [result] = await db.execute(
     "INSERT INTO posts (title, slug, excerpt, content, featured_image, tags_json, meta_title, meta_description, status, author) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     [
-      b.title, slug, b.excerpt || "", b.content || "", b.featuredImage || "",
+      b.title, slug, b.excerpt || "", cleanHtml(b.content), b.featuredImage || "",
       JSON.stringify(b.tags || []), b.metaTitle || b.title || "", b.metaDescription || "",
       b.status || "draft", b.author || "",
     ]
