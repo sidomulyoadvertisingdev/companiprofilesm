@@ -19,8 +19,9 @@ export const translations = {
       headlineLine2: "Strategic Vision.",
       subheadline: "Kami bermitra dengan perusahaan dan korporasi skala besar untuk merancang identitas brand terdepan, kampanye iklan berdaya jangkau tinggi, serta eksekusi fisik berkualitas tinggi.",
       ctaPrimary: "Discuss Your Strategy",
-      ctaSecondary: "Explore Portfolio",
+      ctaSecondary: "Marketplace",
     },
+
     trust: {
       badge: "Enterprise Network",
       title: "Dipercaya oleh Perusahaan Terdepan & Mitra Korporasi",
@@ -219,8 +220,9 @@ export const translations = {
       headlineLine2: "Strategic Vision.",
       subheadline: "We partner with forward-thinking enterprises to design industry-leading brand identities, high-impact advertising campaigns, and flawless physical execution.",
       ctaPrimary: "Discuss Your Strategy",
-      ctaSecondary: "Explore Portfolio",
+      ctaSecondary: "Marketplace",
     },
+
     trust: {
       badge: "Enterprise Network",
       title: "Trusted by Industry Leaders & Corporate Partners",
