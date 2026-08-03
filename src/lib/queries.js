@@ -24,6 +24,7 @@ export async function getSite() {
     social: JSON.parse(r.social_json || "[]"),
     serviceArea: JSON.parse(r.service_area_json || "[]"),
     footerLinks: JSON.parse(r.footer_links_json || "[]"),
+    navMenu: JSON.parse(r.nav_json || "[]"),
     copyrightText: r.copyright_text || "All rights reserved.",
   };
 }
@@ -80,16 +81,24 @@ export async function getStats() {
 }
 
 export async function getNav() {
+  const [rows] = await db.execute("SELECT nav_json FROM site_config WHERE id = 1");
+  const r = rows[0];
+  if (r && r.nav_json) {
+    try {
+      const parsed = JSON.parse(r.nav_json);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
+  }
   return [
-    { name: "Home", path: "/" },
-    { name: "Services", path: "/services" },
-    { name: "Portfolio", path: "/portfolio" },
-    { name: "Catalog", path: "/catalog" },
+    { name: "Beranda", path: "/" },
+    { name: "Layanan", path: "/services" },
+    { name: "Portofolio", path: "/portfolio" },
     { name: "Blog", path: "/blog" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contact" },
+    { name: "Tentang Kami", path: "/about" },
+    { name: "Kontak", path: "/contact" },
   ];
 }
+
 
 export async function getPosts() {
   const [rows] = await db.execute("SELECT id, title, slug, excerpt, featured_image, tags_json, meta_title, meta_description, status, author, created_at, updated_at FROM posts ORDER BY created_at DESC");

@@ -1,77 +1,174 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
-import { FiArrowRight } from "react-icons/fi";
-import { services } from "../data/services.js";
+import { FiArrowRight, FiTrendingUp, FiLayout, FiZap, FiLayers, FiPrinter, FiCheckCircle } from "react-icons/fi";
 import { site } from "../data/site.js";
+
+const detailedCapabilities = [
+  {
+    id: "brand-strategy",
+    title: "01. Brand Strategy & Positioning",
+    icon: FiTrendingUp,
+    tagline: "Formulasi Pondasi & Identitas Strategis",
+    desc: "Membangun landasan brand yang kuat dan relevan dengan tren pasar korporasi. Kami membantu Anda merumuskan pesan kunci, posisi pasar, serta pedoman brand jangka panjang.",
+    deliverables: [
+      "Brand Audit & Market Intelligence",
+      "Core Positioning & Value Proposition",
+      "Brand Architecture Framework",
+      "Comprehensive Brand Style Guide",
+    ],
+  },
+  {
+    id: "creative-design",
+    title: "02. Creative & Visual Design Systems",
+    icon: FiLayout,
+    tagline: "Estetika Visual Berkelas Internasional",
+    desc: "Mentransformasikan strategi menjadi sistem visual yang memukau. Tim desainer kami merancang logo, materi komunikasi korporat, hingga aset promosi bernilai tinggi.",
+    deliverables: [
+      "Corporate Logo & Visual Identity",
+      "Annual Reports & Executive Pitch Decks",
+      "Marketing Collateral & Brochures",
+      "Digital Asset & Motion Graphic Kits",
+    ],
+  },
+  {
+    id: "advertising-campaign",
+    title: "03. Integrated Advertising Campaigns",
+    icon: FiZap,
+    tagline: "Jangkauan Publik Skala Besar & Terukur",
+    desc: "Kampanye periklanan terarah untuk menarik perhatian pasar sasaran. Mulai dari titik Out-of-Home (OOH) strategis, billboard outdoor, hingga media promosi komersial.",
+    deliverables: [
+      "Out-of-Home (OOH) Billboard Placement",
+      "Commercial Retail & Event Display",
+      "Transit Advertising & Vehicle Wrap",
+      "Multi-Channel Campaign Activation",
+    ],
+  },
+  {
+    id: "corporate-branding",
+    title: "04. Corporate Signage & Environmental Graphics",
+    icon: FiLayers,
+    tagline: "Arsitektur Branding Fisik Presisi Tinggi",
+    desc: "Spesialis dalam rekayasa signage 3D, neon box akrilik/LED modern, serta branding fasad gedung untuk memberikan kesan profesional pada titik fisik perusahaan Anda.",
+    deliverables: [
+      "Architectural 3D Letters (Stainless/Acrylic)",
+      "High-Lumen LED Neon Box Systems",
+      "Facade & Office Interior Branding",
+      "Wayfinding & Exhibition Structures",
+    ],
+  },
+  {
+    id: "production-support",
+    title: "05. Precision Production & Heavy-Duty Support",
+    icon: FiPrinter,
+    tagline: "Eksekusi Cetak Tanpa Kompromi",
+    desc: "Dukungan workshop internal dengan mesin cetak digital skala besar generasi terbaru. Menjamin ketepatan warna, ketajaman resolusi, dan daya tahan material luar ruangan.",
+    deliverables: [
+      "Large Format Outdoor & Indoor Printing",
+      "High-Resolution UV & Eco-Solvent Printing",
+      "Material Engineering & Finishing QC",
+      "Professional On-Site Installation",
+    ],
+  },
+];
 ---
 
 <MainLayout
-  title="Layanan Percetakan & Advertising - Sidomulyo Advertising Salatiga"
-  description="Layanan percetakan dan advertising profesional: neon box, digital printing, huruf timbul, branding. Cepat jadi, mesin tercanggih, hasil berkualitas. Melayani Salatiga, Semarang, dan sekitarnya."
+  title="Capabilities & Services — Sidomulyo Advertising | Strategic Agency Solutions"
+  description="Layanan terintegrasi Sidomulyo Advertising: Brand Strategy, Creative Design, Integrated Advertising Campaigns, Corporate Signage, dan Precision Production."
 >
-  <main class="pt-20">
-    <section class="min-h-[55vh] flex items-center bg-white dark:bg-[#0a0a1a] transition-colors">
-      <div class="max-w-6xl mx-auto px-6">
-        <h1 class="text-5xl md:text-6xl font-bold mb-6 dark:text-white">
-          Layanan Kami
+  <main class="pt-24 bg-white dark:bg-[#09090b] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    {/* HERO */}
+    <section class="py-24 md:py-32 bg-slate-50 dark:bg-[#09090b] relative overflow-hidden transition-colors duration-300 border-b border-slate-200 dark:border-slate-800/80">
+      <div className="absolute top-0 left-1/3 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <span class="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-4 block">
+          Strategic Capabilities
+        </span>
+        <h1 class="text-4xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight mb-8 max-w-4xl">
+          Solusi Branding & Periklanan Terintegrasi.
         </h1>
-        <p class="text-xl text-[#6e6e73] dark:text-slate-400 max-w-3xl">
-          Kami menyediakan berbagai layanan percetakan dan advertising untuk
-          mendukung branding serta promosi bisnis Anda — cepat jadi dengan
-          mesin tercanggih.
+        <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed font-normal">
+          Dari formulasi ide hingga instalasi titik fisik, kami menyediakan ekosistem layanan lengkap untuk mendukung reputasi dan pertumbuhan brand korporasi Anda.
         </p>
       </div>
     </section>
 
-    <section class="py-24 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
-      <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10">
-        {services.map((item) => (
-          <div class="bg-white dark:bg-slate-800 rounded-3xl p-10 shadow-sm transition-colors">
-            <h3 class="text-2xl font-semibold mb-4 dark:text-white">{item.title}</h3>
-            <p class="text-[#6e6e73] dark:text-slate-400 text-lg leading-relaxed mb-6">{item.longDesc}</p>
-            <ul class="space-y-2">
-              {item.features.map((f) => (
-                <li class="flex items-start gap-2 text-[#1d1d1f] dark:text-slate-200">
-                  <span class="mt-1 w-1.5 h-1.5 rounded-full bg-blue-700 shrink-0"></span>
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
-    </section>
+    {/* CAPABILITIES LIST */}
+    <section class="py-20 md:py-28 bg-white dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-6 space-y-16">
+        {detailedCapabilities.map((cap) => {
+          const Icon = cap.icon;
+          return (
+            <div key={cap.id} id={cap.id} class="scroll-mt-28 rounded-3xl p-8 md:p-12 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] hover:border-blue-500/40 transition-all duration-300 shadow-sm">
+              <div class="grid lg:grid-cols-12 gap-8 items-start">
 
-    <section class="py-24 bg-white dark:bg-[#0a0a1a] text-center transition-colors">
-      <h2 class="text-4xl font-bold mb-12 dark:text-white">Proses Kerja Kami</h2>
-      <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-10">
-        {["Konsultasi Kebutuhan", "Desain & Perencanaan", "Produksi", "Pemasangan & Finishing"].map((step, i) => (
-          <div class="flex flex-col items-center">
-            <div class="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/50 text-blue-700 flex items-center justify-center font-bold mb-4">
-              {i + 1}
+                <div class="lg:col-span-7">
+                  <div class="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-6">
+                    <Icon />
+                  </div>
+                  <div class="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-2">
+                    {cap.tagline}
+                  </div>
+                  <h2 class="text-2xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
+                    {cap.title}
+                  </h2>
+                  <p class="text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed mb-6">
+                    {cap.desc}
+                  </p>
+                </div>
+
+                <div class="lg:col-span-5 rounded-2xl p-6 bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] shadow-xs">
+                  <div class="text-xs font-bold tracking-widest uppercase text-slate-700 dark:text-slate-400 mb-4">
+                    Key Deliverables:
+                  </div>
+                  <ul class="space-y-3">
+                    {cap.deliverables.map((item) => (
+                      <li key={item} class="flex items-center gap-3 text-xs md:text-sm font-medium text-slate-700 dark:text-slate-300">
+                        <FiCheckCircle class="text-blue-600 dark:text-blue-500 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
-            <p class="text-lg font-medium text-[#1d1d1f] dark:text-slate-200">{step}</p>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
 
-    <section class="py-24 bg-[#f5f5f7] dark:bg-[#111118] text-center transition-colors">
-      <h2 class="text-4xl font-bold mb-6 dark:text-white">
-        Siap Meningkatkan Branding Bisnis Anda?
-      </h2>
+    {/* METHODOLOGY PROCESS */}
+    <section class="py-28 md:py-36 bg-slate-50 dark:bg-[#09090b] border-b border-slate-200 dark:border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-3xl mx-auto mb-20">
+          <span class="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-3 block">
+            Quality Assurance
+          </span>
+          <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-6">
+            Standar Kerja & Kontrol Kualitas
+          </h2>
+          <p class="text-slate-600 dark:text-slate-400 text-base md:text-lg">
+            Setiap proyek dikawal oleh tim spesialis dengan jaminan pengujian kelayakan material dan kesesuaian identitas brand.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* EXECUTIVE CTA */}
+    <section class="py-28 bg-slate-900 dark:bg-[#09090b] text-center text-white">
+      <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">Siap Mengakselerasi Kehadiran Brand Anda?</h2>
+      <p class="text-base md:text-lg text-slate-300 mb-10 max-w-2xl mx-auto">
+        Konsultasikan proyek periklanan atau branding perusahaan Anda bersama konsultan kami.
+      </p>
       <a
-        href={`https://wa.me/${site.phone}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center gap-2
-               rounded-full bg-blue-700 text-white
-               px-10 py-4 text-sm font-semibold
-               hover:bg-blue-400 transition"
+        href="/contact"
+        class="inline-flex items-center gap-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 text-xs font-bold tracking-wider uppercase shadow-xl transition"
       >
-        Konsultasi Sekarang via WhatsApp
-        <FiArrowRight />
+        <span>Schedule Executive Consultation</span>
+        <FiArrowRight class="text-base" />
       </a>
     </section>
   </main>
+
 </MainLayout>
+

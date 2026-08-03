@@ -3,41 +3,55 @@ import MainLayout from "../layouts/MainLayout.astro";
 import { getSite, getStats, getServices, getPortfolio, getPartners, getTestimonials, getProducts } from "../lib/queries.js";
 import Hero from "../components/Hero.jsx";
 import GlobeShowcase from "../components/ui/GlobeShowcase.jsx";
-import Stats from "../components/Stats.jsx";
 import Services from "../components/Services.jsx";
+import WhyUs from "../components/WhyUs.jsx";
+import Process from "../components/Process.jsx";
 import Portfolio from "../components/Portfolio.jsx";
 import ClientsNetwork from "../components/ClientsNetwork.jsx";
 import Testimonials from "../components/Testimonials.jsx";
-import Catalog from "../components/Catalog.jsx";
 import CTA from "../components/CTA.jsx";
 
-// Fetch content server-side (SSR) and hydrate islands with initialData
-// so the markup is present in the initial HTML (better SEO + no blank flash).
 const site = await getSite();
 const stats = await getStats();
 const services = await getServices();
 const portfolio = await getPortfolio();
 const partners = await getPartners();
 const testimonials = await getTestimonials();
-const products = await getProducts();
 ---
 
 <MainLayout
-  title="Sidomulyo Advertising & Printing - Jasa Percetakan & Advertising Profesional di Salatiga"
-  description={site?.description}
+  title="Sidomulyo Advertising — Strategic Branding & Full-Service Advertising Agency"
+  description="Sidomulyo Advertising adalah perusahaan Strategic Branding Partner dan Full-Service Advertising Agency. Spesialis brand strategy, creative design, kampanye periklanan, corporate branding, dan produksi presisi."
 >
-  <main class="pt-0">
+  <main class="pt-0 bg-white dark:bg-[#09090b] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    {/* 1. HERO */}
     <div class="relative">
-      <Hero client:visible initialData={site}>
+      <Hero client:load initialData={site}>
         <GlobeShowcase client:only="react" />
       </Hero>
     </div>
-    <Stats client:visible initialData={stats} />
-    <Services client:visible initialData={services} />
-    <Portfolio client:visible initialData={portfolio} />
-    <ClientsNetwork client:visible initialData={partners} />
-    <Testimonials client:visible initialData={testimonials} />
-    <Catalog client:visible initialData={products} />
-    <CTA client:visible initialData={site} />
+
+    {/* 2. TRUST / CREDIBILITY */}
+    <ClientsNetwork client:load initialData={partners} />
+
+    {/* 3. SERVICES (REPOSITIONED) */}
+    <Services client:load initialData={services} />
+
+    {/* 4. WHY US */}
+    <WhyUs client:load />
+
+    {/* 5. PROCESS */}
+    <Process client:load />
+
+    {/* 6. PORTFOLIO */}
+    <Portfolio client:load initialData={portfolio} />
+
+    {/* 7. TESTIMONIALS */}
+    <Testimonials client:load initialData={testimonials} />
+
+    {/* 8. CTA */}
+    <CTA client:load initialData={site} />
   </main>
 </MainLayout>
+
+

@@ -1,105 +1,176 @@
 ---
 import MainLayout from "../layouts/MainLayout.astro";
 import { getSite, getStats } from "../lib/queries.js";
-import { FiArrowRight } from "react-icons/fi";
+import { FiArrowRight, FiShield, FiCheckCircle } from "react-icons/fi";
 
 const s = await getSite();
 const stats = await getStats();
+
+const values = [
+  {
+    title: "Strategic Rigor",
+    desc: "Setiap pendekatan visual didasari oleh riset intelijen pasar dan arah pertumbuhan bisnis korporasi.",
+  },
+  {
+    title: "Uncompromised Quality",
+    desc: "Standar ketat dalam pemilihan material, rekayasa teknik signage, serta kontrol presisi cetak.",
+  },
+  {
+    title: "End-to-End Partnership",
+    desc: "Mendampingi klien dari tahap perancangan ide hingga eksekusi instalasi di lapangan secara menyeluruh.",
+  },
+];
 ---
 
 <MainLayout
-  title="Tentang Sidomulyo Advertising - Percetakan Profesional di Salatiga"
-  description="Kenali Sidomulyo Advertising & Printing, perusahaan percetakan dan advertising profesional di Salatiga. Berpengalaman dengan mesin tercanggih untuk neon box, banner, digital printing, dan branding."
+  title="About Us — Sidomulyo Advertising | Strategic Branding & Advertising Agency"
+  description="Mengenal Sidomulyo Advertising: Perusahaan Strategic Branding Partner & Full-Service Advertising Agency yang melayani korporasi dan institusi skala nasional."
 >
-  <main class="pt-20">
-    <section class="min-h-[55vh] flex items-center bg-white dark:bg-[#0a0a1a] transition-colors">
-      <div class="max-w-6xl mx-auto px-6">
-        <h1 class="text-5xl md:text-6xl font-bold mb-6 dark:text-white">
-          Tentang Sidomulyo Advertising
+  <main class="pt-24 bg-white dark:bg-[#09090b] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+    {/* HERO MANIFESTO */}
+    <section class="py-24 md:py-36 bg-slate-50 dark:bg-[#09090b] relative overflow-hidden transition-colors duration-300 border-b border-slate-200 dark:border-slate-800/80">
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] pointer-events-none" />
+      <div class="max-w-7xl mx-auto px-6 relative z-10">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-600/10 border border-blue-600/20 text-blue-600 dark:text-blue-400 text-xs font-bold tracking-widest uppercase mb-8">
+          <FiShield class="text-sm" />
+          <span>Agency Overview & Manifesto</span>
+        </div>
+
+        <h1 class="text-4xl md:text-7xl font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight mb-8 max-w-4xl">
+          Architecting Memorable Brands & Impactful Campaigns.
         </h1>
-        <p class="text-xl text-[#6e6e73] dark:text-slate-400 max-w-3xl leading-relaxed">
-          Kami adalah perusahaan percetakan dan advertising profesional yang
-          berpusat di <strong class="dark:text-slate-200">{s.address.city}, {s.address.region}</strong> —
-          didukung mesin tercanggih dan tim ahli untuk hasil terbaik.
+        <p class="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed font-normal">
+          Sidomulyo Advertising adalah perusahaan Strategic Branding Partner dan Full-Service Advertising Agency. Kami mengombinasikan pemikiran strategis tingkat agency dengan keandalan armada produksi fisik milik sendiri.
         </p>
       </div>
     </section>
 
-    <section class="py-24 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
-      <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-        <div>
-          <h2 class="text-4xl font-bold mb-6 dark:text-white">Siapa Kami</h2>
-          <p class="text-[#6e6e73] dark:text-slate-400 text-lg leading-relaxed">
-            {s.name} adalah perusahaan digital printing dan advertising yang
-            berlokasi di <strong class="dark:text-slate-200">{s.address.street}, {s.address.city}</strong>.
-            Kami melayani berbagai kebutuhan promosi dan branding untuk bisnis di
-            {s.serviceArea.join(", ")} dengan mesin tercanggih dan hasil cepat jadi.
+    {/* CORPORATE STORY & POSITIONING */}
+    <section class="py-28 md:py-36 bg-white dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-16 items-center">
+        <div class="lg:col-span-7">
+          <span class="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-3 block">
+            Who We Are
+          </span>
+          <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
+            Mitra Branding Terpercaya untuk Korporasi & Bisnis Berkembang
+          </h2>
+          <p class="text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed mb-6">
+            Berawal dari komitmen terhadap presisi cetak dan rekayasa material, Sidomulyo Advertising telah berkembang menjadi partner strategis bagi perusahaan nasional maupun lokal dalam membangun identitas visual berdaya jangkau tinggi.
+          </p>
+          <p class="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
+            Kami percaya bahwa branding yang kuat tidak hanya soal estetika, melainkan bagaimana sebuah pesan visual dapat dikomunikasikan secara konsisten di setiap titik sentuh pelanggan — dari media komunikasi digital hingga struktur fisik Out-of-Home (OOH).
           </p>
         </div>
-        <div class="flex justify-center">
-          <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm p-10 transition-colors">
+
+        <div class="lg:col-span-5 flex justify-center">
+          <div class="w-full rounded-3xl p-10 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] shadow-xl flex flex-col items-center justify-center text-center">
             <img
               src={s.logo}
               alt={s.name}
-              class="h-40 md:h-48 w-auto object-contain mx-auto"
-              width="500"
-              height="200"
-              loading="lazy"
+              class="h-32 md:h-40 w-auto object-contain mb-8 filter drop-shadow-md"
+              width="400"
+              height="160"
             />
+            <div class="text-xs font-bold tracking-widest uppercase text-slate-700 dark:text-slate-400">
+              Headquarters: Salatiga, Jawa Tengah
+            </div>
+            <div class="text-xs text-slate-500 dark:text-slate-500 mt-1">
+              Melayani Jangkauan Layanan Nasional & Regional
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="py-24 bg-white dark:bg-[#0a0a1a] transition-colors">
-      <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-16">
-        <div>
-          <h3 class="text-3xl font-bold mb-4 dark:text-white">Visi</h3>
-          <p class="text-[#6e6e73] dark:text-slate-400 text-lg">
-            Menjadi perusahaan percetakan dan advertising terpercaya dengan
-            kualitas terbaik di Indonesia — dimulai dari Salatiga untuk seluruh
-            nusantara.
+    {/* VISION & MISSION */}
+    <section class="py-28 md:py-36 bg-slate-50 dark:bg-[#09090b] border-b border-slate-200 dark:border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12">
+        <div class="rounded-3xl p-10 bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] shadow-sm">
+          <span class="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-3 block">
+            Corporate Vision
+          </span>
+          <h3 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-4">Visi Perusahaan</h3>
+          <p class="text-slate-600 dark:text-slate-300 text-base md:text-lg leading-relaxed">
+            Menjadi Strategic Branding & Advertising Agency pilihan utama di Indonesia yang diakui atas inovasi ide kreatif, keunggulan kualitas produksi, serta dampak nyata bagi pertumbuhan bisnis mitra.
           </p>
         </div>
-        <div>
-          <h3 class="text-3xl font-bold mb-4 dark:text-white">Misi</h3>
-          <ul class="text-[#6e6e73] dark:text-slate-400 text-lg space-y-3 list-disc list-inside">
-            <li>Memberikan hasil cetak berkualitas tinggi dengan mesin modern</li>
-            <li>Mengutamakan kepuasan pelanggan dengan layanan cepat jadi</li>
-            <li>Mengikuti perkembangan teknologi percetakan terbaru</li>
-            <li>Pelayanan cepat, profesional, dan tepat waktu</li>
+
+        <div class="rounded-3xl p-10 bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] shadow-sm">
+          <span class="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-3 block">
+            Core Mission
+          </span>
+          <h3 class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-4">Misi Strategis</h3>
+          <ul class="text-slate-600 dark:text-slate-300 text-sm md:text-base space-y-4">
+            <li class="flex items-start gap-3">
+              <FiCheckCircle class="text-blue-600 dark:text-blue-500 mt-1 shrink-0 text-lg" />
+              <span>Merancang solusi periklanan dan identitas visual yang tepat sasaran serta bernilai tinggi.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <FiCheckCircle class="text-blue-600 dark:text-blue-500 mt-1 shrink-0 text-lg" />
+              <span>Menjamin ketepatan waktu dan presisi tinggi melalui armada mesin produksi milik sendiri.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <FiCheckCircle class="text-blue-600 dark:text-blue-500 mt-1 shrink-0 text-lg" />
+              <span>Membangun kemitraan jangka panjang berbasis kepercayaan, profesionalisme, dan efisiensi.</span>
+            </li>
           </ul>
         </div>
       </div>
     </section>
 
-    <section class="py-24 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
-      <div class="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
-        {stats.map((s) => (
-          <div>
-            <div class="text-4xl md:text-5xl font-bold text-blue-700">
-              {s.value}{s.suffix}
+    {/* CORE VALUES */}
+    <section class="py-28 md:py-36 bg-white dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center max-w-3xl mx-auto mb-20">
+          <span class="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-3 block">
+            Our Principles
+          </span>
+          <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white mb-6">
+            Nilai Utama Pelayanan Kami
+          </h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-8">
+          {values.map((v) => (
+            <div class="rounded-3xl p-8 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] shadow-sm">
+              <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-3">{v.title}</h3>
+              <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{v.desc}</p>
             </div>
-            <div class="mt-2 text-sm text-[#6e6e73] dark:text-slate-400">{s.label}</div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    {/* STATS */}
+    <section class="py-24 bg-slate-50 dark:bg-[#09090b] border-b border-slate-200 dark:border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        {stats.map((st) => (
+          <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] shadow-sm">
+            <div class="text-4xl md:text-5xl font-extrabold text-blue-600 dark:text-blue-500">
+              {st.value}{st.suffix}
+            </div>
+            <div class="mt-2 text-xs font-bold tracking-wider uppercase text-slate-600 dark:text-slate-400">{st.label}</div>
           </div>
         ))}
       </div>
     </section>
 
-    <section class="py-24 bg-white dark:bg-[#0a0a1a] text-center transition-colors">
-      <h2 class="text-4xl font-bold mb-6 dark:text-white">Siap Bekerja Sama dengan Kami?</h2>
-      <p class="text-lg text-[#6e6e73] dark:text-slate-400 mb-8 max-w-3xl mx-auto">
-        Butuh percetakan cepat jadi di {s.address.city}? Hubungi kami sekarang!
+    {/* EXECUTIVE CTA */}
+    <section class="py-28 bg-slate-900 dark:bg-[#09090b] text-center text-white">
+      <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">Siap Diskusi Strategi Branding Anda?</h2>
+      <p class="text-base md:text-lg text-slate-300 mb-10 max-w-2xl mx-auto">
+        Hubungi tim konsultasi kami untuk membahas kebutuhan kampanye dan branding perusahaan Anda.
       </p>
       <a
-        href={`https://wa.me/${s.phone}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center rounded-full bg-blue-700 text-white px-8 py-4 text-sm font-semibold hover:bg-blue-400 transition"
+        href="/contact"
+        class="inline-flex items-center gap-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 text-xs font-bold tracking-wider uppercase shadow-xl transition"
       >
-        Hubungi Kami via WhatsApp
-        <FiArrowRight />
+        <span>Schedule Executive Consultation</span>
+        <FiArrowRight class="text-base" />
       </a>
     </section>
   </main>
+
 </MainLayout>
+

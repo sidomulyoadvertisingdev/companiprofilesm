@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { getPartners } from "../lib/content.js";
+import { useLanguage } from "../lib/i18n.js";
 
 // Section "Mitra & Klien" — logo cloud dengan swap animation.
 export default function ClientsNetwork({ initialData }) {
   const [partners, setPartners] = useState(initialData || []);
+  const { dict } = useLanguage();
+
   useEffect(() => {
     if (!initialData) getPartners().then(setPartners);
   }, [initialData]);
@@ -16,27 +19,29 @@ export default function ClientsNetwork({ initialData }) {
   const row2 = [...partners, ...partners, ...partners].reverse();
 
   return (
-    <section className="py-28 bg-white dark:bg-[#0a0a1a] overflow-hidden transition-colors">
-      <div className="max-w-6xl mx-auto px-6">
+    <section className="py-14 md:py-18 bg-slate-50 dark:bg-[#09090b] overflow-hidden transition-colors border-y border-slate-200/80 dark:border-white/[0.08]">
+
+      <div className="max-w-7xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-14"
         >
-          <span className="text-xs font-semibold tracking-widest uppercase text-blue-700">
-            Mitra & Klien
+          <span className="text-xs font-bold tracking-widest uppercase text-blue-500 mb-2 block">
+            {dict.trust.badge}
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1d1d1f] dark:text-white mt-3">
-            Dipercaya Banyak Perusahaan
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {dict.trust.title}
           </h2>
-          <p className="text-lg text-[#6e6e73] dark:text-slate-400 mt-4 max-w-2xl mx-auto">
-            Jaringan mitra dan klien yang telah mempercayai Sidomulyo
-            Advertising untuk kebutuhan percetakan mereka.
+          <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 mt-3 max-w-2xl mx-auto">
+            {dict.trust.sub}
           </p>
         </motion.div>
       </div>
+
+
 
       {/* Logo Cloud — dua baris berlawanan arah */}
       <div className="relative">

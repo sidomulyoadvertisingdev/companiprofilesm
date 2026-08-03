@@ -14,6 +14,7 @@ function rowToSite(r) {
     social: JSON.parse(r.social_json || "[]"),
     serviceArea: JSON.parse(r.service_area_json || "[]"),
     footerLinks: JSON.parse(r.footer_links_json || "[]"),
+    navMenu: JSON.parse(r.nav_json || "[]"),
     copyrightText: r.copyright_text || "All rights reserved.",
   };
 }
@@ -35,7 +36,7 @@ export async function PUT({ request }) {
       phone=?, phone_display=?, email=?, operational_hours=?,
       maps_url=?, maps_embed=?, logo=?, hero_image=?,
       social_json=?, service_area_json=?,
-      footer_links_json=?, copyright_text=?
+      footer_links_json=?, nav_json=?, copyright_text=?
      WHERE id=1`,
     [
       b.name, b.shortName, b.tagline, b.description,
@@ -45,8 +46,9 @@ export async function PUT({ request }) {
       b.phone, b.phoneDisplay, b.email, b.operationalHours,
       b.mapsUrl, b.mapsEmbed, b.logo, b.heroImage,
       JSON.stringify(b.social || []), JSON.stringify(b.serviceArea || []),
-      JSON.stringify(b.footerLinks || []), b.copyrightText || "All rights reserved.",
+      JSON.stringify(b.footerLinks || []), JSON.stringify(b.navMenu || []), b.copyrightText || "All rights reserved.",
     ]
   );
   return GET();
 }
+

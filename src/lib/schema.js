@@ -397,15 +397,51 @@ export async function initSchema() {
   await ensureColumn("marketplace_users", "latitude", "DOUBLE DEFAULT NULL");
   await ensureColumn("marketplace_users", "longitude", "DOUBLE DEFAULT NULL");
 
-  // Email Templates: ensure banner_image column exists (added after initial schema).
-  await ensureColumn("email_templates", "banner_image", "VARCHAR(500) DEFAULT ''");
+  // Site Config dynamic navigation menu.
+  await ensureColumn("site_config", "nav_json", "LONGTEXT");
 
   // Email Templates: seed default templates (only if table is empty).
   const [existing] = await db.execute("SELECT COUNT(*) AS cnt FROM email_templates");
   if (existing[0].cnt === 0) {
     await seedEmailTemplates();
   }
+
+  // Seed default navigation menu if empty
+  await seedDefaultNavigation();
 }
+
+export const DEFAULT_NAV_MENU = [
+  { id: "home", name: "Beranda", path: "/", order: 1, is_active: true },
+  {
+    id: "services",
+    name: "Layanan",
+    path: "/services",
+    order: 2,
+    has_dropdown: true,
+    is_active: true,
+    dropdown_items: [
+      { id: "brand-strategy", title: "Brand Strategy & Positioning", desc: "Riset intelijen pasar, arsitektur brand, dan positioning strategis korporasi.", path: "/services/brand-strategy" },
+      { id: "creative-design", title: "Creative & Visual Design", desc: "Pengembangan sistem visual berkelas dunia dan komunikasi korporat.", path: "/services/creative-design" },
+      { id: "advertising-campaign", title: "Advertising Campaigns (OOH)", desc: "Perencanaan dan eksekusi kampanye periklanan skala besar Out-of-Home (OOH).", path: "/services/advertising-campaign" },
+      { id: "corporate-branding", title: "Corporate Branding & Signage", desc: "Rekayasa neon box akrilik/LED dan huruf timbul eksklusif untuk gedung.", path: "/services/corporate-branding" },
+      { id: "production-support", title: "Production & Execution Support", desc: "Armada mesin percetakan presisi tinggi untuk eksekusi fisik tanpa kompromi.", path: "/services/production-support" }
+    ]
+  },
+  { id: "portfolio", name: "Portofolio", path: "/portfolio", order: 3, is_active: true },
+  { id: "blog", name: "Blog", path: "/blog", order: 4, is_active: true },
+  { id: "about", name: "Tentang Kami", path: "/about", order: 5, is_active: true },
+  { id: "contact", name: "Kontak", path: "/contact", order: 6, is_active: true }
+];
+
+
+
+export async function seedDefaultNavigation() {
+  const [rows] = await db.execute("SELECT nav_json FROM site_config WHERE id = 1");
+  if (rows.length > 0 && (!rows[0].nav_json || rows[0].nav_json.trim() === "" || rows[0].nav_json === "[]")) {
+    await db.execute("UPDATE site_config SET nav_json = ? WHERE id = 1", [JSON.stringify(DEFAULT_NAV_MENU)]);
+  }
+}
+
 
 async function seedEmailTemplates() {
   const templates = [

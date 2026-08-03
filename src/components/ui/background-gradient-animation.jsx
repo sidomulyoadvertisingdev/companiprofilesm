@@ -92,23 +92,23 @@ export const BackgroundGradientAnimation = ({
     >
       <div className="absolute h-screen w-full [filter:blur(var(--gradient-size))] [inset:-40px_0] opacity-100 z-0">
         <div
-          className="absolute [background:radial-gradient(circle_at_center,var(--first-color)_0_0,_transparent_0)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2)] left-[calc(50%-var(--gradient-size)/2)] [mix-blend-mode:var(--blending-value)]"
+          className="absolute [background:radial-gradient(circle_at_center,rgba(var(--first-color),0.8)_0,rgba(var(--first-color),0)_50%)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2)] left-[calc(50%-var(--gradient-size)/2)] [mix-blend-mode:var(--blending-value)]"
           style={{ transform: `translate(${tgX * 15}px, ${tgY * 15}px)` }}
         />
         <div
-          className="absolute [background:radial-gradient(circle_at_center,var(--second-color)_0_0,_transparent_0)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2+20%)] left-[calc(50%-var(--gradient-size)/2-50%)] [mix-blend-mode:var(--blending-value)]"
+          className="absolute [background:radial-gradient(circle_at_center,rgba(var(--second-color),0.8)_0,rgba(var(--second-color),0)_50%)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2+20%)] left-[calc(50%-var(--gradient-size)/2-50%)] [mix-blend-mode:var(--blending-value)]"
           style={{ transform: `translate(${tgX * 20}px, ${tgY * 20}px)` }}
         />
         <div
-          className="absolute [background:radial-gradient(circle_at_center,var(--third-color)_0_0,_transparent_0)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2+50%)] left-[calc(50%-var(--gradient-size)/2+20%)] [mix-blend-mode:var(--blending-value)]"
+          className="absolute [background:radial-gradient(circle_at_center,rgba(var(--third-color),0.8)_0,rgba(var(--third-color),0)_50%)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2+50%)] left-[calc(50%-var(--gradient-size)/2+20%)] [mix-blend-mode:var(--blending-value)]"
           style={{ transform: `translate(${-tgX * 10}px, ${tgY * 10}px)` }}
         />
         <div
-          className="absolute [background:radial-gradient(circle_at_center,var(--fourth-color)_0_0,_transparent_0)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2-50%)] left-[calc(50%-var(--gradient-size)/2-20%)] [mix-blend-mode:var(--blending-value)]"
+          className="absolute [background:radial-gradient(circle_at_center,rgba(var(--fourth-color),0.8)_0,rgba(var(--fourth-color),0)_50%)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2-50%)] left-[calc(50%-var(--gradient-size)/2-20%)] [mix-blend-mode:var(--blending-value)]"
           style={{ transform: `translate(${-tgX * 15}px, ${-tgY * 15}px)` }}
         />
         <div
-          className="absolute [background:radial-gradient(circle_at_center,var(--fifth-color)_0_0,_transparent_0)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2)] left-[calc(50%-var(--gradient-size)/2+40%)] [mix-blend-mode:var(--blending-value)]"
+          className="absolute [background:radial-gradient(circle_at_center,rgba(var(--fifth-color),0.8)_0,rgba(var(--fifth-color),0)_50%)] w-[var(--gradient-size)] h-[var(--gradient-size)] top-[calc(50%-var(--gradient-size)/2)] left-[calc(50%-var(--gradient-size)/2+40%)] [mix-blend-mode:var(--blending-value)]"
           style={{ transform: `translate(${tgX * 10}px, ${-tgY * 10}px)` }}
         />
         {interactive && (
@@ -116,11 +116,12 @@ export const BackgroundGradientAnimation = ({
             ref={interactiveRef}
             className="absolute inset-0 z-10"
             style={{
-              background: `radial-gradient(circle at ${curX}px ${curY}px, var(--pointer-circle-color) 0%, transparent 60%)`,
+              background: `radial-gradient(circle at ${curX}px ${curY}px, rgba(var(--pointer-circle-color), 0.8) 0%, transparent 60%)`,
             }}
           />
         )}
       </div>
+
       <div className={cn("relative z-10", className)}>{children}</div>
     </div>
   );

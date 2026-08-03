@@ -1,0 +1,24 @@
+---
+import MainLayout from "../../layouts/MainLayout.astro";
+import { getService, getServices, getSite } from "../../lib/queries.js";
+import ServiceDetailPage from "../../react-pages/ServiceDetailPage.jsx";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const service = await getService(slug);
+
+if (!service) {
+  return Astro.redirect("/services");
+}
+
+const allServices = await getServices();
+const site = await getSite();
+---
+
+<MainLayout
+  title={`${service.title} — Sidomulyo Advertising & Printing`}
+  description={service.shortDesc}
+>
+  <ServiceDetailPage client:load service={service} allServices={allServices} siteData={site} />
+</MainLayout>

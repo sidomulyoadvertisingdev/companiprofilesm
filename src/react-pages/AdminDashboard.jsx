@@ -13,8 +13,9 @@ import {
   FiTag, FiPercent, FiPlus, FiTrash2,
   FiFileText, FiEdit3, FiSearch, FiCalendar, FiBarChart2, FiMapPin, FiMonitor,
   FiLayout, FiShield, FiClock, FiTruck, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiAward, FiCheck, FiStar,
-  FiSun, FiMoon, FiMail, FiToggleLeft, FiToggleRight,
+  FiSun, FiMoon, FiMail, FiToggleLeft, FiToggleRight, FiMenu,
 } from "react-icons/fi";
+
 
 // Icon map for landing page trust badges (editable from admin).
 const LP_ICONS = {
@@ -44,8 +45,10 @@ const TABS = [
   { key: "redeem-rules", label: "Aturan Redeem", icon: FiPercent, group: "Marketplace" },
   { key: "marketplace-users", label: "User Marketplace", icon: FiUsers, group: "Marketplace" },
   { key: "email-templates", label: "Email Templates", icon: FiMail, group: "Marketplace" },
+  { key: "nav", label: "Menu Navigasi", icon: FiMenu, group: "Pengaturan" },
   { key: "site", label: "Profil Usaha", icon: FiSettings, group: "Pengaturan" },
 ];
+
 
 const GROUPS = ["Konten", "Marketplace", "Pengaturan"];
 
@@ -314,12 +317,14 @@ export default function AdminDashboard({ admin }) {
           {tab === "redeem-rules" && <RedeemRulesTable rules={redeemRules} products={products} onChanged={load} />}
           {tab === "marketplace-users" && <MarketplaceUsersTable users={marketplaceUsers} stats={marketplaceStats} onChanged={load} />}
           {tab === "email-templates" && <EmailTemplatesManager templates={emailTemplates} onChanged={load} />}
+          {tab === "nav" && site && <NavMenuManager site={site} onChanged={load} />}
           {tab === "site" && site && (
             <>
               <SiteForm site={site} onChanged={load} />
               <AccountForm />
             </>
           )}
+
         </div>
       </div>
     </div>
@@ -3016,3 +3021,219 @@ function LandingPageManager({ pages, onChanged }) {
     </div>
   );
 }
+
+
+/* ─── Nav Menu Manager ────────────────────────────────────────────────── */
+
+function NavMenuManager({ site, onChanged }) {
+  const [items, setItems] = useState(() =>
+    site?.navMenu && Array.isArray(site.navMenu) && site.navMenu.length > 0
+      ? site.navMenu
+      : [
+          { id: "home", name: "Beranda", path: "/", order: 1, is_active: true },
+          {
+            id: "services",
+            name: "Layanan",
+            path: "/services",
+            order: 2,
+            has_dropdown: true,
+            is_active: true,
+            dropdown_items: [
+              { id: "brand-strategy", title: "Brand Strategy & Positioning", desc: "Riset intelijen pasar, arsitektur brand, dan positioning strategis korporasi.", path: "/services#brand-strategy" },
+              { id: "creative-design", title: "Creative & Visual Design", desc: "Pengembangan sistem visual berkelas dunia dan komunikasi korporat.", path: "/services#creative-design" },
+              { id: "advertising-campaigns", title: "Advertising Campaigns", desc: "Perencanaan dan eksekusi kampanye periklanan skala besar Out-of-Home (OOH).", path: "/services#advertising-campaigns" },
+              { id: "corporate-signage", title: "Corporate Branding & Signage", desc: "Rekayasa neon box akrilik/LED dan huruf timbul eksklusif untuk gedung.", path: "/services#corporate-signage" },
+              { id: "precision-production", title: "Production & Execution Support", desc: "Armada mesin percetakan presisi tinggi untuk eksekusi fisik tanpa kompromi.", path: "/services#precision-production" }
+            ]
+          },
+          { id: "portfolio", name: "Portofolio", path: "/portfolio", order: 3, is_active: true },
+          { id: "blog", name: "Blog", path: "/blog", order: 4, is_active: true },
+          { id: "about", name: "Tentang Kami", path: "/about", order: 5, is_active: true },
+          { id: "contact", name: "Kontak", path: "/contact", order: 6, is_active: true }
+        ]
+  );
+  const [saving, setSaving] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const saveNav = async () => {
+    setSaving(true);
+    setMsg("");
+    try {
+      await put("/api/site-config", { ...site, navMenu: items });
+      setMsg("✅ Menu navigasi berhasil diperbarui!");
+      onChanged();
+    } catch (err) {
+      setMsg("❌ Gagal menyimpan menu: " + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const seedNav = async () => {
+    if (!confirm("Reset dan isi ulang menu navigasi dengan data seeder default?")) return;
+    setSeeding(true);
+    setMsg("");
+    try {
+      const res = await post("/api/admin/seed-navigation", {});
+      if (res && res.data) {
+        setItems(res.data);
+        setMsg("🌱 Menu navigasi berhasil diseed ulang dari default database!");
+        onChanged();
+      }
+    } catch (err) {
+      setMsg("❌ Gagal seed: " + err.message);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
+  const updateItem = (index, field, val) => {
+    const next = [...items];
+    next[index] = { ...next[index], [field]: val };
+    setItems(next);
+  };
+
+  const toggleItemActive = (index) => {
+    const next = [...items];
+    next[index] = { ...next[index], is_active: !next[index].is_active };
+    setItems(next);
+  };
+
+  const addItem = () => {
+    setItems([
+      ...items,
+      {
+        id: `custom-${Date.now()}`,
+        name: "Menu Baru",
+        path: "/page-baru",
+        order: items.length + 1,
+        is_active: true,
+      },
+    ]);
+  };
+
+  const deleteItem = (index) => {
+    if (!confirm("Hapus menu ini?")) return;
+    setItems(items.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* HEADER ACTION BAR */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-[#1a1a2e] p-6 rounded-3xl border border-[#e5e5e5] dark:border-slate-700">
+        <div>
+          <h2 className="text-xl font-bold text-[#1d1d1f] dark:text-white">Kelola Menu Navigasi (Backend Dinamis)</h2>
+          <p className="text-xs text-[#6e6e73] dark:text-slate-400 mt-1">
+            Atur urutan, nama, rute, dan status aktif/non-aktif menu header & dropdown secara langsung dari database.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={seedNav}
+            disabled={seeding}
+            className="px-4 py-2.5 text-xs font-semibold rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-1.5"
+          >
+            🌱 {seeding ? "Seeding..." : "Seed Default Menu"}
+          </button>
+          <button
+            onClick={addItem}
+            className="px-4 py-2.5 text-xs font-semibold rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 hover:bg-blue-100 transition flex items-center gap-1.5"
+          >
+            <FiPlus /> Tambah Menu
+          </button>
+          <button
+            onClick={saveNav}
+            disabled={saving}
+            className="px-5 py-2.5 text-xs font-bold rounded-xl bg-blue-600 text-white hover:bg-blue-700 shadow-md transition"
+          >
+            {saving ? "Menyimpan..." : "Simpan Perubahan Navigasi"}
+          </button>
+        </div>
+      </div>
+
+      {msg && (
+        <div className="p-4 rounded-2xl bg-blue-50 dark:bg-blue-500/10 text-xs font-semibold text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20">
+          {msg}
+        </div>
+      )}
+
+      {/* MENU ITEMS TABLE */}
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 overflow-hidden shadow-xs">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[#6e6e73] dark:text-slate-400 border-b border-[#e5e5e5] dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+              <th className="px-4 py-3 w-16">Urutan</th>
+              <th className="px-4 py-3">Nama Menu</th>
+              <th className="px-4 py-3">Path / URL</th>
+              <th className="px-4 py-3">Sub-Dropdown</th>
+              <th className="px-4 py-3 w-28">Status</th>
+              <th className="px-4 py-3 text-right w-20">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#f0f0f2] dark:divide-slate-800">
+            {items.map((item, idx) => (
+              <tr key={item.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition">
+                <td className="px-4 py-3">
+                  <input
+                    type="number"
+                    value={item.order ?? idx + 1}
+                    onChange={(e) => updateItem(idx, "order", parseInt(e.target.value) || 0)}
+                    className="w-12 px-2 py-1 text-xs border rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-center font-bold"
+                  />
+                </td>
+                <td className="px-4 py-3">
+                  <input
+                    type="text"
+                    value={item.name}
+                    onChange={(e) => updateItem(idx, "name", e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs font-bold border rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
+                  />
+                </td>
+                <td className="px-4 py-3">
+                  <input
+                    type="text"
+                    value={item.path}
+                    onChange={(e) => updateItem(idx, "path", e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs font-mono border rounded-lg bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-blue-600 dark:text-blue-400"
+                  />
+                </td>
+                <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
+                  {item.dropdown_items && item.dropdown_items.length > 0 ? (
+                    <span className="px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400 font-semibold text-[11px]">
+                      {item.dropdown_items.length} Sub-layanan
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">-</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <button
+                    onClick={() => toggleItemActive(idx)}
+                    className={`px-3 py-1 rounded-full text-xs font-semibold transition ${
+                      item.is_active !== false
+                        ? "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400"
+                        : "bg-gray-100 dark:bg-slate-700 text-gray-500"
+                    }`}
+                  >
+                    {item.is_active !== false ? "Aktif" : "Nonaktif"}
+                  </button>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    onClick={() => deleteItem(idx)}
+                    className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition"
+                    title="Hapus"
+                  >
+                    <FiTrash2 />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+

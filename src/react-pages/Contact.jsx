@@ -1,19 +1,22 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import { FiPhone, FiMail, FiMapPin, FiSend } from "react-icons/fi";
+import { FiPhone, FiMail, FiMapPin, FiSend, FiBriefcase, FiUser, FiMessageSquare } from "react-icons/fi";
 import { getSite } from "../lib/content.js";
+import { useLanguage } from "../lib/i18n.js";
 
 export default function Contact({ initialData }) {
   const [site, setSite] = useState(initialData || null);
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", company: "", email: "", message: "" });
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
   const [error, setError] = useState("");
+  const { dict } = useLanguage();
+  const cDict = dict.contactPage;
 
   useEffect(() => {
     if (!initialData) getSite().then(setSite);
   }, [initialData]);
 
-  if (!site) return <main className="pt-20 min-h-screen" />;
+  if (!site) return <main className="pt-24 min-h-screen bg-[#09090b]" />;
 
   const update = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
@@ -34,7 +37,7 @@ export default function Contact({ initialData }) {
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.message || "Gagal mengirim pesan");
       setStatus("sent");
-      setForm({ name: "", email: "", message: "" });
+      setForm({ name: "", company: "", email: "", message: "" });
     } catch (err) {
       setStatus("error");
       setError(err.message);
@@ -45,45 +48,59 @@ export default function Contact({ initialData }) {
   const wa = `https://wa.me/${phone}`;
 
   return (
-    <main className="pt-20">
-      <section className="min-h-[60vh] flex items-center bg-white dark:bg-[#0a0a1a] transition-colors">
-        <div className="max-w-6xl mx-auto px-6">
+    <main className="pt-20 bg-white dark:bg-[#09090b] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+      {/* HERO HEADER */}
+      <section className="py-10 md:py-14 bg-slate-50 dark:bg-[#09090b] relative overflow-hidden border-b border-slate-200 dark:border-slate-800/80 transition-colors duration-300">
+
+        <div className="absolute top-0 right-1/3 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
+          <span className="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-4 block">
+            {cDict.badge}
+          </span>
           <motion.h1
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
-            className="text-5xl md:text-6xl font-semibold mb-6 dark:text-white"
+            className="text-4xl md:text-7xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight mb-6"
           >
-            Hubungi Kami
+            {cDict.title}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
             viewport={{ once: true }}
-            className="text-xl text-[#6e6e73] dark:text-slate-400 max-w-3xl"
+            className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-3xl leading-relaxed"
           >
-            Silakan hubungi Sidomulyo Advertising untuk konsultasi,
-            penawaran harga, atau kerja sama.
+            {cDict.sub}
           </motion.p>
         </div>
       </section>
 
-      <section className="py-32 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
-        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-12">
+      {/* CONTACT INFO CARDS */}
+      <section className="py-24 bg-white dark:bg-slate-900/40 border-b border-slate-200 dark:border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="bg-white dark:bg-slate-800 rounded-3xl p-8 transition-colors"
+            className="rounded-3xl p-8 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] hover:border-blue-500/40 transition-all duration-300 shadow-sm"
           >
-            <FiPhone className="text-2xl mb-4" />
-            <h3 className="text-xl font-medium mb-2 dark:text-white">WhatsApp</h3>
-            <p className="text-[#6e6e73] dark:text-slate-400 mb-4">{phoneDisplay}</p>
-            <a href={wa} target="_blank" rel="noopener noreferrer" data-track="cta-whatsapp-contact" className="text-blue-800 dark:text-blue-400 hover:underline">
-              Chat Sekarang
+            <div className="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-6">
+              <FiPhone />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{cDict.direct}</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{phoneDisplay}</p>
+            <a
+              href={wa}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="cta-whatsapp-contact"
+              className="text-xs font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-2"
+            >
+              <span>{cDict.chatLine}</span>
             </a>
           </motion.div>
 
@@ -92,13 +109,18 @@ export default function Contact({ initialData }) {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             viewport={{ once: true }}
-            className="bg-white dark:bg-slate-800 rounded-3xl p-8 transition-colors"
+            className="rounded-3xl p-8 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] hover:border-blue-500/40 transition-all duration-300 shadow-sm"
           >
-            <FiMail className="text-2xl mb-4" />
-            <h3 className="text-xl font-medium mb-2 dark:text-white">Email</h3>
-            <p className="text-[#6e6e73] dark:text-slate-400 mb-4">{email}</p>
-            <a href={`mailto:${email}`} className="text-blue-800 dark:text-blue-400 hover:underline">
-              Kirim Email
+            <div className="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-6">
+              <FiMail />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{cDict.officialEmail}</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">{email}</p>
+            <a
+              href={`mailto:${email}`}
+              className="text-xs font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-2"
+            >
+              <span>{cDict.sendRfp}</span>
             </a>
           </motion.div>
 
@@ -107,80 +129,138 @@ export default function Contact({ initialData }) {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
             viewport={{ once: true }}
-            className="bg-white dark:bg-slate-800 rounded-3xl p-8 transition-colors"
+            className="rounded-3xl p-8 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] hover:border-blue-500/40 transition-all duration-300 shadow-sm"
           >
-            <FiMapPin className="text-2xl mb-4" />
-            <h3 className="text-xl font-medium mb-2 dark:text-white">Alamat</h3>
-            <p className="text-[#6e6e73] dark:text-slate-400 leading-relaxed">
-               {site.name}<br />
-               {address.street}<br />
-               Kota {address.city}, {address.region} {address.postalCode}
+            <div className="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl mb-6">
+              <FiMapPin />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{cDict.hq}</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+              {site.name}<br />
+              {address.street}<br />
+              Kota {address.city}, {address.region} {address.postalCode}
             </p>
           </motion.div>
         </div>
       </section>
 
-      <section className="py-32 bg-white dark:bg-[#0a0a1a] transition-colors">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="overflow-hidden rounded-3xl">
-            <iframe
-              title="Lokasi Sidomulyo Advertising & Printing"
-              src={mapsEmbed}
-              className="w-full h-[400px] border-0"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            />
+      {/* FORM & MAP */}
+      <section className="py-28 md:py-36 bg-slate-50 dark:bg-[#09090b] transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-12 gap-16">
+          {/* Inquiry Form */}
+          <div className="lg:col-span-7">
+            <span className="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-3 block">
+              {cDict.inquiryBadge}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-8">
+              {cDict.inquiryTitle}
+            </h2>
+
+            <form className="space-y-6" onSubmit={submit}>
+              <div className="grid sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <FiUser className="text-blue-600 dark:text-blue-400" /> {cDict.fullName}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Nama Anda"
+                    value={form.name}
+                    onChange={update("name")}
+                    className="w-full px-5 py-4 rounded-xl border border-slate-300 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors shadow-xs"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                    <FiBriefcase className="text-blue-600 dark:text-blue-400" /> {cDict.companyName}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="PT / Instansi Anda"
+                    value={form.company}
+                    onChange={update("company")}
+                    className="w-full px-5 py-4 rounded-xl border border-slate-300 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors shadow-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <FiMail className="text-blue-600 dark:text-blue-400" /> {cDict.emailAddress}
+                </label>
+                <input
+                  type="email"
+                  placeholder="name@company.com"
+                  value={form.email}
+                  onChange={update("email")}
+                  className="w-full px-5 py-4 rounded-xl border border-slate-300 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors shadow-xs"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <FiMessageSquare className="text-blue-600 dark:text-blue-400" /> {cDict.messageDetail}
+                </label>
+                <textarea
+                  placeholder="Detail..."
+                  rows="5"
+                  value={form.message}
+                  onChange={update("message")}
+                  className="w-full px-5 py-4 rounded-xl border border-slate-300 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:outline-none focus:border-blue-500 transition-colors shadow-xs"
+                />
+              </div>
+
+              <div className="flex items-center gap-4">
+                <button
+                  type="submit"
+                  disabled={status === "sending"}
+                  className="inline-flex items-center gap-3 rounded-full bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 text-xs font-bold tracking-wider uppercase shadow-xl transition disabled:opacity-50"
+                >
+                  <span>{status === "sending" ? cDict.sending : cDict.submit}</span>
+                  <FiSend />
+                </button>
+                {status === "sent" && (
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">{cDict.sent}</span>
+                )}
+                {status === "error" && (
+                  <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">{error}</span>
+                )}
+              </div>
+            </form>
           </div>
-          <div className="text-center mt-6">
+
+          {/* Location Map */}
+          <div className="lg:col-span-5 flex flex-col">
+            <span className="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-500 mb-3 block">
+              {cDict.mapBadge}
+            </span>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-8">
+              {cDict.mapTitle}
+            </h2>
+
+            <div className="rounded-3xl overflow-hidden border border-slate-200 dark:border-white/[0.08] h-[380px] w-full mb-4 shadow-sm">
+              <iframe
+                title="Lokasi Sidomulyo Advertising"
+                src={mapsEmbed}
+                className="w-full h-full border-0 filter grayscale contrast-125 opacity-80 hover:opacity-100 transition-opacity"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
             <a
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-blue-800 dark:text-blue-400 hover:underline"
+              className="text-xs font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400 hover:underline"
             >
-              Buka di Google Maps
+              {cDict.openMaps}
             </a>
           </div>
         </div>
       </section>
-
-      <section className="py-32 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
-        <div className="max-w-3xl mx-auto px-6">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-4xl font-semibold mb-10 text-center dark:text-white"
-          >
-            Kirim Pesan
-          </motion.h2>
-          <form className="space-y-6" onSubmit={submit}>
-            <input type="text" placeholder="Nama" value={form.name} onChange={update("name")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors" />
-            <input type="email" placeholder="Email" value={form.email} onChange={update("email")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors" />
-            <textarea placeholder="Pesan" rows="5" value={form.message} onChange={update("message")} className="w-full px-6 py-4 rounded-xl border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-slate-800 text-[#1d1d1f] dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors" />
-            <div className="flex items-center gap-4">
-              <button
-                type="submit"
-                disabled={status === "sending"}
-                className="inline-flex items-center gap-2
-                           rounded-full bg-[#1d1d1f] dark:bg-white dark:text-[#1d1d1f] text-white
-                           px-8 py-4 text-sm font-medium
-                           hover:bg-black dark:hover:bg-gray-200 transition-colors disabled:opacity-50"
-              >
-                {status === "sending" ? "Mengirim…" : "Kirim Pesan"}
-                <FiSend />
-              </button>
-              {status === "sent" && (
-                <span className="text-sm font-medium text-green-600 dark:text-green-400">Pesan terkirim!</span>
-              )}
-              {status === "error" && (
-                <span className="text-sm font-medium text-red-600 dark:text-red-400">{error}</span>
-              )}
-            </div>
-          </form>
-        </div>
-      </section>
     </main>
   );
+
 }
+
+

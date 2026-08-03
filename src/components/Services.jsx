@@ -1,69 +1,92 @@
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiArrowRight } from "react-icons/fi";
-import { getServices } from "../lib/content.js";
-import { getIcon } from "./ui/iconMap.jsx";
+import { FiArrowRight, FiTrendingUp, FiLayout, FiZap, FiLayers, FiPrinter } from "react-icons/fi";
+import { useLanguage } from "../lib/i18n.js";
+
+const iconMap = [FiTrendingUp, FiLayout, FiZap, FiLayers, FiPrinter];
 
 export default function Services({ initialData }) {
-  const [services, setServices] = useState(initialData || []);
-  useEffect(() => {
-    if (!initialData) getServices().then(setServices);
-  }, [initialData]);
+  const { dict } = useLanguage();
+  const agencyServices = dict.services.items;
 
   return (
-    <section id="services" className="py-28 bg-white dark:bg-[#0a0a1a] transition-colors">
-      <div className="max-w-6xl mx-auto px-6">
+    <section id="services" className="py-16 md:py-24 bg-white dark:bg-[#09090b] transition-colors relative">
+
+      <div className="max-w-7xl mx-auto px-6">
+        
+        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8"
         >
-          <span className="text-xs font-semibold tracking-widest uppercase text-blue-700">
-            Layanan Kami
-          </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-[#1d1d1f] dark:text-white mt-3">
-            Solusi Percetakan Lengkap
-          </h2>
-          <p className="text-lg text-[#6e6e73] dark:text-slate-400 mt-4 max-w-2xl mx-auto">
-            Dari neon box hingga digital printing — didukung mesin tercanggih
-            untuk hasil profesional dan cepat jadi.
+          <div className="max-w-2xl">
+            <span className="text-xs font-bold tracking-widest uppercase text-blue-500 mb-3 block">
+              {dict.services.badge}
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+              {dict.services.title}
+            </h2>
+          </div>
+          <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 max-w-md leading-relaxed">
+            {dict.services.sub}
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.map((item, i) => {
-            const Icon = getIcon(item.icon);
+        {/* Grid of 5 Agency Pillars */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {agencyServices.map((item, i) => {
+            const Icon = iconMap[i % iconMap.length];
+            const isLarge = i === 3 || i === 4;
             return (
               <motion.div
-                key={item.id}
+                key={item.id || i}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: i * 0.08 }}
                 viewport={{ once: true }}
-                className="group rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-8 hover:border-blue-300 hover:shadow-lg transition dark:bg-slate-800/50"
+                className={`group rounded-3xl p-8 bg-slate-50 dark:bg-white/[0.02] border border-slate-200/80 dark:border-white/[0.08] hover:border-blue-500/40 dark:hover:border-blue-500/40 transition-all duration-300 hover:shadow-xl flex flex-col justify-between ${
+                  isLarge ? "lg:col-span-1" : ""
+                }`}
               >
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/50 text-blue-700 flex items-center justify-center text-2xl mb-6">
-                  <Icon />
+                <div>
+                  <div className="w-14 h-14 rounded-2xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl mb-8 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                    <Icon />
+                  </div>
+                  
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
+                    {item.title}
+                  </h3>
+                  
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
+                    {item.shortDesc}
+                  </p>
+
+                  <ul className="space-y-3 mb-8">
+                    {item.features.map((f) => (
+                      <li key={f} className="flex items-center gap-3 text-xs font-medium text-slate-700 dark:text-slate-300">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <h3 className="text-xl font-semibold text-[#1d1d1f] dark:text-white mb-2">
-                  {item.title}
-                </h3>
-                <p className="text-[#6e6e73] dark:text-slate-400 text-sm leading-relaxed mb-5">
-                  {item.shortDesc}
-                </p>
+
                 <a
                   href="/services"
-                  className="inline-flex items-center gap-1 text-sm font-semibold text-blue-800 hover:gap-2 transition-all"
+                  className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400 group-hover:text-blue-500 transition-colors pt-4 border-t border-slate-200/60 dark:border-white/[0.06]"
                 >
-                  Selengkapnya <FiArrowRight />
+                  <span>{dict.services.explore}</span>
+                  <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
                 </a>
               </motion.div>
             );
           })}
         </div>
+
       </div>
     </section>
   );
 }
+

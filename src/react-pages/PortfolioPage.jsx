@@ -26,29 +26,28 @@ export default function PortfolioPage({ initialData, siteData }) {
 
   return (
     <main className="pt-20">
-      <section className="min-h-[55vh] flex items-center bg-white dark:bg-[#0a0a1a] transition-colors">
+      <section className="pt-8 pb-10 md:pt-12 md:pb-14 bg-white dark:bg-[#0a0a1a] transition-colors border-b border-slate-100 dark:border-white/[0.06]">
         <div className="max-w-6xl mx-auto px-6">
-          <motion.h1
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-5xl md:text-6xl font-bold mb-6 dark:text-white"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="max-w-3xl"
           >
-            Portofolio Kami
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            viewport={{ once: true }}
-            className="text-xl text-[#6e6e73] dark:text-slate-400 max-w-3xl"
-          >
-            Berbagai proyek percetakan dan advertising yang telah kami kerjakan
-            untuk klien dari berbagai sektor.
-          </motion.p>
+            <span className="text-xs font-bold tracking-widest uppercase text-blue-600 dark:text-blue-400 mb-3 block">
+              Showcase Proyek Korporat
+            </span>
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 dark:text-white text-slate-900 leading-tight">
+              Portofolio Kami
+            </h1>
+            <p className="text-base md:text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+              Berbagai proyek percetakan dan advertising yang telah kami kerjakan
+              untuk klien dari berbagai sektor.
+            </p>
+          </motion.div>
         </div>
       </section>
+
 
       <section className="py-24 bg-[#f5f5f7] dark:bg-[#111118] transition-colors">
         <div className="max-w-6xl mx-auto px-6">
