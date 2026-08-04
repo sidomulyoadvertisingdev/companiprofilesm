@@ -7,20 +7,20 @@ export const translations = {
       blog: "Blog",
       about: "Tentang Kami",
       contact: "Kontak",
-      cta: "Hubungi Kami",
+      cta: "Marketplace",
       whyUs: "Mengapa Memilih Kami",
       process: "Metodologi Kerja",
     },
-
 
     hero: {
       badge: "Strategic Branding & Advertising Partner",
       headlineLine1: "Elevating Brands Through",
       headlineLine2: "Strategic Vision.",
       subheadline: "Kami bermitra dengan perusahaan dan korporasi skala besar untuk merancang identitas brand terdepan, kampanye iklan berdaya jangkau tinggi, serta eksekusi fisik berkualitas tinggi.",
-      ctaPrimary: "Discuss Your Strategy",
-      ctaSecondary: "Marketplace",
+      ctaPrimary: "Jadwalkan Konsultasi",
+      ctaSecondary: "Hubungi Kami",
     },
+
 
     trust: {
       badge: "Enterprise Network",
@@ -208,20 +208,20 @@ export const translations = {
       blog: "Blog",
       about: "About Us",
       contact: "Contact",
-      cta: "Schedule Consultation",
+      cta: "Marketplace",
       whyUs: "Why Choose Us",
       process: "Our Process",
     },
-
 
     hero: {
       badge: "Strategic Branding & Advertising Partner",
       headlineLine1: "Elevating Brands Through",
       headlineLine2: "Strategic Vision.",
       subheadline: "We partner with forward-thinking enterprises to design industry-leading brand identities, high-impact advertising campaigns, and flawless physical execution.",
-      ctaPrimary: "Discuss Your Strategy",
-      ctaSecondary: "Marketplace",
+      ctaPrimary: "Schedule Consultation",
+      ctaSecondary: "Contact Us",
     },
+
 
     trust: {
       badge: "Enterprise Network",

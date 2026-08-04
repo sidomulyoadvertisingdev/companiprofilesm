@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { FiArrowRight, FiCalendar, FiShield, FiTag } from "react-icons/fi";
+import { FiArrowRight, FiCalendar, FiShield, FiPhone } from "react-icons/fi";
 import { getSite } from "../lib/content.js";
 import { BackgroundGradientAnimation } from "./ui/background-gradient-animation";
 import { useLanguage } from "../lib/i18n.js";
+
 
 
 export default function Hero({ initialData, children }) {
@@ -85,13 +86,14 @@ export default function Hero({ initialData, children }) {
                 </a>
 
                 <a
-                  href="/marketplace"
-                  data-track="cta-marketplace-hero"
+                  href="/contact"
+                  data-track="cta-contact-hero"
                   className="inline-flex items-center justify-center gap-2.5 rounded-full border border-slate-300 dark:border-white/20 hover:border-slate-400 dark:hover:border-white/40 bg-white/60 dark:bg-white/5 hover:bg-white text-slate-800 dark:text-white px-8 py-4 text-sm font-semibold tracking-wide backdrop-blur-md transition-all duration-300 shadow-xs group"
                 >
-                  <FiTag className="text-base text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+                  <FiPhone className="text-base text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
                   <span>{dict.hero.ctaSecondary}</span>
                 </a>
+
 
               </div>
             </motion.div>

@@ -16,7 +16,9 @@ import {
   FiZap,
   FiLayers,
   FiPrinter,
+  FiTag,
 } from "react-icons/fi";
+
 import ThemeToggle from "./ui/ThemeToggle.jsx";
 import LanguageToggle from "./ui/LanguageToggle.jsx";
 import { useLanguage } from "../lib/i18n.js";
@@ -253,17 +255,18 @@ export default function Navbar() {
             {/* THEME TOGGLE */}
             <ThemeToggle />
 
-            {/* EXECUTIVE CTA BUTTON */}
+            {/* EXECUTIVE CTA BUTTON - MARKETPLACE */}
             <a
-              href="/contact"
+              href="/marketplace"
               className="hidden sm:inline-flex items-center gap-2
                          rounded-full bg-blue-600 hover:bg-blue-500 text-white
                          px-5 py-2.5 text-xs font-bold tracking-wider uppercase shadow-md shadow-blue-600/20
                          hover:shadow-lg hover:shadow-blue-600/30 transition-all duration-300 transform active:scale-95"
             >
+              <FiTag className="text-sm" />
               <span>{dict.nav.cta}</span>
-              <FiArrowRight className="text-sm" />
             </a>
+
 
             {/* MOBILE MENU TOGGLE */}
             <button
@@ -345,16 +348,17 @@ export default function Navbar() {
 
               <li className="pt-6 pb-2">
                 <a
-                  href="/contact"
+                  href="/marketplace"
                   onClick={() => setOpen(false)}
                   className="w-full flex items-center justify-center gap-2
                              rounded-xl bg-blue-600 text-white
                              py-3.5 text-xs font-bold tracking-wider uppercase shadow-md transition"
                 >
-                  <FiCalendar />
+                  <FiTag />
                   {dict.nav.cta}
                 </a>
               </li>
+
             </ul>
           </motion.div>
         )}
