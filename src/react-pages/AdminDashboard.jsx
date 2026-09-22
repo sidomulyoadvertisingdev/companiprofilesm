@@ -250,6 +250,27 @@ export default function AdminDashboard({ admin }) {
               })}
             </div>
           ))}
+          <div className="mb-3">
+            {!collapsed && (
+              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#6e6e73] dark:text-slate-500">
+                Campaign Iklan
+              </p>
+            )}
+            {/* /admin/campaigns is a standalone admin page (separate Astro
+                route + React app, isolated on purpose from this dashboard),
+                so this is a real navigation link, not an internal setTab. */}
+            <a
+              href="/admin/campaigns"
+              title={collapsed ? "Landing Page Campaign" : undefined}
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/50 hover:text-[#1d1d1f] dark:hover:text-white ${
+                collapsed ? "lg:justify-center lg:px-0" : ""
+              }`}
+            >
+              <FiGift className="text-base shrink-0 text-[#6e6e73] dark:text-slate-400" />
+              {!collapsed && <span className="hidden lg:inline">Landing Page Campaign</span>}
+              <span className="lg:hidden">Landing Page Campaign</span>
+            </a>
+          </div>
         </nav>
         <div className={`p-3 border-t border-gray-100 dark:border-slate-700/50 ${collapsed ? "lg:p-2" : ""}`}>
           <button
