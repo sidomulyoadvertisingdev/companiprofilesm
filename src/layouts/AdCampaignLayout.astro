@@ -1,6 +1,5 @@
 ---
 import "../styles/index.css";
-import ChatWidget from "../components/ChatWidget.jsx";
 
 const {
   title = "Sidomulyo Advertising",
@@ -44,7 +43,6 @@ const canonical = canonicalUrl || Astro.url.href;
   </head>
   <body class="bg-white text-[#1d1d1f] dark:bg-[#0a0a1a] dark:text-slate-200">
     <slot />
-    <ChatWidget client:load />
     <script is:inline src="/tracker.js" defer></script>
   </body>
 </html>
