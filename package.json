@@ -8,7 +8,8 @@
     "build": "astro build",
     "lint": "eslint .",
     "preview": "astro preview",
-    "seed": "node scripts/seed.mjs"
+    "seed": "node scripts/seed.mjs",
+    "seed:sppg-campaign": "node scripts/seed-ad-campaign-sppg.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^9.5.5",

@@ -1,0 +1,14 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import AdCampaignAdmin from "../../../react-pages/AdCampaignAdmin.jsx";
+import { ensureAdCampaignSchema } from "../../../lib/ad-campaigns.js";
+
+// Page protection for /admin/* is already handled globally by src/middleware.js.
+await ensureAdCampaignSchema();
+
+const admin = Astro.locals.admin;
+---
+
+<AdminLayout title="Ad Campaigns - Sidomulyo Advertising CMS">
+  <AdCampaignAdmin client:load admin={admin} />
+</AdminLayout>
