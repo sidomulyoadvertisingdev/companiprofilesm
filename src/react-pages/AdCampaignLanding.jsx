@@ -406,7 +406,7 @@ function SolutionSection({ section }) {
 
 function StepCard({ step, accent }) {
   return (
-    <div className="flex-1 text-center">
+    <div className="flex-1 text-center max-w-[260px] sm:max-w-none">
       <div
         className="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-base font-bold text-white mb-3"
         style={{ backgroundColor: accent }}
@@ -440,7 +440,7 @@ function StepsInfo({ section, accent }) {
         </p>
       </Reveal>
       {items.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-start gap-4">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-4">
           {items.map((step, i) => (
             <Fragment key={i}>
               <StepCard step={step} accent={accent} />
