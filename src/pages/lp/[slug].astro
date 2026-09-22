@@ -17,6 +17,6 @@ const description = page.metaDescription || page.heroSubtext || page.title;
 const image = page.heroImage || "/hero-product.webp";
 ---
 
-<LandingLayout title={title} description={description} image={image} accent={page.accentColor}>
+<LandingLayout title={title} description={description} image={image} accent={page.accentColor} noindex={page.noindex}>
   <LandingPage client:load initialData={page} />
 </LandingLayout>

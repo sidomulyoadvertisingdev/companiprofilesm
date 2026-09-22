@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Fragment } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
@@ -13,7 +13,8 @@ import {
   FiTag, FiPercent, FiPlus, FiTrash2,
   FiFileText, FiEdit3, FiSearch, FiCalendar, FiBarChart2, FiMapPin, FiMonitor,
   FiLayout, FiShield, FiClock, FiTruck, FiHeadphones, FiThumbsUp, FiZap, FiGift, FiAward, FiCheck, FiStar,
-  FiSun, FiMoon, FiMail, FiToggleLeft, FiToggleRight, FiMenu,
+  FiSun, FiMoon, FiMail, FiToggleLeft, FiToggleRight, FiMenu, FiInbox, FiDownload,
+  FiMessageCircle, FiChevronUp,
 } from "react-icons/fi";
 
 
@@ -38,6 +39,7 @@ const TABS = [
   { key: "portfolio", label: "Portofolio", icon: FiBriefcase, group: "Konten" },
   { key: "posts", label: "Blog", icon: FiFileText, group: "Konten" },
   { key: "landing", label: "Landing Page", icon: FiLayout, group: "Konten" },
+  { key: "landing-leads", label: "Landing Leads", icon: FiInbox, group: "Konten" },
   { key: "partners", label: "Mitra", icon: FiUsers, group: "Konten" },
   { key: "testimonials", label: "Testimoni", icon: FiMessageSquare, group: "Konten" },
   { key: "messages", label: "Pesan Masuk", icon: FiMail, group: "Konten" },
@@ -298,6 +300,7 @@ export default function AdminDashboard({ admin }) {
           )}
           {tab === "posts" && <BlogManager posts={posts} onChanged={load} />}
           {tab === "landing" && <LandingPageManager pages={landingPages} onChanged={load} />}
+          {tab === "landing-leads" && <LandingLeadsManager landingPages={landingPages} />}
           {tab === "messages" && <MessagesManager messages={messages} onChanged={load} focusId={messageFocusId} onFocused={() => setMessageFocusId(null)} />}
           {tab === "partners" && (
             <CrudTable rows={partners} fields={[
@@ -2605,6 +2608,15 @@ function AnalyticsDashboard() {
 
 /* ─── Landing Page Manager ───────────────────────────────────────────── */
 
+// Converts a MySQL DATETIME string to the value <input type="datetime-local"> expects.
+function toLocalDatetimeInput(v) {
+  if (!v) return "";
+  const d = new Date(v);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function LandingPageEditor({ page, onSaved, onCancel }) {
   const [form, setForm] = useState({
     id: page?.id || null,
@@ -2632,6 +2644,13 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
     mapAddress: page?.mapAddress || "",
     testimonials: page?.testimonials || [],
     status: page?.status || "draft",
+    heroLayout: page?.heroLayout || "parallax",
+    heroEyebrow: page?.heroEyebrow || "",
+    secondaryCtaText: page?.secondaryCtaText || "",
+    secondaryCtaTarget: page?.secondaryCtaTarget || "",
+    formFields: page?.formFields || [],
+    noindex: page?.noindex || false,
+    publishedAt: page?.publishedAt ? toLocalDatetimeInput(page.publishedAt) : "",
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
@@ -2666,7 +2685,7 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
     setSaving(true);
     setMsg("");
     try {
-      const body = { ...form };
+      const body = { ...form, publishedAt: form.publishedAt ? new Date(form.publishedAt).toISOString().slice(0, 19).replace("T", " ") : null };
       if (form.id) await put(`/api/admin/landing-pages?id=${form.id}`, body);
       else await post("/api/admin/landing-pages", body);
       setMsg("Tersimpan");
@@ -2715,6 +2734,17 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
           <label className={labelCls}>Badge Hero (cth: Promo Terbatas)</label>
           <input className={inputCls} value={form.badgeText} onChange={(e) => update("badgeText", e.target.value)} placeholder="Promo Terbatas Sidomulyo" />
         </div>
+        <div>
+          <label className={labelCls}>Layout Hero</label>
+          <select className={inputCls} value={form.heroLayout} onChange={(e) => update("heroLayout", e.target.value)}>
+            <option value="parallax">Parallax Showcase (katalog produk)</option>
+            <option value="product">Product Campaign (single-product, mobile sticky CTA)</option>
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Eyebrow Hero (label kecil di atas headline)</label>
+          <input className={inputCls} value={form.heroEyebrow} onChange={(e) => update("heroEyebrow", e.target.value)} placeholder="LABEL OMPRENG SPPG" />
+        </div>
         <div className="md:col-span-2">
           <label className={labelCls}>Hero Headline</label>
           <input className={inputCls} value={form.heroHeadline} onChange={(e) => update("heroHeadline", e.target.value)} />
@@ -2724,20 +2754,37 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
           <textarea className={inputCls} rows="2" value={form.heroSubtext} onChange={(e) => update("heroSubtext", e.target.value)} />
         </div>
         <div>
-          <label className={labelCls}>CTA Text</label>
+          <label className={labelCls}>CTA Text (Primer)</label>
           <input className={inputCls} value={form.ctaText} onChange={(e) => update("ctaText", e.target.value)} placeholder="Hubungi Kami" />
         </div>
         <div>
-          <label className={labelCls}>CTA Target (url)</label>
-          <input className={inputCls} value={form.ctaTarget} onChange={(e) => update("ctaTarget", e.target.value)} placeholder="https://wa.me/..." />
+          <label className={labelCls}>CTA Target (url atau #anchor)</label>
+          <input className={inputCls} value={form.ctaTarget} onChange={(e) => update("ctaTarget", e.target.value)} placeholder="https://wa.me/... atau #sample-form" />
+        </div>
+        <div>
+          <label className={labelCls}>CTA Text (Sekunder)</label>
+          <input className={inputCls} value={form.secondaryCtaText} onChange={(e) => update("secondaryCtaText", e.target.value)} placeholder="Chat WhatsApp" />
+        </div>
+        <div>
+          <label className={labelCls}>CTA Target (Sekunder — biasanya link wa.me)</label>
+          <input className={inputCls} value={form.secondaryCtaTarget} onChange={(e) => update("secondaryCtaTarget", e.target.value)} placeholder="https://wa.me/62xxxx?text=..." />
         </div>
         <div>
           <label className={labelCls}>Warna Aksen</label>
           <input type="color" className="w-full h-10 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23]" value={form.accentColor} onChange={(e) => update("accentColor", e.target.value)} />
         </div>
+        <div>
+          <label className={labelCls}>Jadwalkan Publish (opsional)</label>
+          <input type="datetime-local" className={inputCls} value={form.publishedAt} onChange={(e) => update("publishedAt", e.target.value)} />
+        </div>
         <div className="flex items-end gap-4">
           <label className="flex items-center gap-2 text-sm text-[#1d1d1f] dark:text-white">
             <input type="checkbox" checked={form.formEnabled} onChange={(e) => update("formEnabled", e.target.checked)} /> Aktifkan Form Lead
+          </label>
+        </div>
+        <div className="flex items-end gap-4">
+          <label className="flex items-center gap-2 text-sm text-[#1d1d1f] dark:text-white">
+            <input type="checkbox" checked={form.noindex} onChange={(e) => update("noindex", e.target.checked)} /> Noindex (sembunyikan dari Google)
           </label>
         </div>
         <div className="md:col-span-2">
@@ -2863,7 +2910,9 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
               <select className={inputCls} value={s.type} onChange={(e) => updateSection(i, { type: e.target.value })}>
                 <option value="text">Teks</option>
                 <option value="image">Gambar</option>
-                <option value="features">Fitur Grid</option>
+                <option value="features">Fitur Grid (kartu: masalah/benefit/area)</option>
+                <option value="steps">Alur / Proses (numbered steps)</option>
+                <option value="faq">FAQ (accordion)</option>
               </select>
               <button onClick={() => removeSection(i)} className="p-2 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10">
                 <FiTrash2 />
@@ -2887,8 +2936,38 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
                 <FeatureItemsEditor items={s.items || []} onChange={(items) => updateSection(i, { items })} />
               </>
             )}
+            {s.type === "steps" && (
+              <>
+                <input className={`${inputCls} mb-2`} value={s.heading || ""} onChange={(e) => updateSection(i, { heading: e.target.value })} placeholder="Judul section" />
+                <input className={`${inputCls} mb-2`} value={s.badge || ""} onChange={(e) => updateSection(i, { badge: e.target.value })} placeholder="Badge kecil (opsional, cth: 1 Sample Kit per SPPG)" />
+                <StepsItemsEditor items={s.items || []} onChange={(items) => updateSection(i, { items })} />
+              </>
+            )}
+            {s.type === "faq" && (
+              <>
+                <input className={`${inputCls} mb-2`} value={s.heading || ""} onChange={(e) => updateSection(i, { heading: e.target.value })} placeholder="Judul section" />
+                <FaqItemsEditor items={s.items || []} onChange={(items) => updateSection(i, { items })} />
+              </>
+            )}
           </div>
         ))}
+      </div>
+
+      {/* Dynamic Lead Form Fields (form_fields_json) */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-2">
+          <h4 className="text-sm font-semibold text-[#1d1d1f] dark:text-white">Field Form Dinamis (kosongkan untuk pakai form default nama/telepon/pesan)</h4>
+          <button
+            onClick={() => update("formFields", [...form.formFields, { key: "", label: "", type: "text", required: false, options: [] }])}
+            className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+          >
+            <FiPlus /> Tambah Field
+          </button>
+        </div>
+        <p className="text-xs text-[#6e6e73] dark:text-slate-400 mb-2">
+          Konvensi key: <code>name</code>/<code>whatsapp</code>/<code>email</code>/<code>city</code> otomatis dipetakan ke kolom lead. Field lain (kecamatan, alamat, dsb) disimpan sebagai data tambahan.
+        </p>
+        <FormFieldsEditor fields={form.formFields} onChange={(formFields) => update("formFields", formFields)} />
       </div>
 
       <div className="flex items-center gap-3 mt-5">
@@ -2897,6 +2976,105 @@ function LandingPageEditor({ page, onSaved, onCancel }) {
         </button>
         {msg && <span className="text-sm text-[#6e6e73] dark:text-slate-400">{msg}</span>}
       </div>
+    </div>
+  );
+}
+
+function StepsItemsEditor({ items, onChange }) {
+  const update = (i, patch) => onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
+  const add = () => onChange([...items, { number: items.length + 1, title: "", desc: "" }]);
+  const inputCls = "w-full px-2 py-1.5 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white outline-none focus:ring-2 focus:ring-blue-500";
+
+  return (
+    <div className="space-y-2">
+      {items.map((it, i) => (
+        <div key={i} className="flex gap-2 items-start p-2 rounded-lg border border-[#e5e5e5] dark:border-slate-700">
+          <input type="number" className={`${inputCls} w-16 shrink-0`} value={it.number ?? i + 1} onChange={(e) => update(i, { number: Number(e.target.value) })} />
+          <div className="flex-1 space-y-2">
+            <input className={inputCls} value={it.title || ""} onChange={(e) => update(i, { title: e.target.value })} placeholder="Judul langkah" />
+            <input className={inputCls} value={it.desc || ""} onChange={(e) => update(i, { desc: e.target.value })} placeholder="Deskripsi singkat (opsional)" />
+          </div>
+          <button onClick={() => remove(i)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"><FiTrash2 /></button>
+        </div>
+      ))}
+      <button onClick={add} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-[#f0f0f2] dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300 hover:text-[#1d1d1f]"><FiPlus /> Tambah Langkah</button>
+    </div>
+  );
+}
+
+function FaqItemsEditor({ items, onChange }) {
+  const update = (i, patch) => onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)));
+  const remove = (i) => onChange(items.filter((_, idx) => idx !== i));
+  const add = () => onChange([...items, { question: "", answer: "", active: true }]);
+  const inputCls = "w-full px-2 py-1.5 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white outline-none focus:ring-2 focus:ring-blue-500";
+
+  return (
+    <div className="space-y-2">
+      {items.map((it, i) => (
+        <div key={i} className="p-2 rounded-lg border border-[#e5e5e5] dark:border-slate-700 space-y-2">
+          <div className="flex items-center gap-2">
+            <input className={inputCls} value={it.question || ""} onChange={(e) => update(i, { question: e.target.value })} placeholder="Pertanyaan" />
+            <label className="flex items-center gap-1 text-xs text-[#6e6e73] dark:text-slate-400 shrink-0">
+              <input type="checkbox" checked={it.active !== false} onChange={(e) => update(i, { active: e.target.checked })} /> Aktif
+            </label>
+            <button onClick={() => remove(i)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 shrink-0"><FiTrash2 /></button>
+          </div>
+          <textarea className={inputCls} rows="2" value={it.answer || ""} onChange={(e) => update(i, { answer: e.target.value })} placeholder="Jawaban" />
+        </div>
+      ))}
+      <button onClick={add} className="inline-flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg bg-[#f0f0f2] dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300 hover:text-[#1d1d1f]"><FiPlus /> Tambah FAQ</button>
+    </div>
+  );
+}
+
+function FormFieldsEditor({ fields, onChange }) {
+  const update = (i, patch) => onChange(fields.map((f, idx) => (idx === i ? { ...f, ...patch } : f)));
+  const remove = (i) => onChange(fields.filter((_, idx) => idx !== i));
+  const move = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= fields.length) return;
+    const next = [...fields];
+    [next[i], next[j]] = [next[j], next[i]];
+    onChange(next);
+  };
+  const inputCls = "w-full px-2 py-1.5 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white outline-none focus:ring-2 focus:ring-blue-500";
+
+  return (
+    <div className="space-y-2">
+      {fields.map((f, i) => (
+        <div key={i} className="p-3 rounded-lg border border-[#e5e5e5] dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-2">
+          <input className={inputCls} value={f.key || ""} onChange={(e) => update(i, { key: e.target.value })} placeholder="key (cth: name, whatsapp, city)" />
+          <input className={inputCls} value={f.label || ""} onChange={(e) => update(i, { label: e.target.value })} placeholder="Label tampilan" />
+          <select className={inputCls} value={f.type || "text"} onChange={(e) => update(i, { type: e.target.value })}>
+            <option value="text">Text</option>
+            <option value="tel">Telepon</option>
+            <option value="email">Email</option>
+            <option value="select">Select (dropdown)</option>
+            <option value="textarea">Textarea</option>
+          </select>
+          <input className={inputCls} value={f.placeholder || ""} onChange={(e) => update(i, { placeholder: e.target.value })} placeholder="Placeholder (opsional)" />
+          {f.type === "select" && (
+            <textarea
+              className={`${inputCls} md:col-span-2`}
+              rows="2"
+              value={(f.options || []).join("\n")}
+              onChange={(e) => update(i, { options: e.target.value.split("\n").map((s) => s.trim()).filter(Boolean) })}
+              placeholder={"Satu opsi per baris, cth:\nSalatiga\nSemarang\nMagelang"}
+            />
+          )}
+          <div className="md:col-span-2 flex items-center justify-between">
+            <label className="flex items-center gap-2 text-xs text-[#1d1d1f] dark:text-white">
+              <input type="checkbox" checked={!!f.required} onChange={(e) => update(i, { required: e.target.checked })} /> Wajib diisi
+            </label>
+            <div className="flex items-center gap-1">
+              <button onClick={() => move(i, -1)} className="p-1.5 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:bg-[#f0f0f2] dark:hover:bg-slate-700"><FiChevronUp /></button>
+              <button onClick={() => move(i, 1)} className="p-1.5 rounded-lg text-[#6e6e73] dark:text-slate-400 hover:bg-[#f0f0f2] dark:hover:bg-slate-700"><FiChevronDown /></button>
+              <button onClick={() => remove(i)} className="p-1.5 rounded-lg text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"><FiTrash2 /></button>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -3017,6 +3195,243 @@ function LandingPageManager({ pages, onChanged }) {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+
+/* ─── Landing Page Leads Manager ──────────────────────────────────────── */
+
+const LEAD_STATUSES = [
+  "new", "contacted", "qualified", "sample_approved", "sample_sent",
+  "sample_received", "follow_up", "quotation", "order", "not_interested",
+];
+
+const LEAD_STATUS_LABEL = {
+  new: "Baru", contacted: "Dihubungi", qualified: "Qualified",
+  sample_approved: "Sample Disetujui", sample_sent: "Sample Terkirim",
+  sample_received: "Sample Diterima", follow_up: "Follow Up",
+  quotation: "Penawaran", order: "Order", not_interested: "Tidak Tertarik",
+};
+
+const LEAD_STATUS_COLOR = {
+  new: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+  contacted: "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400",
+  qualified: "bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-400",
+  sample_approved: "bg-teal-100 dark:bg-teal-500/20 text-teal-700 dark:text-teal-400",
+  sample_sent: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400",
+  sample_received: "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400",
+  follow_up: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400",
+  quotation: "bg-fuchsia-100 dark:bg-fuchsia-500/20 text-fuchsia-700 dark:text-fuchsia-400",
+  order: "bg-green-100 dark:bg-green-500/20 text-green-700 dark:text-green-400",
+  not_interested: "bg-gray-100 dark:bg-slate-700 text-[#6e6e73] dark:text-slate-300",
+};
+
+function LandingLeadsManager({ landingPages }) {
+  const [leads, setLeads] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({ landingPageId: "", status: "", city: "", q: "", dateFrom: "", dateTo: "" });
+  const [activeId, setActiveId] = useState(null);
+  const pageSize = 20;
+
+  const buildParams = useCallback((overridePage) => {
+    const params = new URLSearchParams();
+    if (filters.landingPageId) params.set("landingPageId", filters.landingPageId);
+    if (filters.status) params.set("status", filters.status);
+    if (filters.city) params.set("city", filters.city);
+    if (filters.q) params.set("q", filters.q);
+    if (filters.dateFrom) params.set("dateFrom", filters.dateFrom);
+    if (filters.dateTo) params.set("dateTo", filters.dateTo);
+    params.set("page", String(overridePage || page));
+    params.set("pageSize", String(pageSize));
+    return params;
+  }, [filters, page]);
+
+  const fetchLeads = useCallback(async (overridePage) => {
+    setLoading(true);
+    try {
+      const params = buildParams(overridePage);
+      const res = await fetch(`/api/admin/landing-leads?${params.toString()}`);
+      const d = await res.json();
+      setLeads(d.data || []);
+      setTotal(d.total || 0);
+      setTotalPages(d.totalPages || 1);
+    } catch {
+      setLeads([]);
+    }
+    setLoading(false);
+  }, [buildParams]);
+
+  useEffect(() => { fetchLeads(1).catch(() => {}); setPage(1); /* eslint-disable-next-line */ }, [filters.landingPageId, filters.status, filters.city, filters.q, filters.dateFrom, filters.dateTo]);
+  useEffect(() => { fetchLeads(page).catch(() => {}); /* eslint-disable-next-line */ }, [page]);
+
+  async function updateStatus(id, status) {
+    try {
+      await put(`/api/admin/landing-leads?id=${id}`, { status });
+      fetchLeads();
+    } catch (err) {
+      console.error("Gagal update status lead:", err);
+    }
+  }
+
+  async function saveNotes(id, adminNotes) {
+    try {
+      await put(`/api/admin/landing-leads?id=${id}`, { adminNotes });
+      fetchLeads();
+    } catch (err) {
+      console.error("Gagal simpan catatan lead:", err);
+    }
+  }
+
+  function waLink(lead) {
+    const num = (lead.whatsapp || "").replace(/\D/g, "");
+    const text = encodeURIComponent(`Halo ${lead.name}, terima kasih sudah mengisi form kami.`);
+    return `https://wa.me/${num}?text=${text}`;
+  }
+
+  const exportUrl = `/api/admin/landing-leads?format=csv&${buildParams(1).toString()}`;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h2 className="text-xl font-bold text-[#1d1d1f] dark:text-white">Landing Leads</h2>
+          <p className="text-sm text-[#6e6e73] dark:text-slate-400">{total} lead ditemukan</p>
+        </div>
+        <a href={exportUrl} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 text-sm">
+          <FiDownload /> Export CSV
+        </a>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-2xl border border-[#e5e5e5] dark:border-slate-700 p-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <select className="px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white" value={filters.landingPageId} onChange={(e) => setFilters((f) => ({ ...f, landingPageId: e.target.value }))}>
+          <option value="">Semua Landing Page</option>
+          {landingPages.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+        </select>
+        <select className="px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white" value={filters.status} onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}>
+          <option value="">Semua Status</option>
+          {LEAD_STATUSES.map((s) => <option key={s} value={s}>{LEAD_STATUS_LABEL[s]}</option>)}
+        </select>
+        <input className="px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white" placeholder="Kota" value={filters.city} onChange={(e) => setFilters((f) => ({ ...f, city: e.target.value }))} />
+        <input className="px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white" placeholder="Cari nama / WA / email" value={filters.q} onChange={(e) => setFilters((f) => ({ ...f, q: e.target.value }))} />
+        <input type="date" className="px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white" value={filters.dateFrom} onChange={(e) => setFilters((f) => ({ ...f, dateFrom: e.target.value }))} />
+        <input type="date" className="px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white" value={filters.dateTo} onChange={(e) => setFilters((f) => ({ ...f, dateTo: e.target.value }))} />
+      </div>
+
+      <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-[#6e6e73] dark:text-slate-400 border-b border-[#e5e5e5] dark:border-slate-700">
+              <th className="px-4 py-3">Nama</th>
+              <th className="px-4 py-3">WhatsApp</th>
+              <th className="px-4 py-3">Kota</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Tanggal</th>
+              <th className="px-4 py-3 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {!loading && leads.length === 0 && (
+              <tr><td colSpan="6" className="px-4 py-8 text-center text-[#6e6e73] dark:text-slate-400">Belum ada lead</td></tr>
+            )}
+            {leads.map((l) => (
+              <Fragment key={l.id}>
+                <tr className="border-b border-[#f0f0f2] dark:border-slate-800 cursor-pointer hover:bg-[#fafafa] dark:hover:bg-slate-800/40" onClick={() => setActiveId(activeId === l.id ? null : l.id)}>
+                  <td className="px-4 py-3 font-medium text-[#1d1d1f] dark:text-white">
+                    {l.name}
+                    <div className="text-[11px] text-[#6e6e73] dark:text-slate-400">{l.landingPageTitle}</div>
+                  </td>
+                  <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-300">{l.whatsapp}</td>
+                  <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-300">{l.city || "-"}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${LEAD_STATUS_COLOR[l.status] || ""}`}>
+                      {LEAD_STATUS_LABEL[l.status] || l.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-[#6e6e73] dark:text-slate-400 text-xs">
+                    {new Date(l.createdAt).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </td>
+                  <td className="px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                    <a href={waLink(l)} target="_blank" rel="noreferrer" className="p-2 inline-block rounded-lg text-green-600 hover:bg-green-50 dark:hover:bg-green-500/10" title="Buka WhatsApp"><FiMessageCircle /></a>
+                    <button onClick={() => updateStatus(l.id, "sample_sent")} className="p-2 rounded-lg text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-500/10" title="Tandai Sample Terkirim"><FiTruck /></button>
+                    <button onClick={() => updateStatus(l.id, "follow_up")} className="p-2 rounded-lg text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-500/10" title="Tandai Follow Up"><FiClock /></button>
+                    <button onClick={() => updateStatus(l.id, "order")} className="p-2 rounded-lg text-green-700 hover:bg-green-50 dark:hover:bg-green-500/10" title="Tandai Order"><FiCheck /></button>
+                  </td>
+                </tr>
+                {activeId === l.id && (
+                  <tr className="border-b border-[#f0f0f2] dark:border-slate-800 bg-[#fafafa] dark:bg-slate-800/40">
+                    <td colSpan="6" className="px-4 py-4">
+                      <LeadDetail lead={l} onStatusChange={(status) => updateStatus(l.id, status)} onSaveNotes={(notes) => saveNotes(l.id, notes)} />
+                    </td>
+                  </tr>
+                )}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <button disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))} className="px-3 py-1.5 rounded-lg border border-[#e5e5e5] dark:border-slate-600 text-sm text-[#1d1d1f] dark:text-white disabled:opacity-40">Sebelumnya</button>
+          <span className="text-sm text-[#6e6e73] dark:text-slate-400">Halaman {page} / {totalPages}</span>
+          <button disabled={page >= totalPages} onClick={() => setPage((p) => Math.min(totalPages, p + 1))} className="px-3 py-1.5 rounded-lg border border-[#e5e5e5] dark:border-slate-600 text-sm text-[#1d1d1f] dark:text-white disabled:opacity-40">Berikutnya</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LeadDetail({ lead, onStatusChange, onSaveNotes }) {
+  const [notes, setNotes] = useState(lead.adminNotes || "");
+  const entries = Object.entries(lead.answers || {});
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-[#6e6e73] dark:text-slate-400 mb-2">Detail Jawaban</h4>
+        {lead.email && <p className="text-sm text-[#1d1d1f] dark:text-white mb-1"><span className="text-[#6e6e73] dark:text-slate-400">Email:</span> {lead.email}</p>}
+        {lead.message && <p className="text-sm text-[#1d1d1f] dark:text-white mb-1"><span className="text-[#6e6e73] dark:text-slate-400">Pesan:</span> {lead.message}</p>}
+        {entries.length > 0 ? (
+          <dl className="text-sm space-y-1 mt-2">
+            {entries.map(([k, v]) => (
+              <div key={k} className="flex gap-2">
+                <dt className="text-[#6e6e73] dark:text-slate-400 min-w-[140px] shrink-0">{k}</dt>
+                <dd className="text-[#1d1d1f] dark:text-white">{Array.isArray(v) ? v.join(", ") : String(v)}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
+          <p className="text-xs text-[#6e6e73] dark:text-slate-500">Tidak ada data tambahan.</p>
+        )}
+        {(lead.utmSource || lead.utmCampaign) && (
+          <p className="text-[11px] text-[#6e6e73] dark:text-slate-500 mt-2">
+            UTM: {lead.utmSource || "-"} / {lead.utmMedium || "-"} / {lead.utmCampaign || "-"}
+          </p>
+        )}
+      </div>
+      <div>
+        <h4 className="text-xs font-semibold uppercase tracking-wide text-[#6e6e73] dark:text-slate-400 mb-2">Status & Catatan</h4>
+        <select
+          className="w-full mb-2 px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white"
+          value={lead.status}
+          onChange={(e) => onStatusChange(e.target.value)}
+        >
+          {LEAD_STATUSES.map((s) => <option key={s} value={s}>{LEAD_STATUS_LABEL[s]}</option>)}
+        </select>
+        <textarea
+          className="w-full px-3 py-2 rounded-lg border border-[#e5e5e5] dark:border-slate-600 bg-white dark:bg-[#0f0f23] text-sm text-[#1d1d1f] dark:text-white"
+          rows="3"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Catatan admin (opsional)"
+        />
+        <button onClick={() => onSaveNotes(notes)} className="mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700">Simpan Catatan</button>
       </div>
     </div>
   );
