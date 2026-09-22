@@ -1,0 +1,32 @@
+---
+export const prerender = false;
+
+import AdCampaignLayout from "../../layouts/AdCampaignLayout.astro";
+import AdCampaignLanding from "../../react-pages/AdCampaignLanding.jsx";
+import { ensureAdCampaignSchema, getAdCampaignBySlug } from "../../lib/ad-campaigns.js";
+
+await ensureAdCampaignSchema();
+
+const { slug } = Astro.params;
+const campaign = await getAdCampaignBySlug(slug);
+
+if (!campaign) {
+  return new Response("Not found", { status: 404 });
+}
+
+const title = campaign.metaTitle || campaign.title;
+const description = campaign.metaDescription || campaign.heroSubtext || "";
+const image = campaign.ogImage || campaign.heroImage || "/hero-product.webp";
+const canonicalUrl = campaign.canonicalUrl || Astro.url.href;
+---
+
+<AdCampaignLayout
+  title={title}
+  description={description}
+  image={image}
+  canonicalUrl={canonicalUrl}
+  accent={campaign.accentColor || "#0A4DA6"}
+  noindex={campaign.noindex}
+>
+  <AdCampaignLanding client:load campaign={campaign} />
+</AdCampaignLayout>
