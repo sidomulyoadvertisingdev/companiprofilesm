@@ -371,14 +371,19 @@ export async function getAdCampaignLeads({
   );
   const total = countRows[0]?.total || 0;
 
+  // mysql2's prepared-statement protocol (db.execute) is known to reject `?`
+  // placeholders for LIMIT/OFFSET on many server versions ("Incorrect
+  // arguments to mysqld_stmt_execute"). safePageSize/offset are already
+  // clamped, server-computed integers (not raw user input), so inlining
+  // them directly is the standard, safe workaround — no injection risk.
   const [rows] = await db.execute(
     `SELECT l.*, c.slug AS campaign_slug, c.title AS campaign_title
      FROM ad_campaign_leads l
      JOIN ad_campaigns c ON c.id = l.ad_campaign_id
      ${whereSql}
      ORDER BY l.created_at DESC
-     LIMIT ? OFFSET ?`,
-    [...params, safePageSize, offset]
+     LIMIT ${safePageSize} OFFSET ${offset}`,
+    params
   );
 
   return {
