@@ -267,10 +267,14 @@ function Hero({ campaign, accent }) {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={BLUE} icon={FiGift} />
+            <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget || "#sample-form"} accent={BLUE} icon={FiGift} />
+            {/* Deliberately points at the form, not campaign.secondaryCtaTarget
+                (a direct wa.me link) — visitors fill their data first, then
+                get sent to WhatsApp with a prefilled message automatically
+                after submitting (see LeadFormCard's success state below). */}
             <CtaButton
               text={campaign.secondaryCtaText}
-              target={campaign.secondaryCtaTarget}
+              target={campaign.primaryCtaTarget || "#sample-form"}
               accent={GREEN}
               arrow={false}
               icon={FiMessageCircle}

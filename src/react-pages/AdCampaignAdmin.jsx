@@ -691,7 +691,10 @@ function CampaignForm({ initial, onSaved, onCancel }) {
           <Field label="Secondary CTA Text">
             <TextInput value={form.secondaryCtaText} onChange={(e) => set("secondaryCtaText", e.target.value)} />
           </Field>
-          <Field label="Secondary CTA Target">
+          <Field
+            label="Secondary CTA Target"
+            hint='Tombol "Chat WhatsApp" di hero mengarahkan pengunjung ke form isian dulu, bukan langsung buka chat. Link wa.me di sini dipakai sebagai sumber nomor WhatsApp untuk pesan follow-up otomatis setelah pengunjung submit form.'
+          >
             <TextInput value={form.secondaryCtaTarget} onChange={(e) => set("secondaryCtaTarget", e.target.value)} />
           </Field>
         </div>
