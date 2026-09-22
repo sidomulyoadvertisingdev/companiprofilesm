@@ -151,6 +151,11 @@ const campaign = {
       // not real customers. Replace with genuine testimonials (or remove the
       // items) via the admin editor before this campaign goes live — do not
       // publish fabricated testimonials attributed to invented people.
+      //
+      // Deliberately NOT set in Salatiga/Semarang/Magelang (the campaign's
+      // free-sample target area) — these read as broader social proof from
+      // SPPG elsewhere already using the product, kept distinct from the
+      // "free sample available in these 3 cities" claim above.
       type: "testimonials",
       heading: "Kata SPPG yang Sudah Mencoba",
       items: [
@@ -158,7 +163,7 @@ const campaign = {
         // initials avatar; real photos can be uploaded later via the admin.
         {
           name: "Ibu Sri Wahyuni",
-          role: "Kepala Dapur, SPPG Kota Salatiga",
+          role: "Kepala Dapur, SPPG Jakarta Timur",
           quote:
             "Dulu label sering ninggalin bekas lem di ompreng, sekarang tinggal ditempel dan dilepas, jauh lebih cepat pas jam sibuk.",
           rating: 5,
@@ -167,7 +172,7 @@ const campaign = {
         },
         {
           name: "Bapak Agus Setiawan",
-          role: "Koordinator Operasional, SPPG Semarang",
+          role: "Koordinator Operasional, SPPG Bandung",
           quote:
             "Timnya bantu custom info menu dan batch sesuai kebutuhan kami. Prosesnya cepat dan hasilnya tetap rapi dipakai harian.",
           rating: 5,
@@ -176,9 +181,72 @@ const campaign = {
         },
         {
           name: "Ibu Dewi Lestari",
-          role: "Penanggung Jawab Gizi, SPPG Magelang",
+          role: "Penanggung Jawab Gizi, SPPG Surabaya",
           quote:
             "Sample-nya beneran gratis dan kualitasnya bagus. Setelah cocok kami lanjut cetak rutin untuk kebutuhan operasional.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Bapak Hendra Kurniawan",
+          role: "Ketua Tim Dapur, SPPG Yogyakarta",
+          quote:
+            "Ukurannya pas, tidak menutupi tampilan ompreng, tapi informasi menu tetap kebaca jelas dari jarak agak jauh.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Ibu Ratna Puspita",
+          role: "Kepala Dapur, SPPG Solo",
+          quote:
+            "Proses gantinya jadi jauh lebih singkat dibanding label lama kami. Tim dapur jadi bisa fokus ke hal lain saat jam sibuk.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Bapak Yusuf Maulana",
+          role: "Koordinator Logistik, SPPG Malang",
+          quote:
+            "Awalnya ragu soal daya rekatnya, ternyata tetap menempel kuat selama distribusi tapi tetap mudah dilepas saat dicuci.",
+          rating: 4,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Ibu Nur Aisyah",
+          role: "Penanggung Jawab Gizi, SPPG Bogor",
+          quote:
+            "Sample kit yang dikirim lengkap dan mudah dicoba sendiri. Respons timnya juga cepat waktu kami tanya-tanya.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Bapak Dedi Ramdani",
+          role: "Kepala Dapur, SPPG Tangerang",
+          quote:
+            "Ompreng jadi terlihat lebih rapi dan profesional dibanding pakai spidol atau label yang gampang luntur.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Ibu Fitriani Rahayu",
+          role: "Koordinator Operasional, SPPG Depok",
+          quote:
+            "Kami request custom batas konsumsi dan waktu produksi, hasilnya sesuai dan tetap jelas dibaca oleh tim distribusi.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Bapak Rizky Pratama",
+          role: "Ketua Tim Dapur, SPPG Cirebon",
+          quote:
+            "Sudah coba beberapa jenis label sebelumnya, ini yang paling praktis untuk kebutuhan harian dapur kami.",
           rating: 5,
           avatar: "",
           active: true,

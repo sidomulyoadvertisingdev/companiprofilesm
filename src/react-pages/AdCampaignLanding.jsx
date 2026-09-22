@@ -775,13 +775,13 @@ function Avatar({ name, image, accent }) {
   );
 }
 
-function TestimonialCard({ item, accent, delay }) {
+// Plain (non-scroll-reveal) card — used inside the auto-scrolling marquee,
+// where a viewport-triggered entrance animation would refire oddly as
+// duplicated cards continuously scroll in and out of view.
+function TestimonialCard({ item, accent }) {
   const rating = Number(item.rating) || 0;
   return (
-    <Reveal
-      delay={delay}
-      className="rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 p-6 shadow-sm"
-    >
+    <div className="w-[280px] sm:w-[340px] shrink-0 rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 p-6 shadow-sm">
       {rating > 0 && (
         <div className="flex items-center gap-0.5 mb-3" aria-label={`Rating ${rating} dari 5`}>
           {Array.from({ length: 5 }).map((_, i) => (
@@ -805,23 +805,43 @@ function TestimonialCard({ item, accent, delay }) {
           {item.role && <p className="text-xs text-[#6e6e73] dark:text-slate-400 truncate">{item.role}</p>}
         </div>
       </div>
-    </Reveal>
+    </div>
   );
 }
 
+// Auto-scrolling "running" testimonial strip. Reuses the project's existing
+// `animate-infinite-scroll` keyframe (tailwind.config.js) — a seamless loop
+// achieved by rendering the item list twice back-to-back and translating
+// exactly -50%. Pauses on hover/focus and respects prefers-reduced-motion.
 function TestimonialsSection({ section, accent }) {
   const items = (section.items || []).filter((it) => it.active !== false);
   if (!items.length) return null;
+  const loop = items.length > 2 ? [...items, ...items] : items;
   return (
-    <section id="testimoni" className="py-14 sm:py-20 px-4 sm:px-6 bg-slate-50 dark:bg-white/[0.03] scroll-mt-16">
-      <div className="max-w-6xl mx-auto">
+    <section
+      id="testimoni"
+      className="py-14 sm:py-20 bg-slate-50 dark:bg-white/[0.03] scroll-mt-16 overflow-hidden"
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <SectionHeading
           heading={section.heading}
           subheading="Kata SPPG yang sudah mencoba label removable kami."
         />
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {items.map((item, i) => (
-            <TestimonialCard key={i} item={item} accent={accent} delay={i * 0.06} />
+      </div>
+      <div className="relative">
+        <div
+          className="pointer-events-none absolute inset-y-0 left-0 w-10 sm:w-24 bg-gradient-to-r from-slate-50 dark:from-[#0a0a1a] to-transparent z-10"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 w-10 sm:w-24 bg-gradient-to-l from-slate-50 dark:from-[#0a0a1a] to-transparent z-10"
+          aria-hidden="true"
+        />
+        <div
+          className="flex w-max gap-5 px-4 sm:px-6 animate-infinite-scroll [animation-duration:60s] hover:[animation-play-state:paused] focus-within:[animation-play-state:paused] motion-reduce:animate-none"
+        >
+          {loop.map((item, i) => (
+            <TestimonialCard key={i} item={item} accent={accent} />
           ))}
         </div>
       </div>
