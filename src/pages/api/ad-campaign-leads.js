@@ -25,6 +25,36 @@ function json(body, status = 200) {
   });
 }
 
+// Pulls the raw phone number out of a wa.me / api.whatsapp.com link (the
+// hero secondary CTA target an admin pastes in) so we can build a fresh,
+// lead-specific prefilled message rather than reusing the generic CTA text.
+function extractWaPhone(target) {
+  if (!target) return null;
+  const m = String(target).match(/wa\.me\/(\d+)|[?&]phone=(\d+)/);
+  return m ? m[1] || m[2] : null;
+}
+
+// The page shows a "Ketik: SAMPLE SPPG" style hint elsewhere; reuse that
+// same keyword here (if set) so the admin can spot/search follow-up chats
+// consistently, instead of hardcoding "SAMPLE SPPG" for every campaign.
+function extractShortcutKeyword(text) {
+  if (!text) return null;
+  const m = String(text).match(/ketik\s*:?\s*(.+)/i);
+  return (m ? m[1] : text).trim() || null;
+}
+
+function buildFollowUpWhatsappUrl(campaign, leadName) {
+  const phone = extractWaPhone(campaign.secondaryCtaTarget);
+  if (!phone) return null;
+  const keyword = extractShortcutKeyword(campaign.whatsappShortcutText);
+  const parts = [];
+  if (keyword) parts.push(keyword);
+  parts.push(
+    `Halo, saya ${leadName} sudah mengisi form request sample untuk "${campaign.title}". Mohon segera di-follow up ya, terima kasih.`
+  );
+  return `https://wa.me/${phone}?text=${encodeURIComponent(parts.join(" - "))}`;
+}
+
 export async function POST({ request, clientAddress }) {
   await ensureAdCampaignSchema();
 
@@ -101,7 +131,12 @@ export async function POST({ request, clientAddress }) {
   });
 
   return json(
-    { ok: true, id: lead.id, secondaryCtaTarget: campaign.secondaryCtaTarget || null },
+    {
+      ok: true,
+      id: lead.id,
+      secondaryCtaTarget: campaign.secondaryCtaTarget || null,
+      whatsappUrl: buildFollowUpWhatsappUrl(campaign, name),
+    },
     201
   );
 }

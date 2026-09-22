@@ -557,31 +557,55 @@ function LeadFormCard({ campaign, accent }) {
   }
 
   if (success) {
-    const waTarget = isWaLink(success.secondaryCtaTarget) ? success.secondaryCtaTarget : null;
+    // Prefer the lead-specific link the API builds (prefilled with the
+    // "SAMPLE SPPG" follow-up keyword + the submitter's name); fall back to
+    // the generic hero WhatsApp CTA if that couldn't be built for some
+    // reason (e.g. secondaryCtaTarget isn't a recognizable wa.me link).
+    const waTarget = isWaLink(success.whatsappUrl)
+      ? success.whatsappUrl
+      : isWaLink(success.secondaryCtaTarget)
+      ? success.secondaryCtaTarget
+      : null;
     return (
-      <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm overflow-hidden text-center p-8">
+      <div id="sample-form" className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm overflow-hidden text-center p-8 scroll-mt-20">
         <FiCheckCircle className="mx-auto text-4xl mb-4" style={{ color: accent }} />
         <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white mb-2">Terima kasih!</h3>
-        <p className="text-sm text-[#6e6e73] dark:text-slate-400 mb-6">
-          Data Anda sudah kami terima. Tim kami akan segera menghubungi Anda.
+        <p className="text-sm text-[#6e6e73] dark:text-slate-400 mb-2">
+          Data Anda sudah kami terima.
         </p>
         {waTarget && (
-          <a
-            href={waTarget}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold text-white text-sm"
-            style={{ backgroundColor: GREEN }}
-          >
-            <FiMessageCircle /> Lanjut Chat WhatsApp
-          </a>
+          <>
+            <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white mb-5 max-w-sm mx-auto">
+              Satu langkah lagi: klik tombol WhatsApp di bawah supaya tim kami bisa langsung follow up pesanan Anda lebih cepat.
+            </p>
+            <a
+              href={waTarget}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 font-semibold text-white text-base shadow-md hover:scale-[1.02] transition-transform animate-pulse"
+              style={{ backgroundColor: GREEN }}
+            >
+              <FiMessageCircle /> Chat WhatsApp Sekarang
+            </a>
+            <p className="text-xs text-[#6e6e73] dark:text-slate-500 mt-3">
+              Pesan otomatis sudah kami siapkan, tinggal klik kirim.
+            </p>
+          </>
+        )}
+        {!waTarget && (
+          <p className="text-sm text-[#6e6e73] dark:text-slate-400">
+            Tim kami akan segera menghubungi Anda.
+          </p>
         )}
       </div>
     );
   }
 
   return (
-    <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm overflow-hidden">
+    <div
+      id="sample-form"
+      className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm overflow-hidden scroll-mt-20"
+    >
       <div className="px-6 sm:px-8 py-6" style={{ backgroundColor: NAVY }}>
         {campaign.formTitle && (
           <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5">{campaign.formTitle}</h2>
