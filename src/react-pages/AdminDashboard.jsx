@@ -31,6 +31,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import "leaflet/dist/leaflet.css";
+import AdCampaignAdmin from "./AdCampaignAdmin.jsx";
 
 const TABS = [
   { key: "services", label: "Layanan", icon: FiGrid, group: "Konten" },
@@ -38,11 +39,12 @@ const TABS = [
   { key: "portfolio", label: "Portofolio", icon: FiBriefcase, group: "Konten" },
   { key: "posts", label: "Blog", icon: FiFileText, group: "Konten" },
   { key: "landing", label: "Landing Page", icon: FiLayout, group: "Konten" },
-  // /admin/campaigns is a standalone Astro route + React app (deliberately
-  // isolated from this dashboard's internal tab system), so this entry
-  // carries an `href` and is rendered as a real navigation link below,
-  // not a setTab — same visual treatment as every other sidebar item.
-  { key: "campaigns", label: "Landing Page Campaign", icon: FiGift, group: "Konten", href: "/admin/campaigns" },
+  // Renders AdCampaignAdmin.jsx (a self-contained component with its own
+  // data/API layer, fully isolated from the rest of this CMS) as a normal
+  // tab here — so the sidebar and dashboard chrome stay put while using it,
+  // same as every other tab. It's also still reachable as its own page at
+  // /admin/campaigns for a direct/bookmarkable link.
+  { key: "campaigns", label: "Landing Page Campaign", icon: FiGift, group: "Konten" },
   { key: "partners", label: "Mitra", icon: FiUsers, group: "Konten" },
   { key: "testimonials", label: "Testimoni", icon: FiMessageSquare, group: "Konten" },
   { key: "messages", label: "Pesan Masuk", icon: FiMail, group: "Konten" },
@@ -320,6 +322,7 @@ export default function AdminDashboard({ admin }) {
           )}
           {tab === "posts" && <BlogManager posts={posts} onChanged={load} />}
           {tab === "landing" && <LandingPageManager pages={landingPages} onChanged={load} />}
+          {tab === "campaigns" && <AdCampaignAdmin embedded />}
           {tab === "messages" && <MessagesManager messages={messages} onChanged={load} focusId={messageFocusId} onFocused={() => setMessageFocusId(null)} />}
           {tab === "partners" && (
             <CrudTable rows={partners} fields={[

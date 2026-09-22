@@ -12,9 +12,10 @@ import {
 } from "react-icons/fi";
 
 // Self-contained admin mini-app for the ad-campaigns feature. Does NOT
-// import anything from AdminDashboard.jsx — this is a standalone parallel
-// admin surface, reachable directly at /admin/campaigns (not yet linked
-// from the main dashboard sidebar).
+// import anything from AdminDashboard.jsx (that import only goes one way:
+// AdminDashboard.jsx renders this component as its "campaigns" tab). Also
+// still reachable directly at /admin/campaigns as its own standalone page —
+// see the `embedded` prop below for how the two render modes differ.
 
 const SECTION_TYPES = [
   { value: "problems", label: "Problems" },
@@ -1092,41 +1093,56 @@ function LeadsTab() {
   );
 }
 
-export default function AdCampaignAdmin() {
+// `embedded`: true when rendered as a tab inside AdminDashboard.jsx (the
+// dashboard's own sidebar/topbar/content-width chrome already applies, so
+// this skips its standalone full-page background, back-link, and heading
+// to avoid doubling up). Defaults to false for the standalone /admin/campaigns
+// route, which still works on its own as a direct/bookmarkable URL.
+export default function AdCampaignAdmin({ embedded = false } = {}) {
   const [tab, setTab] = useState("campaigns");
+
+  const body = (
+    <>
+      {!embedded && (
+        <>
+          <a href="/admin" className="text-sm text-blue-600 font-medium inline-flex items-center gap-1.5 mb-4">
+            <FiArrowLeft aria-hidden="true" /> Dashboard Utama
+          </a>
+          <h1 className="text-2xl font-bold mb-1">Ad Campaigns</h1>
+          <p className="text-sm text-slate-500 mb-6">
+            Kelola landing page campaign iklan dan leads secara terpisah dari CMS utama.
+          </p>
+        </>
+      )}
+
+      <div className="flex gap-2 mb-6">
+        <button
+          onClick={() => setTab("campaigns")}
+          className={`px-4 py-2 rounded-xl text-sm font-semibold ${
+            tab === "campaigns" ? "bg-blue-700 text-white" : "bg-white border"
+          }`}
+        >
+          Campaigns
+        </button>
+        <button
+          onClick={() => setTab("leads")}
+          className={`px-4 py-2 rounded-xl text-sm font-semibold ${
+            tab === "leads" ? "bg-blue-700 text-white" : "bg-white border"
+          }`}
+        >
+          Leads
+        </button>
+      </div>
+
+      {tab === "campaigns" ? <CampaignsTab /> : <LeadsTab />}
+    </>
+  );
+
+  if (embedded) return body;
 
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-        <a href="/admin" className="text-sm text-blue-600 font-medium inline-flex items-center gap-1.5 mb-4">
-          <FiArrowLeft aria-hidden="true" /> Dashboard Utama
-        </a>
-        <h1 className="text-2xl font-bold mb-1">Ad Campaigns</h1>
-        <p className="text-sm text-slate-500 mb-6">
-          Kelola landing page campaign iklan dan leads secara terpisah dari CMS utama.
-        </p>
-
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setTab("campaigns")}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold ${
-              tab === "campaigns" ? "bg-blue-700 text-white" : "bg-white border"
-            }`}
-          >
-            Campaigns
-          </button>
-          <button
-            onClick={() => setTab("leads")}
-            className={`px-4 py-2 rounded-xl text-sm font-semibold ${
-              tab === "leads" ? "bg-blue-700 text-white" : "bg-white border"
-            }`}
-          >
-            Leads
-          </button>
-        </div>
-
-        {tab === "campaigns" ? <CampaignsTab /> : <LeadsTab />}
-      </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">{body}</div>
     </div>
   );
 }
