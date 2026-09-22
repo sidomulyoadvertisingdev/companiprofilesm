@@ -8,6 +8,7 @@ import {
   FiExternalLink,
   FiDownload,
   FiMessageCircle,
+  FiArrowLeft,
 } from "react-icons/fi";
 
 // Self-contained admin mini-app for the ad-campaigns feature. Does NOT
@@ -1044,8 +1045,8 @@ export default function AdCampaignAdmin() {
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-        <a href="/admin" className="text-sm text-blue-600 font-medium inline-block mb-4">
-          ← Dashboard Utama
+        <a href="/admin" className="text-sm text-blue-600 font-medium inline-flex items-center gap-1.5 mb-4">
+          <FiArrowLeft aria-hidden="true" /> Dashboard Utama
         </a>
         <h1 className="text-2xl font-bold mb-1">Ad Campaigns</h1>
         <p className="text-sm text-slate-500 mb-6">

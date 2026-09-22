@@ -42,9 +42,9 @@ const campaign = {
     { icon: "gear", label: "Custom sesuai kebutuhan" },
     { icon: "users", label: "Cocok untuk operasional harian SPPG" },
   ],
-  primaryCtaText: "🎁 Minta Sample Gratis",
+  primaryCtaText: "Minta Sample Gratis",
   primaryCtaTarget: "#sample-form",
-  secondaryCtaText: "📞 Chat WhatsApp",
+  secondaryCtaText: "Chat WhatsApp",
   secondaryCtaTarget: `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_PREFILL}`,
   sections: [
     {

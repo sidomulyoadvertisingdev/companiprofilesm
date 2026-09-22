@@ -28,6 +28,7 @@ import {
   FiLock,
   FiImage,
   FiPackage,
+  FiSend,
 } from "react-icons/fi";
 
 // Self-contained ad-campaign landing page. Deliberately does NOT import
@@ -110,7 +111,7 @@ function ImagePlaceholder({ label = "Foto akan ditambahkan", className = "" }) {
   );
 }
 
-function CtaButton({ text, target, variant = "primary", className = "", accent, arrow }) {
+function CtaButton({ text, target, variant = "primary", className = "", accent, arrow, icon: Icon }) {
   if (!text) return null;
   const showArrow = arrow !== undefined ? arrow : variant === "primary";
   const base =
@@ -129,6 +130,7 @@ function CtaButton({ text, target, variant = "primary", className = "", accent, 
       className={`${base} ${styles} ${className}`}
       style={style}
     >
+      {Icon && <Icon aria-hidden="true" />}
       {text}
       {showArrow && <FiArrowRight aria-hidden="true" />}
     </a>
@@ -259,12 +261,13 @@ function Hero({ campaign, accent }) {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={ORANGE} />
+            <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={ORANGE} icon={FiGift} />
             <CtaButton
               text={campaign.secondaryCtaText}
               target={campaign.secondaryCtaTarget}
               accent={GREEN}
               arrow={false}
+              icon={FiMessageCircle}
             />
           </div>
 
@@ -635,7 +638,13 @@ function LeadFormCard({ campaign, accent }) {
           className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3.5 font-semibold text-white text-sm sm:text-base disabled:opacity-60"
           style={{ backgroundColor: ORANGE }}
         >
-          {submitting ? "Mengirim..." : "📤 Kirim Permintaan Sample"}
+          {submitting ? (
+            "Mengirim..."
+          ) : (
+            <>
+              <FiSend aria-hidden="true" /> Kirim Permintaan Sample
+            </>
+          )}
         </button>
 
         <p className="flex items-center justify-center gap-1.5 text-xs text-[#6e6e73] dark:text-slate-400 pt-1">
@@ -807,6 +816,7 @@ function CtaBand({ campaign }) {
               text={campaign.primaryCtaText ? `${campaign.primaryCtaText} Sekarang` : null}
               target={campaign.primaryCtaTarget}
               accent={ORANGE}
+              icon={FiGift}
             />
           </div>
           {campaign.whatsappShortcutText && (
@@ -893,7 +903,7 @@ function StickyMobileCta({ campaign }) {
       className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0a0a1a]/95 backdrop-blur border-t border-slate-200 dark:border-white/10 px-4 py-3"
       style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
     >
-      <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={ORANGE} className="w-full" />
+      <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={ORANGE} className="w-full" icon={FiGift} />
     </div>
   );
 }
