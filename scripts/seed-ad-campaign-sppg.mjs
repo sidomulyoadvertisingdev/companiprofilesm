@@ -31,12 +31,20 @@ const campaign = {
   heroEyebrow: "LABEL OMPRENG SPPG",
   heroHeadline: "Coba GRATIS Sample Label Ompreng Removable untuk SPPG",
   heroSubtext:
-    "Khusus SPPG area Salatiga, Semarang & Magelang. Tinggal tempel, mudah dilepas, cepat diganti, tetap jelas dibaca.",
-  heroImage: "/hero-product.webp",
+    "Khusus SPPG area Salatiga, Semarang & Magelang. Tempel rapi, mudah dilepas, cepat diganti, tetap jelas dibaca.",
+  // Left empty on purpose — real product photography is uploaded manually
+  // through the admin editor afterward. The component renders a clean
+  // "foto belum diupload" placeholder whenever this is empty.
+  heroImage: "",
   heroBadges: ["Removable", "Praktis", "Bersih", "Profesional"],
-  primaryCtaText: "Minta Sample Gratis",
+  heroTrustPoints: [
+    { icon: "check", label: "Mudah dilepas" },
+    { icon: "gear", label: "Custom sesuai kebutuhan" },
+    { icon: "users", label: "Cocok untuk operasional harian SPPG" },
+  ],
+  primaryCtaText: "🎁 Minta Sample Gratis",
   primaryCtaTarget: "#sample-form",
-  secondaryCtaText: "Chat WhatsApp",
+  secondaryCtaText: "📞 Chat WhatsApp",
   secondaryCtaTarget: `https://wa.me/${WHATSAPP_NUMBER}?text=${WHATSAPP_PREFILL}`,
   sections: [
     {
@@ -44,18 +52,21 @@ const campaign = {
       heading: "Masalah yang sering terjadi di SPPG",
       items: [
         {
+          icon: "frown",
           title: "Label susah dilepas",
-          desc: "Label biasa bisa meninggalkan bekas dan membuat proses pembersihan lebih lama.",
+          desc: "Label biasa meninggalkan bekas dan sulit dibersihkan dari ompreng.",
           active: true,
         },
         {
-          title: "Bekas lem bikin ompreng kotor",
-          desc: "Ompreng digunakan berulang sehingga kebersihan permukaan sangat penting.",
+          icon: "broom",
+          title: "Bekas lem bikin ompreng terlihat kotor",
+          desc: "Sisa lem membuat ompreng terlihat tidak bersih dan kurang profesional.",
           active: true,
         },
         {
+          icon: "clock",
           title: "Ganti label harian makan waktu",
-          desc: "Menu, batch, waktu, dan tujuan dapat berubah setiap hari.",
+          desc: "Proses lepas-pasang label yang lama mengganggu efisiensi operasional.",
           active: true,
         },
       ],
@@ -64,20 +75,28 @@ const campaign = {
       type: "benefits",
       heading: "Solusi Label Removable untuk Ompreng SPPG",
       items: [
-        { title: "Mudah dilepas", desc: "Dirancang untuk penggunaan ompreng berulang.", active: true },
         {
-          title: "Tetap rapi saat digunakan",
-          desc: "Menempel cukup baik untuk proses operasional dan distribusi.",
+          icon: "hand",
+          title: "Mudah dilepas tanpa ribet",
+          desc: "Bisa dilepas dengan mudah tanpa meninggalkan bekas lem.",
           active: true,
         },
         {
-          title: "Ringkas tetapi jelas",
-          desc: "Ukuran tidak mengganggu ompreng namun informasi tetap mudah dibaca.",
+          icon: "shield",
+          title: "Tetap menempel dengan rapi saat digunakan",
+          desc: "Tidak mudah lepas, tetap rapi meski dalam proses distribusi.",
           active: true,
         },
         {
-          title: "Custom sesuai kebutuhan",
-          desc: "Bisa dibuat per menu, batch, batas konsumsi, dan tujuan sekolah.",
+          icon: "document",
+          title: "Ukuran ringkas tapi tetap jelas dibaca",
+          desc: "Informasi penting terlihat jelas dan mudah dibaca.",
+          active: true,
+        },
+        {
+          icon: "pencil",
+          title: "Bisa custom menu, batch, dan tujuan sekolah",
+          desc: "Desain dan informasi label bisa disesuaikan dengan kebutuhan SPPG Anda.",
           active: true,
         },
       ],
@@ -85,19 +104,19 @@ const campaign = {
     {
       type: "steps",
       heading: "Minta Sample Gratis, Coba Langsung di Ompreng Anda",
-      badge: "1 Sample Kit per SPPG",
+      badge: "1 sample kit per SPPG",
       items: [
-        { number: "1", title: "Isi data SPPG", desc: "Lengkapi formulir singkat di bawah halaman ini.", active: true },
+        { number: "1", title: "Isi data SPPG", desc: "Isi formulir singkat di samping.", active: true },
         {
           number: "2",
           title: "Kami kirim sample",
-          desc: "Tim kami mengirimkan sample kit ke alamat SPPG Anda.",
+          desc: "Sample akan kami kirim ke alamat SPPG Anda.",
           active: true,
         },
         {
           number: "3",
           title: "Tes tempel & lepas sendiri",
-          desc: "Coba langsung di ompreng untuk memastikan cocok dengan operasional harian.",
+          desc: "Coba langsung kualitas label removable kami.",
           active: true,
         },
       ],
@@ -106,9 +125,12 @@ const campaign = {
       type: "areas",
       heading: "Area Free Sample",
       items: [
-        { title: "Salatiga", desc: "Area utama layanan free sample.", active: true },
-        { title: "Semarang", desc: "Termasuk dalam area free sample.", active: true },
-        { title: "Magelang", desc: "Termasuk dalam area free sample.", active: true },
+        // icon holds the area photo URL for this section type — left empty
+        // on purpose; uploaded later via the admin editor. Renders as a
+        // clean placeholder, never a broken image.
+        { icon: "", title: "Salatiga", desc: "Area utama layanan free sample.", active: true },
+        { icon: "", title: "Semarang", desc: "Termasuk dalam area free sample.", active: true },
+        { icon: "", title: "Magelang", desc: "Termasuk dalam area free sample.", active: true },
       ],
     },
     {
@@ -159,8 +181,8 @@ const campaign = {
     },
   ],
   formEnabled: true,
-  formTitle: "Minta Sample Gratis",
-  formSubtext: "Isi data SPPG, tim kami akan mengirimkan sample ke alamat Anda.",
+  formTitle: "Ajukan Sample Gratis",
+  formSubtext: "Isi data berikut, kami akan segera menghubungi Anda.",
   formFields: [
     { key: "name", label: "Nama SPPG", type: "text", required: true },
     { key: "pic_name", label: "Nama PIC / Penanggung Jawab", type: "text", required: true },
@@ -190,6 +212,11 @@ const campaign = {
   ],
   ctaBandHeading: "Jangan langsung order banyak. Coba sample-nya dulu.",
   ctaBandText: "Lihat sendiri apakah label removable ini cocok untuk operasional SPPG Anda.",
+  ctaBandBadges: [
+    { icon: "shield", label: "Praktis" },
+    { icon: "gear", label: "Efisien" },
+    { icon: "heart", label: "Dukung Gizi Anak Indonesia" },
+  ],
   whatsappShortcutText: "Ketik: SAMPLE SPPG",
 };
 
@@ -199,20 +226,21 @@ const existingId = existingRows[0]?.id;
 const cols = [
   "slug", "title", "status", "meta_title", "meta_description", "og_image", "canonical_url",
   "noindex", "published_at", "accent_color", "hero_eyebrow", "hero_headline", "hero_subtext",
-  "hero_image", "hero_badges_json", "primary_cta_text", "primary_cta_target", "secondary_cta_text",
-  "secondary_cta_target", "sections_json", "form_enabled", "form_title", "form_subtext",
-  "form_fields_json", "cta_band_heading", "cta_band_text", "whatsapp_shortcut_text",
+  "hero_image", "hero_badges_json", "hero_trust_points_json", "primary_cta_text", "primary_cta_target",
+  "secondary_cta_text", "secondary_cta_target", "sections_json", "form_enabled", "form_title",
+  "form_subtext", "form_fields_json", "cta_band_heading", "cta_band_text", "cta_band_badges_json",
+  "whatsapp_shortcut_text",
 ];
 
 const values = [
   campaign.slug, campaign.title, campaign.status, campaign.metaTitle, campaign.metaDescription,
   campaign.ogImage, campaign.canonicalUrl, campaign.noindex ? 1 : 0, campaign.publishedAt,
   campaign.accentColor, campaign.heroEyebrow, campaign.heroHeadline, campaign.heroSubtext,
-  campaign.heroImage, JSON.stringify(campaign.heroBadges), campaign.primaryCtaText,
-  campaign.primaryCtaTarget, campaign.secondaryCtaText, campaign.secondaryCtaTarget,
+  campaign.heroImage, JSON.stringify(campaign.heroBadges), JSON.stringify(campaign.heroTrustPoints),
+  campaign.primaryCtaText, campaign.primaryCtaTarget, campaign.secondaryCtaText, campaign.secondaryCtaTarget,
   JSON.stringify(campaign.sections), campaign.formEnabled ? 1 : 0, campaign.formTitle,
   campaign.formSubtext, JSON.stringify(campaign.formFields), campaign.ctaBandHeading,
-  campaign.ctaBandText, campaign.whatsappShortcutText,
+  campaign.ctaBandText, JSON.stringify(campaign.ctaBandBadges), campaign.whatsappShortcutText,
 ];
 
 if (existingId) {
