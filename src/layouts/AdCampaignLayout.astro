@@ -8,9 +8,11 @@ const {
   canonicalUrl,
   accent = "#0A4DA6",
   noindex = false,
+  structuredData = null,
 } = Astro.props;
 
 const canonical = canonicalUrl || Astro.url.href;
+const absoluteImage = image?.startsWith("http") ? image : new URL(image, Astro.url.origin).href;
 ---
 
 <!doctype html>
@@ -21,21 +23,26 @@ const canonical = canonicalUrl || Astro.url.href;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={image} />
+    <meta property="og:image" content={absoluteImage} />
     <meta property="og:url" content={canonical} />
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="id_ID" />
+    <meta property="og:site_name" content="Sidomulyo Advertising" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image} />
+    <meta name="twitter:image" content={absoluteImage} />
 
     <link rel="canonical" href={canonical} />
+
+    {structuredData && (
+      <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    )}
 
     <style is:inline define:vars={{ accent }}>
       :root { --ac-accent: {accent}; }

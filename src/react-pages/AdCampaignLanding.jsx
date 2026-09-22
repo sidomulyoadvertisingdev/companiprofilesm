@@ -300,9 +300,10 @@ function Hero({ campaign, accent }) {
           {campaign.heroImage ? (
             <img
               src={campaign.heroImage}
-              alt={campaign.title}
+              alt={campaign.heroHeadline || campaign.title}
               className="w-full rounded-3xl shadow-xl object-cover aspect-[4/3] md:aspect-square"
               loading="eager"
+              fetchpriority="high"
             />
           ) : (
             <ImagePlaceholder
