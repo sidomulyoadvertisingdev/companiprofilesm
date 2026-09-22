@@ -38,6 +38,11 @@ const TABS = [
   { key: "portfolio", label: "Portofolio", icon: FiBriefcase, group: "Konten" },
   { key: "posts", label: "Blog", icon: FiFileText, group: "Konten" },
   { key: "landing", label: "Landing Page", icon: FiLayout, group: "Konten" },
+  // /admin/campaigns is a standalone Astro route + React app (deliberately
+  // isolated from this dashboard's internal tab system), so this entry
+  // carries an `href` and is rendered as a real navigation link below,
+  // not a setTab — same visual treatment as every other sidebar item.
+  { key: "campaigns", label: "Landing Page Campaign", icon: FiGift, group: "Konten", href: "/admin/campaigns" },
   { key: "partners", label: "Mitra", icon: FiUsers, group: "Konten" },
   { key: "testimonials", label: "Testimoni", icon: FiMessageSquare, group: "Konten" },
   { key: "messages", label: "Pesan Masuk", icon: FiMail, group: "Konten" },
@@ -219,20 +224,17 @@ export default function AdminDashboard({ admin }) {
               )}
               {TABS.filter((t) => t.group === g).map((t) => {
                 const Icon = t.icon;
-                return (
-                  <button
-                    key={t.key}
-                    onClick={() => { setTab(t.key); setSidebarOpen(false); if (t.key === "messages") loadMessages().catch(() => {}); }}
-                    title={collapsed ? t.label : undefined}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${
-                      collapsed ? "lg:justify-center lg:px-0" : ""
-                    } ${
-                      tab === t.key
-                        ? "bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 shadow-sm"
-                        : "text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/50 hover:text-[#1d1d1f] dark:hover:text-white"
-                    }`}
-                  >
-                    <Icon className={`text-base shrink-0 ${tab === t.key ? "text-blue-700" : "text-[#6e6e73] dark:text-slate-400"}`} />
+                const isActive = !t.href && tab === t.key;
+                const itemClassName = `w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 ${
+                  collapsed ? "lg:justify-center lg:px-0" : ""
+                } ${
+                  isActive
+                    ? "bg-blue-50 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 shadow-sm"
+                    : "text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/50 hover:text-[#1d1d1f] dark:hover:text-white"
+                }`;
+                const content = (
+                  <>
+                    <Icon className={`text-base shrink-0 ${isActive ? "text-blue-700" : "text-[#6e6e73] dark:text-slate-400"}`} />
                     {!collapsed && <span className="hidden lg:inline">{t.label}</span>}
                     <span className="lg:hidden">{t.label}</span>
                     {!collapsed && t.key === "posts" && (
@@ -245,32 +247,31 @@ export default function AdminDashboard({ admin }) {
                         {unreadCount}
                       </span>
                     )}
+                  </>
+                );
+                // A tab with `href` (e.g. the standalone campaigns admin) is a
+                // real page navigation, not an internal setTab switch — same
+                // styling as every other sidebar item either way.
+                if (t.href) {
+                  return (
+                    <a key={t.key} href={t.href} title={collapsed ? t.label : undefined} className={itemClassName}>
+                      {content}
+                    </a>
+                  );
+                }
+                return (
+                  <button
+                    key={t.key}
+                    onClick={() => { setTab(t.key); setSidebarOpen(false); if (t.key === "messages") loadMessages().catch(() => {}); }}
+                    title={collapsed ? t.label : undefined}
+                    className={itemClassName}
+                  >
+                    {content}
                   </button>
                 );
               })}
             </div>
           ))}
-          <div className="mb-3">
-            {!collapsed && (
-              <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#6e6e73] dark:text-slate-500">
-                Campaign Iklan
-              </p>
-            )}
-            {/* /admin/campaigns is a standalone admin page (separate Astro
-                route + React app, isolated on purpose from this dashboard),
-                so this is a real navigation link, not an internal setTab. */}
-            <a
-              href="/admin/campaigns"
-              title={collapsed ? "Landing Page Campaign" : undefined}
-              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-150 text-[#6e6e73] dark:text-slate-400 hover:bg-[#f5f5f7] dark:hover:bg-slate-700/50 hover:text-[#1d1d1f] dark:hover:text-white ${
-                collapsed ? "lg:justify-center lg:px-0" : ""
-              }`}
-            >
-              <FiGift className="text-base shrink-0 text-[#6e6e73] dark:text-slate-400" />
-              {!collapsed && <span className="hidden lg:inline">Landing Page Campaign</span>}
-              <span className="lg:hidden">Landing Page Campaign</span>
-            </a>
-          </div>
         </nav>
         <div className={`p-3 border-t border-gray-100 dark:border-slate-700/50 ${collapsed ? "lg:p-2" : ""}`}>
           <button
