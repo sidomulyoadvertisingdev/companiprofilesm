@@ -42,6 +42,40 @@ const LEAD_STATUSES = [
   "not_interested",
 ];
 
+const LEAD_STATUS_LABELS = {
+  new: "Baru",
+  contacted: "Sudah Dihubungi",
+  qualified: "Qualified",
+  sample_approved: "Sample Disetujui",
+  sample_sent: "Sample Terkirim",
+  sample_received: "Sample Diterima",
+  follow_up: "Follow Up",
+  quotation: "Penawaran",
+  order: "Order",
+  not_interested: "Tidak Tertarik",
+};
+
+// Known field keys from the default SPPG campaign's form_fields_json —
+// shown with a proper Indonesian label instead of the raw snake_case key.
+// Any other campaign's custom field keys fall back to `humanizeKey` below,
+// so this stays readable even for fields nobody's added a label for yet.
+const ANSWER_LABELS = {
+  pic_name: "Nama PIC / Penanggung Jawab",
+  district: "Kecamatan",
+  address: "Alamat Lengkap",
+  tray_type: "Jenis Ompreng",
+  daily_portion: "Perkiraan Porsi per Hari",
+  current_label: "Label yang Dipakai Saat Ini",
+  pain_point: "Masalah Utama",
+  notes: "Catatan",
+};
+
+function humanizeKey(key) {
+  return ANSWER_LABELS[key] || String(key || "")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 async function api(url, options) {
   const res = await fetch(url, {
     ...options,
@@ -856,7 +890,7 @@ function LeadRow({ lead, onUpdated }) {
           >
             {LEAD_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {LEAD_STATUS_LABELS[s] || s}
               </option>
             ))}
           </select>
@@ -911,9 +945,20 @@ function LeadRow({ lead, onUpdated }) {
                 <p className="text-xs font-semibold text-slate-500 mb-1">Message</p>
                 <p className="text-sm mb-3">{lead.message || "-"}</p>
                 <p className="text-xs font-semibold text-slate-500 mb-1">Jawaban Lengkap</p>
-                <pre className="text-xs bg-white border rounded-lg p-2 overflow-auto max-h-40">
-                  {JSON.stringify(lead.answers || {}, null, 2)}
-                </pre>
+                {Object.keys(lead.answers || {}).length > 0 ? (
+                  <dl className="text-sm bg-white border rounded-lg divide-y divide-slate-100 overflow-hidden">
+                    {Object.entries(lead.answers || {}).map(([key, value]) => (
+                      <div key={key} className="grid grid-cols-2 gap-2 px-3 py-2">
+                        <dt className="text-xs font-medium text-slate-500">{humanizeKey(key)}</dt>
+                        <dd className="text-sm text-[#1d1d1f] break-words">
+                          {Array.isArray(value) ? value.join(", ") : String(value ?? "") || "-"}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : (
+                  <p className="text-sm text-slate-400">-</p>
+                )}
                 <p className="text-xs font-semibold text-slate-500 mt-3 mb-1">UTM</p>
                 <p className="text-xs text-slate-500">
                   source={lead.utmSource || "-"} medium={lead.utmMedium || "-"} campaign={lead.utmCampaign || "-"}
@@ -1020,7 +1065,7 @@ function LeadsTab() {
             <option value="">Semua Status</option>
             {LEAD_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {LEAD_STATUS_LABELS[s] || s}
               </option>
             ))}
           </select>
