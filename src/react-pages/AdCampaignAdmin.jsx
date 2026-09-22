@@ -18,6 +18,7 @@ import {
 // see the `embedded` prop below for how the two render modes differ.
 
 const SECTION_TYPES = [
+  { value: "configurator", label: "Pilih Produk (tampil di bawah hero)" },
   { value: "problems", label: "Problems" },
   { value: "benefits", label: "Benefits" },
   { value: "steps", label: "Steps" },
@@ -68,6 +69,52 @@ const ANSWER_LABELS = {
   current_label: "Label yang Dipakai Saat Ini",
   pain_point: "Masalah Utama",
   notes: "Catatan",
+  // "Pilih Produk" configurator answers.
+  produk: "Produk",
+  varian: "Varian",
+  isi_label: "Isi Label",
+  pilihan: "Pilihan Pengiriman",
+};
+
+// The landing page's built-in section subheadings, shown here as the field's
+// current value when a section never had one set, so the admin edits the
+// text visitors actually see. Clearing the field hides the subheading.
+const SUBHEADING_DEFAULTS = {
+  configurator: "Klik produk untuk melihat varian & minta sample.",
+  problems: "Kami memahami tantangan Anda, karena itu kami hadir dengan solusi yang tepat.",
+  benefits: "Dirancang khusus untuk kebutuhan operasional SPPG yang dinamis.",
+  areas: "Prioritas untuk SPPG aktif di 3 wilayah ini.",
+  gallery: "Lihat langsung tampilan sample label removable pada ompreng.",
+  testimonials: "Kata SPPG yang sudah mencoba label removable kami.",
+  steps: "Proses mudah, cepat, dan tanpa biaya.",
+};
+
+// Same idea for page_settings_json (see PAGE_SETTING_DEFAULTS in
+// AdCampaignLanding.jsx).
+const PAGE_SETTING_DEFAULTS = {
+  heroHighlight: "GRATIS",
+  ctaBandButtonText: "",
+  footerTagline: "Partner Visual untuk Operasional SPPG yang Lebih Baik",
+  footerKeywords: ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"],
+  formPrivacyNote: "Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.",
+};
+
+// Popup copy fields of a "Pilih Produk" section; empty = landing default.
+const CONFIGURATOR_TEXT_FIELDS = [
+  ["variantLabel", "Judul pilihan varian", "Pilih varian"],
+  ["contentLabel", "Judul pilihan isi label", "Mau isi label apa saja?"],
+  ["addressLabel", "Judul form alamat", "Kirim alamat SPPG Anda"],
+  ["nameLabel", "Label kolom nama", "Nama SPPG"],
+  ["submitText", "Teks tombol kirim", "Kirim Alamat ke WhatsApp"],
+  ["waGreeting", "Pembuka pesan WhatsApp", "Halo Sidomulyo, saya mau"],
+];
+
+// Defaults for a freshly added "Pilih Produk" section — mirror the landing
+// page's own fallbacks so the admin sees (and can edit) what visitors get.
+const CONFIGURATOR_DEFAULTS = {
+  heading: "Pilih Produk",
+  contentOptions: ["Barcode", "Nama SPPG", "Jam", "Tanggal", "Menu Makanan", "Himbauan", "CP SPPG", "Kandungan Gizi"],
+  orderOptions: ["Kirim sample ke SPPG saya (gratis)", "Kirim sample ke SPPG & saya order sekalian"],
 };
 
 function humanizeKey(key) {
@@ -165,6 +212,52 @@ function ImageUploadField({ value, onChange, label = "Gambar" }) {
   );
 }
 
+function VideoUploadField({ value, onChange, label = "Video", hint }) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleFile(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const url = await uploadImage(file);
+      onChange(url);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <Field label={label} hint={hint}>
+      <div className="flex items-center gap-3">
+        <TextInput value={value || ""} onChange={(e) => onChange(e.target.value)} placeholder="URL video (.mp4 / .webm)" />
+        <label className="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2.5 rounded-xl border border-slate-300 cursor-pointer hover:bg-slate-50">
+          <FiUpload /> {uploading ? "Mengunggah..." : "Upload"}
+          <input type="file" accept="video/mp4,video/webm" className="hidden" onChange={handleFile} disabled={uploading} />
+        </label>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="shrink-0 text-xs font-medium px-3 py-2.5 rounded-xl border border-slate-300 text-red-500 hover:bg-red-50"
+          >
+            Hapus
+          </button>
+        )}
+      </div>
+      {value && (
+        <video src={value} muted loop autoPlay playsInline className="mt-3 w-full max-w-sm rounded-xl border bg-black aspect-video object-cover" />
+      )}
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    </Field>
+  );
+}
+
 const emptyCampaign = () => ({
   slug: "",
   title: "",
@@ -180,6 +273,7 @@ const emptyCampaign = () => ({
   heroHeadline: "",
   heroSubtext: "",
   heroImage: "",
+  heroVideo: "",
   heroBadges: [],
   heroTrustPoints: [],
   primaryCtaText: "",
@@ -195,6 +289,7 @@ const emptyCampaign = () => ({
   ctaBandText: "",
   ctaBandBadges: [],
   whatsappShortcutText: "",
+  pageSettings: {},
 });
 
 // Small {icon, label} array editor — used for both hero trust points and
@@ -282,20 +377,103 @@ function BadgesRepeater({ badges, onChange }) {
   );
 }
 
-function SectionItemEditor({ type, item, onChange, onRemove }) {
+// Variants of a "Pilih Produk" product: a name plus an optional photo that
+// replaces the product photo in the landing page popup when picked. Older
+// campaigns stored plain strings; those are read as { name, image: "" }.
+function VariantsRepeater({ variants, onChange }) {
+  const list = (variants || []).map((v) => (typeof v === "string" ? { name: v, image: "" } : v));
+
+  function update(i, patch) {
+    const next = [...list];
+    next[i] = { ...next[i], ...patch };
+    onChange(next);
+  }
+
+  return (
+    <div className="mt-2 rounded-lg border border-slate-200 bg-white p-3">
+      <p className="text-xs font-medium text-slate-600 mb-2">
+        Varian (opsional) — foto varian menggantikan foto produk saat varian dipilih
+      </p>
+      {list.map((v, i) => (
+        <div key={i} className="rounded-lg border border-slate-200 p-2.5 mb-2">
+          <div className="flex items-center gap-2 mb-2">
+            <TextInput
+              placeholder="Nama varian (mis. 7 x 4 cm)"
+              value={v.name || ""}
+              onChange={(e) => update(i, { name: e.target.value })}
+            />
+            <button
+              type="button"
+              onClick={() => onChange(list.filter((_, idx) => idx !== i))}
+              className="shrink-0 p-2 text-red-500"
+              aria-label="Hapus varian"
+            >
+              <FiTrash2 size={14} />
+            </button>
+          </div>
+          <ImageUploadField label="Foto varian" value={v.image || ""} onChange={(url) => update(i, { image: url })} />
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={() => onChange([...list, { name: "", image: "" }])}
+        className="text-xs font-medium text-blue-600 inline-flex items-center gap-1"
+      >
+        <FiPlus /> Tambah varian
+      </button>
+    </div>
+  );
+}
+
+function SectionItemEditor({ type, item, index, onChange, onRemove, onMove }) {
   const set = (key, val) => onChange({ ...item, [key]: val });
   return (
     <div className="rounded-xl border border-slate-200 p-3 mb-2 bg-slate-50">
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex items-center gap-3 mb-2">
+        {type === "configurator" && (
+          <span className="text-xs font-semibold text-slate-700">
+            Produk #{index + 1}
+            {item.title ? ` — ${item.title}` : ""}
+          </span>
+        )}
         <label className="inline-flex items-center gap-1.5 text-xs">
           <input type="checkbox" checked={item.active !== false} onChange={(e) => set("active", e.target.checked)} />
           Aktif
         </label>
-        <button type="button" onClick={onRemove} className="text-red-500">
-          <FiTrash2 size={14} />
-        </button>
+        <div className="ml-auto flex items-center gap-1">
+          <button type="button" onClick={() => onMove(-1)} className="p-1 text-slate-500" aria-label="Naikkan">
+            <FiChevronUp size={14} />
+          </button>
+          <button type="button" onClick={() => onMove(1)} className="p-1 text-slate-500" aria-label="Turunkan">
+            <FiChevronDown size={14} />
+          </button>
+          <button type="button" onClick={onRemove} className="p-1 text-red-500" aria-label="Hapus">
+            <FiTrash2 size={14} />
+          </button>
+        </div>
       </div>
-      {type === "faq" ? (
+      {type === "configurator" ? (
+        <>
+          <ImageUploadField
+            label="Foto produk (poster, rasio 2:3)"
+            value={item.image || ""}
+            onChange={(url) => set("image", url)}
+          />
+          <TextInput
+            className="mt-2 mb-2"
+            placeholder="Nama produk (mis. Label Ompreng Removable)"
+            value={item.title || ""}
+            onChange={(e) => set("title", e.target.value)}
+          />
+          <TextInput
+            className="mb-2"
+            placeholder="Deskripsi singkat (opsional)"
+            value={item.desc || ""}
+            onChange={(e) => set("desc", e.target.value)}
+          />
+          <VariantsRepeater variants={item.variants} onChange={(v) => set("variants", v)} />
+        </>
+      ) : type === "faq" ? (
         <>
           <TextInput
             className="mb-2"
@@ -396,6 +574,7 @@ function SectionItemEditor({ type, item, onChange, onRemove }) {
 }
 
 function newSectionItem(type) {
+  if (type === "configurator") return { image: "", title: "", desc: "", variants: [], active: true };
   if (type === "faq") return { question: "", answer: "", active: true };
   if (type === "steps") return { number: "", icon: "", title: "", desc: "", active: true };
   if (type === "gallery") return { image: "", caption: "", active: true };
@@ -433,7 +612,16 @@ function SectionsRepeater({ sections, onChange }) {
             <div className="flex items-center gap-2 mb-3">
               <select
                 value={section.type}
-                onChange={(e) => updateSection(i, { type: e.target.value })}
+                onChange={(e) => {
+                  const type = e.target.value;
+                  const patch = { type };
+                  if (type === "configurator") {
+                    if (!section.heading) patch.heading = CONFIGURATOR_DEFAULTS.heading;
+                    if (!section.contentOptions) patch.contentOptions = CONFIGURATOR_DEFAULTS.contentOptions;
+                    if (!section.orderOptions) patch.orderOptions = CONFIGURATOR_DEFAULTS.orderOptions;
+                  }
+                  updateSection(i, patch);
+                }}
                 className="rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-medium"
               >
                 {SECTION_TYPES.map((t) => (
@@ -461,17 +649,73 @@ function SectionsRepeater({ sections, onChange }) {
               onChange={(e) => updateSection(i, { heading: e.target.value })}
             />
             <TextInput
+              className="mb-2"
+              placeholder="Subheading (opsional)"
+              value={section.subheading ?? SUBHEADING_DEFAULTS[section.type] ?? ""}
+              onChange={(e) => updateSection(i, { subheading: e.target.value })}
+            />
+            <TextInput
               className="mb-3"
               placeholder="Badge (opsional)"
               value={section.badge || ""}
               onChange={(e) => updateSection(i, { badge: e.target.value })}
             />
+            {section.type === "configurator" && (
+              <div className="mb-3 rounded-xl border border-blue-200 bg-blue-50/50 p-3">
+                <p className="text-xs text-slate-500 mb-2">
+                  Item di bawah = kartu produk yang berjalan ke samping. Saat diklik muncul popup: foto, varian, isi label,
+                  lalu 2 tombol pengiriman → pengunjung mengisi alamat → terkirim ke WhatsApp (nomor diambil dari
+                  &quot;Secondary CTA Target&quot;).
+                </p>
+                <label className="block text-xs font-medium text-slate-600 mb-1">Pilihan isi label (satu per baris)</label>
+                <TextArea
+                  rows={5}
+                  value={(section.contentOptions || []).join("\n")}
+                  onChange={(e) => updateSection(i, { contentOptions: e.target.value.split("\n") })}
+                />
+                <label className="block text-xs font-medium text-slate-600 mt-3 mb-1">Teks di popup produk</label>
+                <div className="grid sm:grid-cols-2 gap-x-3">
+                  {CONFIGURATOR_TEXT_FIELDS.map(([key, label, placeholder]) => (
+                    <div key={key} className="mb-2">
+                      <span className="block text-[11px] text-slate-500 mb-0.5">{label}</span>
+                      <TextInput
+                        placeholder={placeholder}
+                        value={section[key] || ""}
+                        onChange={(e) => updateSection(i, { [key]: e.target.value })}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <label className="block text-xs font-medium text-slate-600 mt-3 mb-1">Teks pilihan pengiriman</label>
+                {[0, 1].map((k) => (
+                  <TextInput
+                    key={k}
+                    className="mb-2"
+                    placeholder={CONFIGURATOR_DEFAULTS.orderOptions[k]}
+                    value={(section.orderOptions || [])[k] || ""}
+                    onChange={(e) => {
+                      const orderOptions = [...(section.orderOptions || ["", ""])];
+                      orderOptions[k] = e.target.value;
+                      updateSection(i, { orderOptions });
+                    }}
+                  />
+                ))}
+              </div>
+            )}
             <div>
               {(section.items || []).map((item, j) => (
                 <SectionItemEditor
                   key={j}
+                  index={j}
                   type={section.type}
                   item={item}
+                  onMove={(dir) => {
+                    const k = j + dir;
+                    const items = [...(section.items || [])];
+                    if (k < 0 || k >= items.length) return;
+                    [items[j], items[k]] = [items[k], items[j]];
+                    updateSection(i, { items });
+                  }}
                   onChange={(next) => {
                     const items = [...(section.items || [])];
                     items[j] = next;
@@ -490,7 +734,7 @@ function SectionsRepeater({ sections, onChange }) {
                 }
                 className="text-xs font-medium text-blue-600 inline-flex items-center gap-1"
               >
-                <FiPlus /> Tambah item
+                <FiPlus /> {section.type === "configurator" ? "Tambah produk" : "Tambah item"}
               </button>
             </div>
           </div>
@@ -585,6 +829,9 @@ function CampaignForm({ initial, onSaved, onCancel }) {
   const [error, setError] = useState("");
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
+  const pageSetting = (key) => form.pageSettings?.[key] ?? PAGE_SETTING_DEFAULTS[key];
+  const setPageSetting = (key, val) =>
+    setForm((f) => ({ ...f, pageSettings: { ...(f.pageSettings || {}), [key]: val } }));
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -670,7 +917,13 @@ function CampaignForm({ initial, onSaved, onCancel }) {
         <Field label="Subtext">
           <TextArea rows={2} value={form.heroSubtext} onChange={(e) => set("heroSubtext", e.target.value)} />
         </Field>
-        <ImageUploadField label="Hero Image" value={form.heroImage} onChange={(v) => set("heroImage", v)} />
+        <VideoUploadField
+          label="Hero Background Video"
+          value={form.heroVideo}
+          onChange={(v) => set("heroVideo", v)}
+          hint="Diputar otomatis tanpa suara & berulang di belakang judul hero. Format MP4 (H.264) atau WebM, maks 50 MB — idealnya 10–30 detik, di bawah 10 MB agar cepat dimuat."
+        />
+        <ImageUploadField label="Hero Image (poster / fallback video)" value={form.heroImage} onChange={(v) => set("heroImage", v)} />
         <BadgesRepeater badges={form.heroBadges} onChange={(v) => set("heroBadges", v)} />
         <IconLabelRepeater
           label="Trust points (3 ikon kecil di bawah tombol CTA)"
@@ -721,6 +974,29 @@ function CampaignForm({ initial, onSaved, onCancel }) {
           items={form.ctaBandBadges}
           onChange={(v) => set("ctaBandBadges", v)}
         />
+      </Card>
+
+      <Card className="mb-4">
+        <h3 className="font-semibold mb-3">Teks Lainnya</h3>
+        <Field label="Kata yang di-highlight di headline" hint='Ditampilkan sebagai pil hijau, mis. "GRATIS". Kosongkan untuk tanpa highlight.'>
+          <TextInput value={pageSetting("heroHighlight")} onChange={(e) => setPageSetting("heroHighlight", e.target.value)} />
+        </Field>
+        <Field label="Teks tombol CTA band" hint='Kosongkan untuk memakai Primary CTA Text + " Sekarang".'>
+          <TextInput value={pageSetting("ctaBandButtonText")} onChange={(e) => setPageSetting("ctaBandButtonText", e.target.value)} />
+        </Field>
+        <Field label="Tagline footer">
+          <TextInput value={pageSetting("footerTagline")} onChange={(e) => setPageSetting("footerTagline", e.target.value)} />
+        </Field>
+        <Field label="Kata kunci footer (satu per baris)">
+          <TextArea
+            rows={4}
+            value={(pageSetting("footerKeywords") || []).join("\n")}
+            onChange={(e) => setPageSetting("footerKeywords", e.target.value.split("\n"))}
+          />
+        </Field>
+        <Field label="Catatan privasi di bawah form sample">
+          <TextInput value={pageSetting("formPrivacyNote")} onChange={(e) => setPageSetting("formPrivacyNote", e.target.value)} />
+        </Field>
       </Card>
 
       <Card className="mb-4">

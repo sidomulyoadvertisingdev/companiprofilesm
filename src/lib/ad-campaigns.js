@@ -22,6 +22,7 @@ const TABLES = [
     hero_headline TEXT,
     hero_subtext TEXT,
     hero_image VARCHAR(500),
+    hero_video VARCHAR(500),
     hero_badges_json TEXT,
     hero_trust_points_json TEXT,
     primary_cta_text VARCHAR(100),
@@ -37,6 +38,7 @@ const TABLES = [
     cta_band_text TEXT,
     cta_band_badges_json TEXT,
     whatsapp_shortcut_text VARCHAR(160),
+    page_settings_json TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`,
@@ -81,6 +83,11 @@ export async function ensureAdCampaignSchema() {
   // New CTA/hero badge fields, added after the original schema shipped.
   await ensureColumn("ad_campaigns", "hero_trust_points_json", "TEXT DEFAULT NULL");
   await ensureColumn("ad_campaigns", "cta_band_badges_json", "TEXT DEFAULT NULL");
+  // Background video for the full-screen hero.
+  await ensureColumn("ad_campaigns", "hero_video", "VARCHAR(500) DEFAULT NULL");
+  // Misc page copy that used to be hardcoded (headline highlight word,
+  // footer tagline/keywords, CTA band button, form privacy note).
+  await ensureColumn("ad_campaigns", "page_settings_json", "TEXT DEFAULT NULL");
 }
 
 function parseJson(value, fallback) {
@@ -111,6 +118,7 @@ function mapAdCampaign(row) {
     heroHeadline: row.hero_headline,
     heroSubtext: row.hero_subtext,
     heroImage: row.hero_image,
+    heroVideo: row.hero_video,
     heroBadges: parseJson(row.hero_badges_json, []),
     heroTrustPoints: parseJson(row.hero_trust_points_json, []),
     primaryCtaText: row.primary_cta_text,
@@ -126,6 +134,7 @@ function mapAdCampaign(row) {
     ctaBandText: row.cta_band_text,
     ctaBandBadges: parseJson(row.cta_band_badges_json, []),
     whatsappShortcutText: row.whatsapp_shortcut_text,
+    pageSettings: parseJson(row.page_settings_json, {}),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -199,6 +208,7 @@ export async function upsertAdCampaign(data) {
     heroHeadline = null,
     heroSubtext = null,
     heroImage = null,
+    heroVideo = null,
     heroBadges = [],
     heroTrustPoints = [],
     primaryCtaText = null,
@@ -214,6 +224,7 @@ export async function upsertAdCampaign(data) {
     ctaBandText = null,
     ctaBandBadges = [],
     whatsappShortcutText = null,
+    pageSettings = {},
   } = data;
 
   const params = [
@@ -231,6 +242,7 @@ export async function upsertAdCampaign(data) {
     heroHeadline,
     heroSubtext,
     heroImage,
+    heroVideo,
     JSON.stringify(heroBadges || []),
     JSON.stringify(heroTrustPoints || []),
     primaryCtaText,
@@ -246,6 +258,7 @@ export async function upsertAdCampaign(data) {
     ctaBandText,
     JSON.stringify(ctaBandBadges || []),
     whatsappShortcutText,
+    JSON.stringify(pageSettings || {}),
   ];
 
   if (id) {
@@ -253,10 +266,10 @@ export async function upsertAdCampaign(data) {
       `UPDATE ad_campaigns SET
         slug=?, title=?, status=?, meta_title=?, meta_description=?, og_image=?, canonical_url=?,
         noindex=?, published_at=?, accent_color=?, hero_eyebrow=?, hero_headline=?, hero_subtext=?,
-        hero_image=?, hero_badges_json=?, hero_trust_points_json=?, primary_cta_text=?, primary_cta_target=?,
+        hero_image=?, hero_video=?, hero_badges_json=?, hero_trust_points_json=?, primary_cta_text=?, primary_cta_target=?,
         secondary_cta_text=?, secondary_cta_target=?, sections_json=?, form_enabled=?, form_title=?,
         form_subtext=?, form_fields_json=?, cta_band_heading=?, cta_band_text=?, cta_band_badges_json=?,
-        whatsapp_shortcut_text=?
+        whatsapp_shortcut_text=?, page_settings_json=?
        WHERE id = ?`,
       [...params, id]
     );
@@ -266,11 +279,11 @@ export async function upsertAdCampaign(data) {
   const [result] = await db.execute(
     `INSERT INTO ad_campaigns
       (slug, title, status, meta_title, meta_description, og_image, canonical_url, noindex,
-       published_at, accent_color, hero_eyebrow, hero_headline, hero_subtext, hero_image,
+       published_at, accent_color, hero_eyebrow, hero_headline, hero_subtext, hero_image, hero_video,
        hero_badges_json, hero_trust_points_json, primary_cta_text, primary_cta_target, secondary_cta_text,
        secondary_cta_target, sections_json, form_enabled, form_title, form_subtext,
-       form_fields_json, cta_band_heading, cta_band_text, cta_band_badges_json, whatsapp_shortcut_text)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       form_fields_json, cta_band_heading, cta_band_text, cta_band_badges_json, whatsapp_shortcut_text, page_settings_json)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     params
   );
   return getAdCampaignById(result.insertId);

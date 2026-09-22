@@ -9,7 +9,12 @@ const UPLOAD_DIR = join(process.cwd(), "public", "uploads");
 const ALLOWED = [".webp", ".jpg", ".jpeg", ".png", ".svg", ".gif", ".avif"];
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
-export async function POST({ request }) {
+// Videos (e.g. the ad-campaign hero background) are much larger, so they're
+// only accepted from a logged-in admin — this route is otherwise public.
+const VIDEO_ALLOWED = [".mp4", ".webm"];
+const VIDEO_MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+
+export async function POST({ request, locals }) {
   let form;
   try {
     form = await request.formData();
@@ -29,16 +34,31 @@ export async function POST({ request }) {
   }
 
   const ext = extname(file.name || "").toLowerCase();
-  if (!ALLOWED.includes(ext)) {
+  const isVideo = VIDEO_ALLOWED.includes(ext);
+  if (isVideo && !locals.admin) {
+    return new Response(JSON.stringify({ message: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  if (!ALLOWED.includes(ext) && !isVideo) {
     return new Response(
       JSON.stringify({ message: "Tipe file tidak diizinkan (webp/jpg/png/svg)" }),
       { status: 415, headers: { "Content-Type": "application/json" } }
     );
   }
 
+  const limit = isVideo ? VIDEO_MAX_BYTES : MAX_BYTES;
+  if (file.size > limit) {
+    return new Response(JSON.stringify({ message: `Ukuran maksimal ${limit / 1024 / 1024} MB` }), {
+      status: 413,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const buf = Buffer.from(await file.arrayBuffer());
-  if (buf.length > MAX_BYTES) {
-    return new Response(JSON.stringify({ message: "Ukuran maksimal 5 MB" }), {
+  if (buf.length > limit) {
+    return new Response(JSON.stringify({ message: `Ukuran maksimal ${limit / 1024 / 1024} MB` }), {
       status: 413,
       headers: { "Content-Type": "application/json" },
     });

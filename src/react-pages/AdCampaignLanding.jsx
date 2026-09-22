@@ -1,5 +1,5 @@
-import { Fragment, useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   FiCheckCircle,
   FiAlertCircle,
@@ -30,6 +30,11 @@ import {
   FiPackage,
   FiSend,
   FiStar,
+  FiCheck,
+  FiChevronLeft,
+  FiShoppingCart,
+  FiX,
+  FiArrowLeft,
 } from "react-icons/fi";
 
 // Self-contained ad-campaign landing page. Deliberately does NOT import
@@ -42,6 +47,22 @@ const GOLD = "#D4AF37";
 // `brand.primary`) instead of orange, per brand guidance.
 const BLUE = "#2563EB";
 const GREEN = "#16A34A";
+
+// Page-level copy stored in page_settings_json (editable in the admin's
+// "Teks Lainnya" card). A key that was never set falls back to the original
+// copy; one the admin cleared ("") is hidden.
+const PAGE_SETTING_DEFAULTS = {
+  heroHighlight: "GRATIS",
+  ctaBandButtonText: "",
+  footerTagline: "Partner Visual untuk Operasional SPPG yang Lebih Baik",
+  footerKeywords: ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"],
+  formPrivacyNote: "Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.",
+};
+
+function settingText(campaign, key) {
+  const value = campaign.pageSettings?.[key];
+  return value === undefined || value === null ? PAGE_SETTING_DEFAULTS[key] : value;
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -140,49 +161,68 @@ function CtaButton({ text, target, variant = "primary", className = "", accent, 
   );
 }
 
-function TopNav({ campaign, accent }) {
-  const sampleTarget = campaign.primaryCtaTarget || "#sample-form";
+// Only links whose target section is actually on the page are shown, so a
+// campaign without e.g. testimonials doesn't get a dead "Testimoni" link.
+function navLinks(campaign, hasConfigurator) {
+  const types = new Set((campaign.sections || []).map((s) => s.type));
+  return [
+    [hasConfigurator ? "#pilih-produk" : "#produk", "Produk", true],
+    ["#cara-kerja", "Cara Kerja", types.has("steps") || campaign.formEnabled],
+    ["#area-layanan", "Area Layanan", types.has("areas")],
+    ["#testimoni", "Testimoni", types.has("testimonials")],
+    ["#faq", "FAQ", types.has("faq")],
+  ].filter(([, , show]) => show);
+}
+
+// Transparent over the full-screen video hero (Netflix-style), then turns
+// solid once the visitor scrolls past the top so it stays readable over the
+// light content sections below.
+function TopNav({ campaign, ctaTarget }) {
+  const sampleTarget = ctaTarget || campaign.primaryCtaTarget || "#sample-form";
+  const [solid, setSolid] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setSolid(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#0a0a1a]/95 backdrop-blur border-b border-slate-200 dark:border-white/10">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+    <header
+      className={`fixed top-0 inset-x-0 z-30 transition-colors duration-300 ${
+        solid ? "bg-[#0a0a1a]/95 backdrop-blur border-b border-white/10" : "bg-gradient-to-b from-black/70 to-transparent"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
         <a href="#produk" className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           <span
             className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white font-extrabold text-xs sm:text-sm shrink-0"
-            style={{ backgroundColor: accent }}
+            style={{ backgroundColor: BLUE }}
           >
             S
           </span>
           <span className="leading-tight min-w-0">
-            <span className="block text-xs sm:text-sm font-bold text-[#1d1d1f] dark:text-white truncate max-w-[130px] sm:max-w-none">
+            <span className="block text-xs sm:text-sm font-extrabold tracking-wide text-white truncate max-w-[130px] sm:max-w-none">
               SIDOMULYO ADVERTISING
             </span>
-            <span className="hidden sm:block text-[9px] font-medium tracking-widest uppercase text-slate-400 dark:text-slate-500">
+            <span className="hidden sm:block text-[9px] font-medium tracking-widest uppercase text-white/60">
               Solusi Visual untuk Bisnis Anda
             </span>
           </span>
         </a>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[#4b5563] dark:text-slate-300">
-          <a href="#produk" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
-            Produk
-          </a>
-          <a href="#cara-kerja" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
-            Cara Kerja
-          </a>
-          <a href="#area-layanan" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
-            Area Layanan
-          </a>
-          <a href="#testimoni" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
-            Testimoni
-          </a>
-          <a href="#faq" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
-            FAQ
-          </a>
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-white/80">
+          {navLinks(campaign, Boolean(ctaTarget)).map(([href, label]) => (
+            <a key={href} href={href} className="hover:text-white transition-colors">
+              {label}
+            </a>
+          ))}
         </nav>
 
         <a
           href={sampleTarget}
-          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm shrink-0"
+          className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm shrink-0 hover:opacity-90 transition-opacity"
           style={{ backgroundColor: BLUE }}
         >
           <FiGift aria-hidden="true" /> <span className="hidden sm:inline">Minta Sample Gratis</span>
@@ -195,9 +235,12 @@ function TopNav({ campaign, accent }) {
 
 // Splits a headline string and wraps the given word(s) as a filled green pill,
 // matching the mockup where "GRATIS" appears as a badge inline in the headline.
-function HighlightedHeadline({ text, highlight = "GRATIS" }) {
+function HighlightedHeadline({ text, highlight }) {
   if (!text) return null;
-  const parts = text.split(new RegExp(`(${highlight})`, "g"));
+  if (!highlight) return text;
+  // Escape so an admin-typed word with regex characters can't break the split.
+  const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = text.split(new RegExp(`(${escaped})`, "g"));
   return (
     <>
       {parts.map((part, i) =>
@@ -217,106 +260,129 @@ function HighlightedHeadline({ text, highlight = "GRATIS" }) {
   );
 }
 
-function HeroBadgeStack({ badges }) {
-  const active = (badges || []).filter(Boolean);
-  if (!active.length) return null;
-  return (
-    <div
-      className="absolute -top-4 right-3 sm:-top-6 sm:right-6 w-28 h-28 sm:w-32 sm:h-32 rounded-full flex flex-col items-center justify-center text-center gap-0.5 shadow-lg border-4 border-white p-2 z-10"
-      style={{ backgroundColor: NAVY }}
-    >
-      {active.map((b, i) => (
-        <span
-          key={i}
-          className="text-[9px] sm:text-[10px] font-extrabold uppercase leading-tight tracking-wide"
-          style={{ color: String(b).toLowerCase() === "praktis" ? "#4ADE80" : "#ffffff" }}
-        >
-          {b}
-        </span>
-      ))}
-    </div>
-  );
+// Full-bleed background: the admin-uploaded video (muted, looping, inline so
+// iOS autoplays it), with heroImage as its poster. Falls back to the image
+// alone, then to a plain navy gradient, when nothing has been uploaded yet.
+function HeroBackground({ video, image }) {
+  if (video) {
+    return (
+      <video
+        className="absolute inset-0 w-full h-full object-cover"
+        src={video}
+        poster={image || undefined}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        aria-hidden="true"
+      />
+    );
+  }
+  if (image) {
+    return (
+      <img
+        src={image}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover"
+        loading="eager"
+        fetchpriority="high"
+      />
+    );
+  }
+  return <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${NAVY}, #000)` }} />;
 }
 
-function Hero({ campaign, accent }) {
-  const badges = Array.isArray(campaign.heroBadges) ? campaign.heroBadges : [];
+function Hero({ campaign, ctaTarget }) {
+  // With a configurator section, the hero CTAs lead into it instead of the
+  // plain sample form further down the page.
+  const target = ctaTarget || campaign.primaryCtaTarget || "#sample-form";
+  const badges = (Array.isArray(campaign.heroBadges) ? campaign.heroBadges : []).filter(Boolean);
   const trustPoints = Array.isArray(campaign.heroTrustPoints) ? campaign.heroTrustPoints : [];
 
   return (
     <section
       id="produk"
-      className="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-[#0a0a1a] dark:to-[#0a0a1a] pt-10 pb-16 sm:pt-16 sm:pb-24 scroll-mt-16"
+      className="relative isolate overflow-hidden bg-black min-h-[88svh] sm:min-h-[92vh] flex items-center justify-center scroll-mt-16"
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-10 items-center">
-        <div className="order-1">
-          {campaign.heroEyebrow && (
-            <span
-              className="inline-block text-xs sm:text-sm font-bold tracking-wide uppercase px-3 py-1 rounded-full mb-4"
-              style={{ color: accent, backgroundColor: `${accent}1a` }}
-            >
-              {campaign.heroEyebrow}
-            </span>
-          )}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight" style={{ color: NAVY }}>
-            <HighlightedHeadline text={campaign.heroHeadline} />
-          </h1>
-          {campaign.heroSubtext && (
-            <p className="mt-4 text-base sm:text-lg text-[#4b5563] dark:text-slate-300 max-w-xl">
-              {campaign.heroSubtext}
-            </p>
-          )}
+      <HeroBackground video={campaign.heroVideo} image={campaign.heroImage} />
+      {/* Darkening overlay: an overall dim plus a radial vignette and a fade
+          to black at top/bottom, so white text stays readable on any video. */}
+      <div className="absolute inset-0 bg-black/55" aria-hidden="true" />
+      <div
+        className="absolute inset-0"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.65) 100%), linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 25%, transparent 70%, rgba(0,0,0,0.85) 100%)",
+        }}
+      />
 
-          <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget || "#sample-form"} accent={BLUE} icon={FiGift} />
-            {/* Deliberately points at the form, not campaign.secondaryCtaTarget
-                (a direct wa.me link) — visitors fill their data first, then
-                get sent to WhatsApp with a prefilled message automatically
-                after submitting (see LeadFormCard's success state below). */}
-            <CtaButton
-              text={campaign.secondaryCtaText}
-              target={campaign.primaryCtaTarget || "#sample-form"}
-              accent={GREEN}
-              arrow={false}
-              icon={FiMessageCircle}
-            />
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 pt-24 pb-16 sm:pt-28 sm:pb-20 text-center">
+        {(campaign.heroEyebrow || badges.length > 0) && (
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
+            {campaign.heroEyebrow && (
+              <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-white/15 text-white backdrop-blur-sm border border-white/20">
+                {campaign.heroEyebrow}
+              </span>
+            )}
+            {badges.map((b, i) => (
+              <span
+                key={i}
+                className="inline-block text-[11px] sm:text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-white/20 bg-black/30 backdrop-blur-sm"
+                style={{ color: String(b).toLowerCase() === "praktis" ? "#4ADE80" : "#ffffff" }}
+              >
+                {b}
+              </span>
+            ))}
           </div>
+        )}
 
-          {trustPoints.length > 0 && (
-            <div className="flex flex-wrap gap-x-6 gap-y-3 mt-7">
-              {trustPoints.map((tp, i) => {
-                const Icon = ICON_MAP[tp.icon] || FiCheckCircle;
-                const color = i === 0 ? GREEN : i === 1 ? accent : NAVY;
-                return (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-[#374151] dark:text-slate-300"
-                  >
-                    <Icon style={{ color }} aria-hidden="true" />
-                    {tp.label}
-                  </span>
-                );
-              })}
-            </div>
-          )}
+        <h1 className="text-3xl sm:text-5xl md:text-6xl font-black leading-[1.15] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
+          <HighlightedHeadline text={campaign.heroHeadline} highlight={settingText(campaign, "heroHighlight")} />
+        </h1>
+        {campaign.heroSubtext && (
+          <p className="mt-5 text-base sm:text-xl font-medium text-white/90 max-w-2xl mx-auto drop-shadow">
+            {campaign.heroSubtext}
+          </p>
+        )}
+
+        <div className="flex flex-col sm:flex-row gap-3 mt-8 justify-center">
+          <CtaButton
+            text={campaign.primaryCtaText}
+            target={target}
+            accent={BLUE}
+            icon={FiGift}
+            className="!rounded-md !px-8 !py-4 sm:!text-lg"
+          />
+          {/* Deliberately points at the form, not campaign.secondaryCtaTarget
+              (a direct wa.me link) — visitors fill their data first, then
+              get sent to WhatsApp with a prefilled message automatically
+              after submitting (see LeadFormCard's success state below). */}
+          <CtaButton
+            text={campaign.secondaryCtaText}
+            target={target}
+            accent={GREEN}
+            arrow={false}
+            icon={FiMessageCircle}
+            className="!rounded-md !px-8 !py-4 sm:!text-lg"
+          />
         </div>
 
-        <div className="order-2 relative">
-          {campaign.heroImage ? (
-            <img
-              src={campaign.heroImage}
-              alt={campaign.heroHeadline || campaign.title}
-              className="w-full rounded-3xl shadow-xl object-cover aspect-[4/3] md:aspect-square"
-              loading="eager"
-              fetchpriority="high"
-            />
-          ) : (
-            <ImagePlaceholder
-              label="Foto produk akan ditambahkan"
-              className="w-full aspect-[4/3] md:aspect-square rounded-3xl shadow-xl"
-            />
-          )}
-          <HeroBadgeStack badges={badges} />
-        </div>
+        {trustPoints.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mt-8">
+            {trustPoints.map((tp, i) => {
+              const Icon = ICON_MAP[tp.icon] || FiCheckCircle;
+              return (
+                <span key={i} className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-white/85">
+                  <Icon className="text-[#4ADE80]" aria-hidden="true" />
+                  {tp.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -362,7 +428,7 @@ function ProblemsSection({ section }) {
       <div className="max-w-6xl mx-auto">
         <SectionHeading
           heading={section.heading}
-          subheading="Kami memahami tantangan Anda, karena itu kami hadir dengan solusi yang tepat."
+          subheading={section.subheading ?? "Kami memahami tantangan Anda, karena itu kami hadir dengan solusi yang tepat."}
         />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((item, i) => (
@@ -390,7 +456,7 @@ function SolutionSection({ section }) {
       <div className="max-w-6xl mx-auto">
         <SectionHeading
           heading={section.heading}
-          subheading="Dirancang khusus untuk kebutuhan operasional SPPG yang dinamis."
+          subheading={section.subheading ?? "Dirancang khusus untuk kebutuhan operasional SPPG yang dinamis."}
         />
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {items.map((item, i) => {
@@ -444,9 +510,11 @@ function StepsInfo({ section, accent }) {
         <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: NAVY }}>
           {section.heading}
         </h2>
-        <p className="text-sm sm:text-base text-[#6e6e73] dark:text-slate-400 mb-8">
-          Proses mudah, cepat, dan tanpa biaya.
-        </p>
+        {(section.subheading ?? "Proses mudah, cepat, dan tanpa biaya.") && (
+          <p className="text-sm sm:text-base text-[#6e6e73] dark:text-slate-400 mb-8">
+            {section.subheading ?? "Proses mudah, cepat, dan tanpa biaya."}
+          </p>
+        )}
       </Reveal>
       {items.length > 0 && (
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8 sm:gap-4">
@@ -682,9 +750,11 @@ function LeadFormCard({ campaign, accent }) {
           )}
         </button>
 
-        <p className="flex items-center justify-center gap-1.5 text-xs text-[#6e6e73] dark:text-slate-400 pt-1">
-          <FiLock aria-hidden="true" /> Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.
-        </p>
+        {settingText(campaign, "formPrivacyNote") && (
+          <p className="flex items-center justify-center gap-1.5 text-xs text-[#6e6e73] dark:text-slate-400 pt-1">
+            <FiLock aria-hidden="true" /> {settingText(campaign, "formPrivacyNote")}
+          </p>
+        )}
       </form>
     </div>
   );
@@ -730,7 +800,7 @@ function AreasSection({ section }) {
   return (
     <section id="area-layanan" className="py-14 sm:py-20 px-4 sm:px-6 bg-white dark:bg-[#0a0a1a] scroll-mt-16">
       <div className="max-w-6xl mx-auto">
-        <SectionHeading heading={section.heading} subheading="Prioritas untuk SPPG aktif di 3 wilayah ini." />
+        <SectionHeading heading={section.heading} subheading={section.subheading ?? "Prioritas untuk SPPG aktif di 3 wilayah ini."} />
         <div className="grid sm:grid-cols-3 gap-5">
           {items.map((item, i) => (
             <AreaCard key={i} item={item} delay={i * 0.08} />
@@ -766,7 +836,7 @@ function GallerySection({ section }) {
       <div className="max-w-6xl mx-auto">
         <SectionHeading
           heading={section.heading}
-          subheading="Lihat langsung tampilan sample label removable pada ompreng."
+          subheading={section.subheading ?? "Lihat langsung tampilan sample label removable pada ompreng."}
         />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {items.map((item, i) => (
@@ -854,7 +924,7 @@ function TestimonialsSection({ section, accent }) {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <SectionHeading
           heading={section.heading}
-          subheading="Kata SPPG yang sudah mencoba label removable kami."
+          subheading={section.subheading ?? "Kata SPPG yang sudah mencoba label removable kami."}
         />
       </div>
       <div className="relative">
@@ -932,6 +1002,603 @@ function FaqSection({ section, accent }) {
   );
 }
 
+// ---------------------------------------------------------------------------
+// "Pilih Produk" configurator — Netflix-style dark section rendered directly
+// under the video hero: an auto-scrolling row of product posters. Clicking one
+// opens a modal (photo, variants, label contents, two order buttons), then
+// SPPG name/WA/address, which saves a lead and hands the full order summary
+// to Sidomulyo's WhatsApp.
+// Content comes from a `type: "configurator"` entry in sections_json.
+// ---------------------------------------------------------------------------
+
+const DEFAULT_CONTENT_OPTIONS = [
+  "Barcode",
+  "Nama SPPG",
+  "Jam",
+  "Tanggal",
+  "Menu Makanan",
+  "Himbauan",
+  "CP SPPG",
+  "Kandungan Gizi",
+];
+
+// Popup copy — each key is editable on the "Pilih Produk" section in admin;
+// an empty field falls back to these.
+const CONFIGURATOR_TEXT_DEFAULTS = {
+  variantLabel: "Pilih varian",
+  contentLabel: "Mau isi label apa saja?",
+  addressLabel: "Kirim alamat SPPG Anda",
+  nameLabel: "Nama SPPG",
+  submitText: "Kirim Alamat ke WhatsApp",
+  waGreeting: "Halo Sidomulyo, saya mau",
+};
+
+function configText(section, key) {
+  return (section[key] || "").trim() || CONFIGURATOR_TEXT_DEFAULTS[key];
+}
+
+const DEFAULT_ORDER_OPTIONS = [
+  "Kirim sample ke SPPG saya (gratis)",
+  "Kirim sample ke SPPG & saya order sekalian",
+];
+
+// Variants are `{ name, image }` objects; older campaigns stored plain name
+// strings, which are still accepted (they just have no photo of their own).
+function normalizeVariants(list) {
+  return (Array.isArray(list) ? list : [])
+    .map((v) => (typeof v === "string" ? { name: v.trim(), image: "" } : { name: String(v?.name || "").trim(), image: v?.image || "" }))
+    .filter((v) => v.name);
+}
+
+function cleanList(list) {
+  return (Array.isArray(list) ? list : []).map((s) => String(s || "").trim()).filter(Boolean);
+}
+
+// Same wa.me / api.whatsapp.com phone extraction the lead API uses for its
+// follow-up link, done client-side here so the message can carry the whole
+// configurator summary.
+function extractWaPhone(target) {
+  if (!target) return null;
+  const m = String(target).match(/wa\.me\/(\d+)|[?&]phone=(\d+)/);
+  return m ? m[1] || m[2] : null;
+}
+
+// Big outlined rank number overlapping the card's left edge, as on
+// Netflix's "Sedang Tren Sekarang" row.
+function PosterNumber({ n }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute left-0 bottom-1 z-0 font-black leading-none select-none text-[88px] sm:text-[120px] tracking-tighter"
+      style={{ color: "#000", WebkitTextStroke: "3px rgba(255,255,255,0.9)" }}
+    >
+      {n}
+    </span>
+  );
+}
+
+function Chip({ selected, onClick, children, check, thumb }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={selected}
+      className={`inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold border transition-colors ${
+        selected ? "bg-white text-black border-white" : "bg-white/5 text-white border-white/20 hover:bg-white/10"
+      }`}
+    >
+      {thumb && <img src={thumb} alt="" className="-ml-1.5 w-11 h-7 rounded object-cover" />}
+      {check && (
+        <span
+          className={`w-4 h-4 rounded-[4px] border flex items-center justify-center ${
+            selected ? "border-black bg-black text-white" : "border-white/50"
+          }`}
+        >
+          {selected && <FiCheck size={12} aria-hidden="true" />}
+        </span>
+      )}
+      {children}
+    </button>
+  );
+}
+
+const darkInput =
+  "w-full rounded-md bg-black/40 border border-white/20 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-white/60";
+
+function PosterCard({ item, index, onSelect }) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="group relative shrink-0 pl-11 sm:pl-16 text-left focus:outline-none"
+    >
+      <PosterNumber n={index + 1} />
+      <span
+        className="relative z-10 block w-[132px] sm:w-[190px] aspect-[2/3] rounded-md overflow-hidden bg-[#1a1a2e] shadow-lg transition-transform duration-300 group-hover:scale-[1.05] group-focus-visible:ring-4"
+        style={{ "--tw-ring-color": BLUE }}
+      >
+        {item.image ? (
+          <img src={item.image} alt={item.title} loading="lazy" draggable="false" className="w-full h-full object-cover" />
+        ) : (
+          <span className="w-full h-full flex items-center justify-center text-white/30">
+            <FiImage size={32} aria-hidden="true" />
+          </span>
+        )}
+        <span className="absolute inset-x-0 bottom-0 p-2.5 sm:p-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent">
+          <span className="block text-xs sm:text-sm font-bold text-white leading-tight">{item.title}</span>
+        </span>
+      </span>
+    </button>
+  );
+}
+
+// Keeps the product row gliding sideways on its own (Netflix-style) while
+// still letting visitors swipe/scroll it by hand. The rendered list holds the
+// products twice, so jumping back by one copy's width loops seamlessly.
+// Pauses while hovered/touched, while `paused` is set (modal open), and for
+// visitors who prefer reduced motion.
+function useAutoScroll(ref, paused) {
+  const hold = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
+
+    let pos = el.scrollLeft;
+    let frame;
+    let resumeTimer;
+    const SPEED = 0.5; // px per frame, ~30px/s
+
+    const tick = () => {
+      if (!hold.current && !paused) {
+        // Re-sync with any manual scrolling since the last frame.
+        if (Math.abs(el.scrollLeft - pos) > 2) pos = el.scrollLeft;
+        pos += SPEED;
+        // One copy's exact width: offset of the first card of the second copy.
+        const kids = el.children;
+        const period = kids.length > 1 ? kids[kids.length / 2].offsetLeft - kids[0].offsetLeft : 0;
+        if (period > 0 && pos >= period) pos -= period;
+        el.scrollLeft = pos;
+      }
+      frame = requestAnimationFrame(tick);
+    };
+
+    const stop = () => {
+      clearTimeout(resumeTimer);
+      hold.current = true;
+    };
+    const resumeSoon = () => {
+      clearTimeout(resumeTimer);
+      resumeTimer = setTimeout(() => {
+        pos = el.scrollLeft;
+        hold.current = false;
+      }, 1500);
+    };
+
+    el.addEventListener("pointerenter", stop);
+    el.addEventListener("pointerleave", resumeSoon);
+    el.addEventListener("touchstart", stop, { passive: true });
+    el.addEventListener("touchend", resumeSoon);
+    frame = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(resumeTimer);
+      el.removeEventListener("pointerenter", stop);
+      el.removeEventListener("pointerleave", resumeSoon);
+      el.removeEventListener("touchstart", stop);
+      el.removeEventListener("touchend", resumeSoon);
+    };
+  }, [ref, paused]);
+}
+
+function ProductModal({ product, section, campaign, onClose }) {
+  const variants = normalizeVariants(product.variants);
+  const contentOptions = cleanList(section.contentOptions).length
+    ? cleanList(section.contentOptions)
+    : DEFAULT_CONTENT_OPTIONS;
+  const orderOptions = cleanList(section.orderOptions).length
+    ? cleanList(section.orderOptions)
+    : DEFAULT_ORDER_OPTIONS;
+
+  const [variant, setVariant] = useState(variants.length === 1 ? variants[0].name : "");
+  const [contents, setContents] = useState([]);
+  const [orderOption, setOrderOption] = useState("");
+  const [info, setInfo] = useState({ name: "", whatsapp: "", address: "" });
+  const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [waUrl, setWaUrl] = useState("");
+  const scrollRef = useRef(null);
+  // The big photo follows the selected variant's own photo, falling back to
+  // the product photo when that variant has none (or nothing is picked yet).
+  const photo = variants.find((v) => v.name === variant)?.image || product.image;
+
+  // Esc to close + lock page scroll behind the modal.
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && onClose();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 });
+  }, [orderOption]);
+
+  function toggleContent(opt) {
+    setContents((c) => (c.includes(opt) ? c.filter((x) => x !== opt) : [...c, opt]));
+    setErrors((e) => ({ ...e, contents: undefined }));
+  }
+
+  function chooseOrder(opt) {
+    const errs = {};
+    if (variants.length && !variant) errs.variant = "Pilih varian terlebih dahulu";
+    if (!contents.length) errs.contents = "Centang minimal satu isi label";
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
+    setOrderOption(opt);
+  }
+
+  function buildMessage() {
+    const lines = [
+      `${configText(section, "waGreeting")} ${orderOption.charAt(0).toLowerCase()}${orderOption.slice(1)}.`,
+      "",
+      `Produk: ${product.title}`,
+      variant ? `Varian: ${variant}` : null,
+      `Isi label: ${contents.join(", ")}`,
+      "",
+      `${configText(section, "nameLabel")}: ${info.name.trim()}`,
+      `No. WA: ${info.whatsapp.trim()}`,
+      `Alamat: ${info.address.trim()}`,
+    ];
+    return lines.filter((l) => l !== null).join("\n");
+  }
+
+  async function handleSend(e) {
+    e.preventDefault();
+    const errs = {};
+    if (!info.name.trim()) errs.name = "Wajib diisi";
+    if (!PHONE_RE.test(info.whatsapp.replace(/[\s-]/g, ""))) errs.whatsapp = "Nomor WhatsApp tidak valid";
+    if (!info.address.trim()) errs.address = "Wajib diisi";
+    setErrors(errs);
+    if (Object.keys(errs).length) return;
+
+    setSubmitting(true);
+    const params = new URLSearchParams(window.location.search);
+    try {
+      const res = await fetch("/api/ad-campaign-leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          campaignSlug: campaign.slug,
+          name: info.name,
+          whatsapp: info.whatsapp,
+          answers: {
+            produk: product.title,
+            varian: variant || "-",
+            isi_label: contents.join(", "),
+            pilihan: orderOption,
+            address: info.address,
+          },
+          utmSource: params.get("utm_source"),
+          utmMedium: params.get("utm_medium"),
+          utmCampaign: params.get("utm_campaign"),
+          utmContent: params.get("utm_content"),
+          utmTerm: params.get("utm_term"),
+          referrer: document.referrer || null,
+        }),
+      });
+      if (res.status === 400) {
+        const data = await res.json().catch(() => ({}));
+        setErrors({ form: data.message || "Data belum lengkap." });
+        return;
+      }
+      // Any other failure (rate limit, network) still continues to WhatsApp —
+      // the chat itself is the conversion that matters most here.
+    } catch {
+      // Same as above: fall through to WhatsApp.
+    } finally {
+      setSubmitting(false);
+    }
+
+    const phone = extractWaPhone(campaign.secondaryCtaTarget);
+    if (!phone) {
+      setWaUrl("none");
+      return;
+    }
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(buildMessage())}`;
+    setWaUrl(url);
+    // A navigation (not window.open) so mobile browsers don't treat it as a
+    // blocked popup after the await above; it opens the WhatsApp app directly.
+    window.location.href = url;
+  }
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm sm:p-6"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label={product.title}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 40, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        onClick={(e) => e.stopPropagation()}
+        ref={scrollRef}
+        className="relative w-full sm:max-w-3xl max-h-[92svh] overflow-y-auto rounded-t-2xl sm:rounded-xl bg-[#141414] text-white shadow-2xl"
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Tutup"
+          className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-black/70 hover:bg-black flex items-center justify-center"
+        >
+          <FiX size={20} />
+        </button>
+
+        <div className="relative aspect-[16/10] sm:aspect-[16/8] bg-[#1a1a2e]">
+          {photo ? (
+            <AnimatePresence initial={false}>
+              {/* Whole photo (object-contain) over a blurred copy of itself,
+                  so any aspect ratio — a 2:3 product poster or a wide variant
+                  shot — shows uncropped without empty bars. */}
+              <motion.div
+                key={photo}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.35 }}
+                className="absolute inset-0 overflow-hidden"
+              >
+                <img src={photo} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-60" />
+                <img
+                  src={photo}
+                  alt={variant ? `${product.title} — ${variant}` : product.title}
+                  className="relative w-full h-full object-contain"
+                />
+              </motion.div>
+            </AnimatePresence>
+          ) : (
+            <span className="w-full h-full flex items-center justify-center text-white/30">
+              <FiImage size={40} aria-hidden="true" />
+            </span>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/20 to-transparent" />
+          <div className="absolute left-5 right-5 bottom-4 sm:left-8 sm:bottom-6">
+            <h3 className="text-2xl sm:text-4xl font-black leading-tight drop-shadow">{product.title}</h3>
+            {product.desc && <p className="mt-1 text-sm sm:text-base text-white/80 max-w-xl">{product.desc}</p>}
+          </div>
+        </div>
+
+        <div className="px-5 pb-6 pt-3 sm:px-8 sm:pb-8">
+          {!orderOption ? (
+            <>
+              {variants.length > 0 && (
+                <div className="mb-6">
+                  <p className="text-sm font-semibold text-white/70 mb-2.5">{configText(section, "variantLabel")}</p>
+                  <div className="flex flex-wrap gap-2.5">
+                    {variants.map(({ name: v, image }) => (
+                      <Chip
+                        key={v}
+                        selected={variant === v}
+                        thumb={image}
+                        onClick={() => {
+                          setVariant(v);
+                          setErrors((e) => ({ ...e, variant: undefined }));
+                        }}
+                      >
+                        {v}
+                      </Chip>
+                    ))}
+                  </div>
+                  {errors.variant && <p className="mt-2 text-xs text-red-400">{errors.variant}</p>}
+                </div>
+              )}
+
+              <div className="mb-7">
+                <p className="text-sm font-semibold text-white/70 mb-2.5">{configText(section, "contentLabel")}</p>
+                <div className="flex flex-wrap gap-2.5">
+                  {contentOptions.map((opt) => (
+                    <Chip key={opt} check selected={contents.includes(opt)} onClick={() => toggleContent(opt)}>
+                      {opt}
+                    </Chip>
+                  ))}
+                </div>
+                {errors.contents && <p className="mt-2 text-xs text-red-400">{errors.contents}</p>}
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-3">
+                {orderOptions.map((opt, i) => {
+                  const Icon = i === 0 ? FiGift : FiShoppingCart;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => chooseOrder(opt)}
+                      className="inline-flex items-center justify-center gap-2.5 rounded-md px-5 py-4 text-sm sm:text-base font-bold text-white hover:opacity-90 transition-opacity text-left"
+                      style={{ backgroundColor: i === 0 ? GREEN : BLUE }}
+                    >
+                      <Icon className="shrink-0" size={20} aria-hidden="true" />
+                      {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          ) : (
+            <form onSubmit={handleSend}>
+              <button
+                type="button"
+                onClick={() => setOrderOption("")}
+                className="inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white mb-4"
+              >
+                <FiArrowLeft aria-hidden="true" /> Kembali
+              </button>
+              <div className="mb-5 rounded-md bg-white/5 border border-white/10 p-4 text-sm text-white/70 leading-relaxed">
+                <span className="block font-bold text-white">{orderOption}</span>
+                {product.title}
+                {variant && <> · {variant}</>} · {contents.join(", ")}
+              </div>
+              <p className="text-sm font-semibold text-white/70 mb-2.5">{configText(section, "addressLabel")}</p>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <input
+                    className={darkInput}
+                    placeholder={configText(section, "nameLabel")}
+                    value={info.name}
+                    onChange={(e) => setInfo({ ...info, name: e.target.value })}
+                  />
+                  {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
+                </div>
+                <div>
+                  <input
+                    className={darkInput}
+                    type="tel"
+                    inputMode="tel"
+                    placeholder="No. WhatsApp (08xx)"
+                    value={info.whatsapp}
+                    onChange={(e) => setInfo({ ...info, whatsapp: e.target.value })}
+                  />
+                  {errors.whatsapp && <p className="mt-1 text-xs text-red-400">{errors.whatsapp}</p>}
+                </div>
+                <div className="sm:col-span-2">
+                  <textarea
+                    className={darkInput}
+                    rows={3}
+                    placeholder="Alamat lengkap (jalan, desa/kelurahan, kecamatan, kota)"
+                    value={info.address}
+                    onChange={(e) => setInfo({ ...info, address: e.target.value })}
+                  />
+                  {errors.address && <p className="mt-1 text-xs text-red-400">{errors.address}</p>}
+                </div>
+              </div>
+              {errors.form && <p className="mt-3 text-sm text-red-400">{errors.form}</p>}
+              <button
+                type="submit"
+                disabled={submitting}
+                className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-md px-8 py-4 text-base sm:text-lg font-bold text-white hover:opacity-90 transition-opacity disabled:opacity-60"
+                style={{ backgroundColor: GREEN }}
+              >
+                <FiMessageCircle aria-hidden="true" />
+                {submitting ? "Mengirim..." : configText(section, "submitText")}
+              </button>
+              {waUrl && waUrl !== "none" && (
+                <p className="mt-3 text-xs text-white/60 text-center">
+                  WhatsApp tidak terbuka?{" "}
+                  <a href={waUrl} className="underline text-white">
+                    Klik di sini
+                  </a>
+                  .
+                </p>
+              )}
+              {waUrl === "none" && (
+                <p className="mt-3 text-sm text-green-400 text-center">
+                  Terima kasih! Data Anda sudah kami terima, tim kami akan segera menghubungi.
+                </p>
+              )}
+            </form>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function ConfiguratorSection({ section, campaign }) {
+  const products = (section.items || []).filter((it) => it.active !== false && it.title);
+  const [openIdx, setOpenIdx] = useState(-1);
+  const rowRef = useRef(null);
+  useAutoScroll(rowRef, openIdx !== -1);
+
+  if (!products.length) return null;
+
+  // Repeat the products until one copy comfortably overflows a wide screen,
+  // then render that copy twice for the seamless auto-scroll loop.
+  const copy = [];
+  while (copy.length < Math.max(8, products.length)) {
+    products.forEach((p, i) => copy.push({ p, i }));
+  }
+  const loop = [...copy, ...copy];
+
+  function scrollRow(dir) {
+    const el = rowRef.current;
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
+  }
+
+  return (
+    <section id="pilih-produk" className="relative bg-black text-white overflow-hidden scroll-mt-16">
+      {/* Netflix-style curved glowing divider between the hero and this row. */}
+      <div aria-hidden="true" className="relative h-20 sm:h-28 -mt-px">
+        <div
+          className="absolute left-[-25%] w-[150%] top-4 h-[200%] rounded-[50%]"
+          style={{ background: `linear-gradient(90deg, transparent 5%, ${BLUE} 30%, ${GOLD} 50%, ${BLUE} 70%, transparent 95%)` }}
+        />
+        <div
+          className="absolute left-[-25%] w-[150%] top-[19px] h-[200%] rounded-[50%]"
+          style={{ background: `radial-gradient(50% 30% at 50% 0%, ${NAVY} 0%, #000 100%)` }}
+        />
+      </div>
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pb-16 sm:pb-24">
+        {section.badge && (
+          <span className="inline-block text-[11px] sm:text-xs font-bold tracking-widest uppercase text-white/60 mb-1">
+            {section.badge}
+          </span>
+        )}
+        <h2 className="text-xl sm:text-3xl font-bold text-white">{section.heading || "Pilih Produk"}</h2>
+        {(section.subheading ?? "Klik produk untuk melihat varian & minta sample.") && (
+          <p className="mt-1 text-sm text-white/60">
+            {section.subheading ?? "Klik produk untuk melihat varian & minta sample."}
+          </p>
+        )}
+
+        <div className="relative -mx-4 sm:mx-0 mt-4">
+          <button
+            type="button"
+            onClick={() => scrollRow(-1)}
+            aria-label="Geser ke kiri"
+            className="hidden md:flex absolute left-0 top-4 bottom-4 z-20 w-10 items-center justify-center rounded-md bg-black/60 hover:bg-black/90 text-white"
+          >
+            <FiChevronLeft size={24} />
+          </button>
+          <div
+            ref={rowRef}
+            className="flex gap-3 sm:gap-6 overflow-x-auto px-4 sm:px-12 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {loop.map(({ p, i }, k) => (
+              <PosterCard key={k} item={p} index={i} onSelect={() => setOpenIdx(i)} />
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => scrollRow(1)}
+            aria-label="Geser ke kanan"
+            className="hidden md:flex absolute right-0 top-4 bottom-4 z-20 w-10 items-center justify-center rounded-md bg-black/60 hover:bg-black/90 text-white"
+          >
+            <FiChevronRight size={24} />
+          </button>
+        </div>
+      </div>
+
+      {openIdx !== -1 && (
+        <ProductModal
+          key={openIdx}
+          product={products[openIdx]}
+          section={section}
+          campaign={campaign}
+          onClose={() => setOpenIdx(-1)}
+        />
+      )}
+    </section>
+  );
+}
+
 function SectionsLoop({ sections, stepsSection, accent }) {
   if (!Array.isArray(sections)) return null;
   return sections.map((section, idx) => {
@@ -987,7 +1654,10 @@ function CtaBand({ campaign }) {
           {campaign.ctaBandText && <p className="text-slate-300 mb-6">{campaign.ctaBandText}</p>}
           <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
             <CtaButton
-              text={campaign.primaryCtaText ? `${campaign.primaryCtaText} Sekarang` : null}
+              text={
+                settingText(campaign, "ctaBandButtonText") ||
+                (campaign.primaryCtaText ? `${campaign.primaryCtaText} Sekarang` : null)
+              }
               target={campaign.primaryCtaTarget}
               accent={BLUE}
               icon={FiGift}
@@ -1023,7 +1693,6 @@ function CtaBand({ campaign }) {
   );
 }
 
-const FOOTER_KEYWORDS = ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"];
 
 function Footer({ campaign }) {
   return (
@@ -1045,11 +1714,11 @@ function Footer({ campaign }) {
         </div>
 
         <div>
-          <p className="text-sm sm:text-base font-bold text-white mb-1.5">
-            Partner Visual untuk Operasional SPPG yang Lebih Baik
-          </p>
+          {settingText(campaign, "footerTagline") && (
+            <p className="text-sm sm:text-base font-bold text-white mb-1.5">{settingText(campaign, "footerTagline")}</p>
+          )}
           <p className="text-[11px] uppercase tracking-widest text-slate-400">
-            {FOOTER_KEYWORDS.join(" | ")}
+            {cleanList(settingText(campaign, "footerKeywords")).join(" | ")}
           </p>
         </div>
 
@@ -1070,14 +1739,20 @@ function Footer({ campaign }) {
   );
 }
 
-function StickyMobileCta({ campaign }) {
+function StickyMobileCta({ campaign, ctaTarget }) {
   if (!campaign.primaryCtaText) return null;
   return (
     <div
       className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0a0a1a]/95 backdrop-blur border-t border-slate-200 dark:border-white/10 px-4 py-3"
       style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
     >
-      <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={BLUE} className="w-full" icon={FiGift} />
+      <CtaButton
+        text={campaign.primaryCtaText}
+        target={ctaTarget || campaign.primaryCtaTarget}
+        accent={BLUE}
+        className="w-full"
+        icon={FiGift}
+      />
     </div>
   );
 }
@@ -1086,16 +1761,23 @@ export default function AdCampaignLanding({ campaign }) {
   const accent = campaign.accentColor || "#0A4DA6";
   const sections = Array.isArray(campaign.sections) ? campaign.sections : [];
   const stepsSection = sections.find((s) => s.type === "steps");
+  // Only counts once it has at least one live product, so CTAs never point
+  // at an empty #pilih-produk anchor.
+  const configurator = sections.find(
+    (s) => s.type === "configurator" && (s.items || []).some((it) => it.active !== false && it.title)
+  );
+  const ctaTarget = configurator ? "#pilih-produk" : undefined;
 
   return (
     <main className="pb-24 md:pb-0">
-      <TopNav campaign={campaign} accent={accent} />
-      <Hero campaign={campaign} accent={accent} />
+      <TopNav campaign={campaign} ctaTarget={ctaTarget} />
+      <Hero campaign={campaign} ctaTarget={ctaTarget} />
+      {configurator && <ConfiguratorSection section={configurator} campaign={campaign} />}
       <SectionsLoop sections={sections} stepsSection={stepsSection} accent={accent} />
       <SampleSection stepsSection={stepsSection} campaign={campaign} accent={accent} />
       <CtaBand campaign={campaign} />
       <Footer campaign={campaign} />
-      <StickyMobileCta campaign={campaign} />
+      <StickyMobileCta campaign={campaign} ctaTarget={ctaTarget} />
     </main>
   );
 }

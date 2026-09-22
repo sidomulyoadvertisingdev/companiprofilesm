@@ -25,7 +25,9 @@ CREATE TABLE IF NOT EXISTS ad_campaigns (
   hero_headline TEXT,
   hero_subtext TEXT,
   hero_image VARCHAR(500),
+  hero_video VARCHAR(500),
   hero_badges_json TEXT,
+  hero_trust_points_json TEXT,
   primary_cta_text VARCHAR(100),
   primary_cta_target VARCHAR(500),
   secondary_cta_text VARCHAR(100),
@@ -37,7 +39,9 @@ CREATE TABLE IF NOT EXISTS ad_campaigns (
   form_fields_json TEXT,
   cta_band_heading TEXT,
   cta_band_text TEXT,
+  cta_band_badges_json TEXT,
   whatsapp_shortcut_text VARCHAR(160),
+  page_settings_json TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
