@@ -29,6 +29,7 @@ import {
   FiImage,
   FiPackage,
   FiSend,
+  FiStar,
 } from "react-icons/fi";
 
 // Self-contained ad-campaign landing page. Deliberately does NOT import
@@ -170,6 +171,9 @@ function TopNav({ campaign, accent }) {
           </a>
           <a href="#area-layanan" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
             Area Layanan
+          </a>
+          <a href="#testimoni" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
+            Testimoni
           </a>
           <a href="#faq" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
             FAQ
@@ -708,6 +712,123 @@ function AreasSection({ section }) {
   );
 }
 
+function GalleryCard({ item, delay }) {
+  return (
+    <Reveal delay={delay} className="relative rounded-xl overflow-hidden shadow-sm aspect-square">
+      {item.image ? (
+        <img src={item.image} alt={item.caption || "Sample produk"} className="w-full h-full object-cover" loading="lazy" />
+      ) : (
+        <ImagePlaceholder label="Foto belum diupload" className="w-full h-full" />
+      )}
+      {item.caption && (
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+          <span className="text-white text-xs font-medium leading-tight">{item.caption}</span>
+        </div>
+      )}
+    </Reveal>
+  );
+}
+
+function GallerySection({ section }) {
+  const items = (section.items || []).filter((it) => it.active !== false);
+  if (!items.length) return null;
+  return (
+    <section id="produk-sample" className="py-14 sm:py-20 px-4 sm:px-6 bg-white dark:bg-[#0a0a1a] scroll-mt-16">
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading
+          heading={section.heading}
+          subheading="Lihat langsung tampilan sample label removable pada ompreng."
+        />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+          {items.map((item, i) => (
+            <GalleryCard key={i} item={item} delay={i * 0.05} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Common Indonesian honorifics — skipped when deriving an initial so e.g.
+// "Ibu Sri Wahyuni" and "Ibu Dewi Lestari" don't both show "I".
+const HONORIFICS = ["ibu", "bapak", "bu", "pak", "sdr", "sdri"];
+
+function initialFromName(name) {
+  const words = (name || "").trim().split(/\s+/).filter(Boolean);
+  const word = words.find((w) => !HONORIFICS.includes(w.toLowerCase())) || words[0];
+  return (word || "?").charAt(0).toUpperCase();
+}
+
+function Avatar({ name, image, accent }) {
+  if (image) {
+    return <img src={image} alt={name} className="w-12 h-12 rounded-full object-cover shrink-0" loading="lazy" />;
+  }
+  const initial = initialFromName(name);
+  return (
+    <div
+      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shrink-0"
+      style={{ backgroundColor: accent }}
+      aria-hidden="true"
+    >
+      {initial}
+    </div>
+  );
+}
+
+function TestimonialCard({ item, accent, delay }) {
+  const rating = Number(item.rating) || 0;
+  return (
+    <Reveal
+      delay={delay}
+      className="rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 p-6 shadow-sm"
+    >
+      {rating > 0 && (
+        <div className="flex items-center gap-0.5 mb-3" aria-label={`Rating ${rating} dari 5`}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <FiStar
+              key={i}
+              size={14}
+              className={i < rating ? "fill-current" : ""}
+              style={{ color: i < rating ? "#F59E0B" : "#D1D5DB" }}
+              aria-hidden="true"
+            />
+          ))}
+        </div>
+      )}
+      {item.quote && (
+        <p className="text-sm text-[#374151] dark:text-slate-300 leading-relaxed mb-5">&ldquo;{item.quote}&rdquo;</p>
+      )}
+      <div className="flex items-center gap-3">
+        <Avatar name={item.name} image={item.avatar} accent={accent} />
+        <div className="min-w-0">
+          <p className="font-semibold text-sm text-[#1d1d1f] dark:text-white truncate">{item.name}</p>
+          {item.role && <p className="text-xs text-[#6e6e73] dark:text-slate-400 truncate">{item.role}</p>}
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+function TestimonialsSection({ section, accent }) {
+  const items = (section.items || []).filter((it) => it.active !== false);
+  if (!items.length) return null;
+  return (
+    <section id="testimoni" className="py-14 sm:py-20 px-4 sm:px-6 bg-slate-50 dark:bg-white/[0.03] scroll-mt-16">
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading
+          heading={section.heading}
+          subheading="Kata SPPG yang sudah mencoba label removable kami."
+        />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {items.map((item, i) => (
+            <TestimonialCard key={i} item={item} accent={accent} delay={i * 0.06} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FaqSection({ section, accent }) {
   const items = (section.items || []).filter((it) => it.active !== false);
   const [openIndex, setOpenIndex] = useState(0);
@@ -769,6 +890,8 @@ function SectionsLoop({ sections, stepsSection, accent }) {
     if (section.type === "problems") return <ProblemsSection key={key} section={section} />;
     if (section.type === "benefits") return <SolutionSection key={key} section={section} />;
     if (section.type === "areas") return <AreasSection key={key} section={section} />;
+    if (section.type === "gallery") return <GallerySection key={key} section={section} />;
+    if (section.type === "testimonials") return <TestimonialsSection key={key} section={section} accent={accent} />;
     if (section.type === "faq") return <FaqSection key={key} section={section} accent={accent} />;
     // "steps" is rendered together with the lead form by SampleSection, not here.
     if (section.type === "steps" && section !== stepsSection) {

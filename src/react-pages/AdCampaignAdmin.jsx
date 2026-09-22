@@ -21,6 +21,8 @@ const SECTION_TYPES = [
   { value: "benefits", label: "Benefits" },
   { value: "steps", label: "Steps" },
   { value: "areas", label: "Areas" },
+  { value: "gallery", label: "Gallery (Sample Produk)" },
+  { value: "testimonials", label: "Testimoni Pelanggan" },
   { value: "faq", label: "FAQ" },
 ];
 
@@ -273,6 +275,55 @@ function SectionItemEditor({ type, item, onChange, onRemove }) {
             onChange={(e) => set("answer", e.target.value)}
           />
         </>
+      ) : type === "gallery" ? (
+        <>
+          <ImageUploadField
+            label="Foto sample produk"
+            value={item.image || ""}
+            onChange={(url) => set("image", url)}
+          />
+          <TextInput
+            className="mt-2"
+            placeholder="Keterangan foto (opsional, mis. Label Nasi Ayam Teriyaki)"
+            value={item.caption || ""}
+            onChange={(e) => set("caption", e.target.value)}
+          />
+        </>
+      ) : type === "testimonials" ? (
+        <>
+          <ImageUploadField
+            label="Foto (opsional, kosongkan untuk avatar inisial)"
+            value={item.avatar || ""}
+            onChange={(url) => set("avatar", url)}
+          />
+          <TextInput
+            className="mt-2 mb-2"
+            placeholder="Nama pemberi testimoni"
+            value={item.name || ""}
+            onChange={(e) => set("name", e.target.value)}
+          />
+          <TextInput
+            className="mb-2"
+            placeholder="Jabatan / Nama SPPG (mis. Kepala Dapur SPPG Salatiga)"
+            value={item.role || ""}
+            onChange={(e) => set("role", e.target.value)}
+          />
+          <TextArea
+            rows={3}
+            className="mb-2"
+            placeholder="Isi testimoni"
+            value={item.quote || ""}
+            onChange={(e) => set("quote", e.target.value)}
+          />
+          <TextInput
+            type="number"
+            min="1"
+            max="5"
+            placeholder="Rating bintang (1-5, opsional)"
+            value={item.rating ?? ""}
+            onChange={(e) => set("rating", e.target.value ? Number(e.target.value) : null)}
+          />
+        </>
       ) : (
         <>
           {type === "steps" && (
@@ -312,6 +363,8 @@ function SectionItemEditor({ type, item, onChange, onRemove }) {
 function newSectionItem(type) {
   if (type === "faq") return { question: "", answer: "", active: true };
   if (type === "steps") return { number: "", icon: "", title: "", desc: "", active: true };
+  if (type === "gallery") return { image: "", caption: "", active: true };
+  if (type === "testimonials") return { name: "", role: "", quote: "", rating: 5, avatar: "", active: true };
   return { icon: "", title: "", desc: "", active: true };
 }
 

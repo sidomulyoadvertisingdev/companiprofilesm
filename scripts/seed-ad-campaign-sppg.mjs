@@ -102,6 +102,19 @@ const campaign = {
       ],
     },
     {
+      type: "gallery",
+      heading: "Contoh Sample Label Removable",
+      items: [
+        // `image` is left empty on purpose — real product photography is
+        // uploaded manually through the admin editor. Renders as a clean
+        // placeholder, never a broken image.
+        { image: "", caption: "Label pada ompreng stainless", active: true },
+        { image: "", caption: "Label menempel rapi di permukaan", active: true },
+        { image: "", caption: "Proses melepas label tanpa bekas", active: true },
+        { image: "", caption: "Contoh custom info menu & batch", active: true },
+      ],
+    },
+    {
       type: "steps",
       heading: "Minta Sample Gratis, Coba Langsung di Ompreng Anda",
       badge: "1 sample kit per SPPG",
@@ -131,6 +144,45 @@ const campaign = {
         { icon: "", title: "Salatiga", desc: "Area utama layanan free sample.", active: true },
         { icon: "", title: "Semarang", desc: "Termasuk dalam area free sample.", active: true },
         { icon: "", title: "Magelang", desc: "Termasuk dalam area free sample.", active: true },
+      ],
+    },
+    {
+      // PLACEHOLDER CONTENT: these names/quotes are illustrative sample copy,
+      // not real customers. Replace with genuine testimonials (or remove the
+      // items) via the admin editor before this campaign goes live — do not
+      // publish fabricated testimonials attributed to invented people.
+      type: "testimonials",
+      heading: "Kata SPPG yang Sudah Mencoba",
+      items: [
+        // `avatar` left empty on purpose — the component falls back to an
+        // initials avatar; real photos can be uploaded later via the admin.
+        {
+          name: "Ibu Sri Wahyuni",
+          role: "Kepala Dapur, SPPG Kota Salatiga",
+          quote:
+            "Dulu label sering ninggalin bekas lem di ompreng, sekarang tinggal ditempel dan dilepas, jauh lebih cepat pas jam sibuk.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Bapak Agus Setiawan",
+          role: "Koordinator Operasional, SPPG Semarang",
+          quote:
+            "Timnya bantu custom info menu dan batch sesuai kebutuhan kami. Prosesnya cepat dan hasilnya tetap rapi dipakai harian.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
+        {
+          name: "Ibu Dewi Lestari",
+          role: "Penanggung Jawab Gizi, SPPG Magelang",
+          quote:
+            "Sample-nya beneran gratis dan kualitasnya bagus. Setelah cocok kami lanjut cetak rutin untuk kebutuhan operasional.",
+          rating: 5,
+          avatar: "",
+          active: true,
+        },
       ],
     },
     {
@@ -259,5 +311,8 @@ if (existingId) {
 
 console.log(`URL: /promo/${SLUG}`);
 console.log(`Placeholder WhatsApp number used: ${WHATSAPP_NUMBER} — replace via /admin/campaigns before going live.`);
+console.log(
+  "NOTE: the testimonials section uses illustrative placeholder quotes — replace with real customer testimonials (or remove them) via /admin/campaigns before publishing."
+);
 
 process.exit(0);
