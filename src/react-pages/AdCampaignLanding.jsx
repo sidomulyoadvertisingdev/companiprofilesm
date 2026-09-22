@@ -37,7 +37,9 @@ import {
 
 const NAVY = "#0B1E3D";
 const GOLD = "#D4AF37";
-const ORANGE = "#F97316";
+// Primary CTA color — reuses the site's own brand blue (tailwind.config.js
+// `brand.primary`) instead of orange, per brand guidance.
+const BLUE = "#2563EB";
 const GREEN = "#16A34A";
 
 const fadeUp = {
@@ -142,18 +144,18 @@ function TopNav({ campaign, accent }) {
   return (
     <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#0a0a1a]/95 backdrop-blur border-b border-slate-200 dark:border-white/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        <a href="#produk" className="flex items-center gap-2.5 shrink-0">
+        <a href="#produk" className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           <span
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-extrabold text-sm shrink-0"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white font-extrabold text-xs sm:text-sm shrink-0"
             style={{ backgroundColor: accent }}
           >
             S
           </span>
-          <span className="leading-tight">
-            <span className="block text-sm font-bold text-[#1d1d1f] dark:text-white">
+          <span className="leading-tight min-w-0">
+            <span className="block text-xs sm:text-sm font-bold text-[#1d1d1f] dark:text-white truncate max-w-[130px] sm:max-w-none">
               SIDOMULYO ADVERTISING
             </span>
-            <span className="block text-[9px] font-medium tracking-widest uppercase text-slate-400 dark:text-slate-500">
+            <span className="hidden sm:block text-[9px] font-medium tracking-widest uppercase text-slate-400 dark:text-slate-500">
               Solusi Visual untuk Bisnis Anda
             </span>
           </span>
@@ -177,7 +179,7 @@ function TopNav({ campaign, accent }) {
         <a
           href={sampleTarget}
           className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm shrink-0"
-          style={{ backgroundColor: ORANGE }}
+          style={{ backgroundColor: BLUE }}
         >
           <FiGift aria-hidden="true" /> <span className="hidden sm:inline">Minta Sample Gratis</span>
           <span className="sm:hidden">Sample Gratis</span>
@@ -261,7 +263,7 @@ function Hero({ campaign, accent }) {
           )}
 
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={ORANGE} icon={FiGift} />
+            <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={BLUE} icon={FiGift} />
             <CtaButton
               text={campaign.secondaryCtaText}
               target={campaign.secondaryCtaTarget}
@@ -636,7 +638,7 @@ function LeadFormCard({ campaign, accent }) {
           type="submit"
           disabled={submitting}
           className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3.5 font-semibold text-white text-sm sm:text-base disabled:opacity-60"
-          style={{ backgroundColor: ORANGE }}
+          style={{ backgroundColor: BLUE }}
         >
           {submitting ? (
             "Mengirim..."
@@ -747,7 +749,7 @@ function FaqSection({ section, accent }) {
                   />
                 </button>
                 {isOpen && (
-                  <div className="px-5 pb-4 pl-16 text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
+                  <div className="px-5 pb-4 pl-12 sm:pl-16 text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
                     {item.answer}
                   </div>
                 )}
@@ -815,7 +817,7 @@ function CtaBand({ campaign }) {
             <CtaButton
               text={campaign.primaryCtaText ? `${campaign.primaryCtaText} Sekarang` : null}
               target={campaign.primaryCtaTarget}
-              accent={ORANGE}
+              accent={BLUE}
               icon={FiGift}
             />
           </div>
@@ -903,7 +905,7 @@ function StickyMobileCta({ campaign }) {
       className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0a0a1a]/95 backdrop-blur border-t border-slate-200 dark:border-white/10 px-4 py-3"
       style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
     >
-      <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={ORANGE} className="w-full" icon={FiGift} />
+      <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={BLUE} className="w-full" icon={FiGift} />
     </div>
   );
 }
