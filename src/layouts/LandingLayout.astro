@@ -7,7 +7,6 @@ const {
   description = "Sidomulyo Advertising - Jasa percetakan & advertising terpercaya di Salatiga.",
   image = "/hero-product.webp",
   accent = "#0A4DA6",
-  noindex = false,
 } = Astro.props;
 ---
 
@@ -19,7 +18,6 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex,nofollow" />}
 
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />

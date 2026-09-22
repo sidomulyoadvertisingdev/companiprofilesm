@@ -167,22 +167,12 @@ function mapLandingPage(r) {
     testimonials: JSON.parse(r.testimonials_json || "[]"),
     formEnabled: !!r.form_enabled,
     status: r.status,
-    // Generalized campaign-engine fields (safe defaults keep old rows unchanged).
-    heroLayout: r.hero_layout || "parallax",
-    heroEyebrow: r.hero_eyebrow || "",
-    secondaryCtaText: r.secondary_cta_text || "",
-    secondaryCtaTarget: r.secondary_cta_target || "",
-    formFields: JSON.parse(r.form_fields_json || "[]"),
-    noindex: !!r.noindex,
-    publishedAt: r.published_at,
     createdAt: r.created_at, updatedAt: r.updated_at,
   };
 }
 
 export async function getLandingPages() {
-  const [rows] = await db.execute(
-    "SELECT * FROM landing_pages WHERE status = 'published' AND (published_at IS NULL OR published_at <= NOW()) ORDER BY updated_at DESC"
-  );
+  const [rows] = await db.execute("SELECT * FROM landing_pages WHERE status = 'published' ORDER BY updated_at DESC");
   return rows.map(mapLandingPage);
 }
 
@@ -192,10 +182,7 @@ export async function getAdminLandingPages() {
 }
 
 export async function getLandingPageBySlug(slug) {
-  const [rows] = await db.execute(
-    "SELECT * FROM landing_pages WHERE slug = ? AND status = 'published' AND (published_at IS NULL OR published_at <= NOW())",
-    [slug]
-  );
+  const [rows] = await db.execute("SELECT * FROM landing_pages WHERE slug = ? AND status = 'published'", [slug]);
   return mapLandingPage(rows[0]);
 }
 
@@ -212,13 +199,10 @@ export async function upsertLandingPage(data) {
     formTitle, formSubtext, formEnabled, status,
     mapEnabled, mapLat, mapLng, mapAddress,
     testimonials,
-    heroLayout, heroEyebrow, secondaryCtaText, secondaryCtaTarget,
-    formFields, noindex, publishedAt,
   } = data;
   const sectionsJson = JSON.stringify(sections || []);
   const trustBadgesJson = JSON.stringify(trustBadges || []);
   const testimonialsJson = JSON.stringify(testimonials || []);
-  const formFieldsJson = JSON.stringify(formFields || []);
   const v = {
     slug, title,
     metaTitle: metaTitle || null,
@@ -243,148 +227,21 @@ export async function upsertLandingPage(data) {
     testimonialsJson,
     formEnabled: formEnabled ? 1 : 0,
     status: status || "draft",
-    heroLayout: heroLayout || "parallax",
-    heroEyebrow: heroEyebrow || null,
-    secondaryCtaText: secondaryCtaText || null,
-    secondaryCtaTarget: secondaryCtaTarget || null,
-    formFieldsJson,
-    noindex: noindex ? 1 : 0,
-    publishedAt: publishedAt || null,
   };
   if (id) {
     await db.execute(
-      `UPDATE landing_pages SET slug=?, title=?, meta_title=?, meta_description=?, badge_text=?, hero_headline=?, hero_subtext=?, hero_image=?, cta_text=?, cta_target=?, accent_color=?, sections_json=?, trust_badges_json=?, cta_band_heading=?, cta_band_text=?, form_title=?, form_subtext=?, map_enabled=?, map_lat=?, map_lng=?, map_address=?, testimonials_json=?, form_enabled=?, status=?, hero_layout=?, hero_eyebrow=?, secondary_cta_text=?, secondary_cta_target=?, form_fields_json=?, noindex=?, published_at=? WHERE id=?`,
-      [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.mapEnabled, v.mapLat, v.mapLng, v.mapAddress, v.testimonialsJson, v.formEnabled, v.status, v.heroLayout, v.heroEyebrow, v.secondaryCtaText, v.secondaryCtaTarget, v.formFieldsJson, v.noindex, v.publishedAt, id]
+      `UPDATE landing_pages SET slug=?, title=?, meta_title=?, meta_description=?, badge_text=?, hero_headline=?, hero_subtext=?, hero_image=?, cta_text=?, cta_target=?, accent_color=?, sections_json=?, trust_badges_json=?, cta_band_heading=?, cta_band_text=?, form_title=?, form_subtext=?, map_enabled=?, map_lat=?, map_lng=?, map_address=?, testimonials_json=?, form_enabled=?, status=? WHERE id=?`,
+      [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.mapEnabled, v.mapLat, v.mapLng, v.mapAddress, v.testimonialsJson, v.formEnabled, v.status, id]
     );
     return id;
   }
   const [res] = await db.execute(
-    `INSERT INTO landing_pages (slug, title, meta_title, meta_description, badge_text, hero_headline, hero_subtext, hero_image, cta_text, cta_target, accent_color, sections_json, trust_badges_json, cta_band_heading, cta_band_text, form_title, form_subtext, map_enabled, map_lat, map_lng, map_address, testimonials_json, form_enabled, status, hero_layout, hero_eyebrow, secondary_cta_text, secondary_cta_target, form_fields_json, noindex, published_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-    [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.mapEnabled, v.mapLat, v.mapLng, v.mapAddress, v.testimonialsJson, v.formEnabled, v.status, v.heroLayout, v.heroEyebrow, v.secondaryCtaText, v.secondaryCtaTarget, v.formFieldsJson, v.noindex, v.publishedAt]
+    `INSERT INTO landing_pages (slug, title, meta_title, meta_description, badge_text, hero_headline, hero_subtext, hero_image, cta_text, cta_target, accent_color, sections_json, trust_badges_json, cta_band_heading, cta_band_text, form_title, form_subtext, map_enabled, map_lat, map_lng, map_address, testimonials_json, form_enabled, status) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+    [v.slug, v.title, v.metaTitle, v.metaDescription, v.badgeText, v.heroHeadline, v.heroSubtext, v.heroImage, v.ctaText, v.ctaTarget, v.accentColor, v.sectionsJson, v.trustBadgesJson, v.ctaBandHeading, v.ctaBandText, v.formTitle, v.formSubtext, v.mapEnabled, v.mapLat, v.mapLng, v.mapAddress, v.testimonialsJson, v.formEnabled, v.status]
   );
   return res.insertId;
 }
 
 export async function deleteLandingPage(id) {
   await db.execute("DELETE FROM landing_pages WHERE id = ?", [id]);
-}
-
-/* ─── Landing Page Leads (generic across campaigns) ──────────────────── */
-
-function mapLandingPageLead(r) {
-  if (!r) return null;
-  let answers = {};
-  if (r.answers_json) {
-    try { answers = JSON.parse(r.answers_json); } catch { answers = {}; }
-  }
-  return {
-    id: r.id, landingPageId: r.landing_page_id,
-    name: r.name, whatsapp: r.whatsapp, email: r.email, city: r.city,
-    message: r.message, answers,
-    status: r.status, source: r.source,
-    utmSource: r.utm_source, utmMedium: r.utm_medium, utmCampaign: r.utm_campaign,
-    utmContent: r.utm_content, utmTerm: r.utm_term, referrer: r.referrer,
-    adminNotes: r.admin_notes,
-    createdAt: r.created_at, updatedAt: r.updated_at,
-    // Joined convenience fields (only present when selected via a JOIN).
-    landingPageTitle: r.landing_page_title, landingPageSlug: r.landing_page_slug,
-  };
-}
-
-export async function createLandingPageLead(data) {
-  const {
-    landingPageId, name, whatsapp, email, city, message, answers,
-    source, utmSource, utmMedium, utmCampaign, utmContent, utmTerm, referrer,
-  } = data;
-  const [res] = await db.execute(
-    `INSERT INTO landing_page_leads
-      (landing_page_id, name, whatsapp, email, city, message, answers_json, source, utm_source, utm_medium, utm_campaign, utm_content, utm_term, referrer)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-    [
-      landingPageId, name, whatsapp, email || null, city || null, message || null,
-      JSON.stringify(answers || {}), source || null,
-      utmSource || null, utmMedium || null, utmCampaign || null, utmContent || null, utmTerm || null,
-      referrer || null,
-    ]
-  );
-  return res.insertId;
-}
-
-export async function getLandingPageLeads({
-  landingPageId, status, city, q, dateFrom, dateTo, page = 1, pageSize = 20,
-} = {}) {
-  const where = [];
-  const params = [];
-  if (landingPageId) { where.push("l.landing_page_id = ?"); params.push(landingPageId); }
-  if (status) { where.push("l.status = ?"); params.push(status); }
-  if (city) { where.push("l.city = ?"); params.push(city); }
-  if (q) {
-    where.push("(l.name LIKE ? OR l.whatsapp LIKE ? OR l.email LIKE ? OR l.answers_json LIKE ?)");
-    const like = `%${q}%`;
-    params.push(like, like, like, like);
-  }
-  if (dateFrom) { where.push("l.created_at >= ?"); params.push(dateFrom); }
-  if (dateTo) { where.push("l.created_at <= ?"); params.push(dateTo); }
-  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
-
-  const [[{ total }]] = await db.execute(
-    `SELECT COUNT(*) AS total FROM landing_page_leads l ${whereSql}`,
-    params
-  );
-
-  const safePage = Math.max(1, Number(page) || 1);
-  const safePageSize = Math.min(200, Math.max(1, Number(pageSize) || 20));
-  const offset = (safePage - 1) * safePageSize;
-
-  const [rows] = await db.execute(
-    `SELECT l.*, lp.title AS landing_page_title, lp.slug AS landing_page_slug
-     FROM landing_page_leads l
-     LEFT JOIN landing_pages lp ON lp.id = l.landing_page_id
-     ${whereSql}
-     ORDER BY l.created_at DESC
-     LIMIT ${offset}, ${safePageSize}`,
-    params
-  );
-
-  return {
-    data: rows.map(mapLandingPageLead),
-    total,
-    page: safePage,
-    pageSize: safePageSize,
-    totalPages: Math.max(1, Math.ceil(total / safePageSize)),
-  };
-}
-
-export async function getLandingPageLeadById(id) {
-  const [rows] = await db.execute(
-    `SELECT l.*, lp.title AS landing_page_title, lp.slug AS landing_page_slug
-     FROM landing_page_leads l
-     LEFT JOIN landing_pages lp ON lp.id = l.landing_page_id
-     WHERE l.id = ?`,
-    [id]
-  );
-  return mapLandingPageLead(rows[0]);
-}
-
-export async function updateLandingPageLead(id, { status, adminNotes } = {}) {
-  const sets = [];
-  const params = [];
-  if (status !== undefined) { sets.push("status = ?"); params.push(status); }
-  if (adminNotes !== undefined) { sets.push("admin_notes = ?"); params.push(adminNotes); }
-  if (sets.length === 0) return;
-  params.push(id);
-  await db.execute(`UPDATE landing_page_leads SET ${sets.join(", ")} WHERE id = ?`, params);
-}
-
-export async function getLandingPageLeadStats(landingPageId) {
-  const params = [];
-  let where = "";
-  if (landingPageId) { where = "WHERE landing_page_id = ?"; params.push(landingPageId); }
-  const [rows] = await db.execute(
-    `SELECT status, COUNT(*) AS count FROM landing_page_leads ${where} GROUP BY status`,
-    params
-  );
-  const stats = {};
-  for (const r of rows) stats[r.status] = r.count;
-  return stats;
 }

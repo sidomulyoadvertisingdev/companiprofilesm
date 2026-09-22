@@ -254,32 +254,6 @@ const TABLES = [
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   )`,
   `INSERT IGNORE INTO site_config (id) VALUES (1)`,
-  `CREATE TABLE IF NOT EXISTS landing_page_leads (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    landing_page_id INT NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    whatsapp VARCHAR(30) NOT NULL,
-    email VARCHAR(255) DEFAULT NULL,
-    city VARCHAR(100) DEFAULT NULL,
-    message TEXT,
-    answers_json LONGTEXT,
-    status ENUM('new','contacted','qualified','sample_approved','sample_sent','sample_received','follow_up','quotation','order','not_interested') NOT NULL DEFAULT 'new',
-    source VARCHAR(100) DEFAULT NULL,
-    utm_source VARCHAR(100) DEFAULT NULL,
-    utm_medium VARCHAR(100) DEFAULT NULL,
-    utm_campaign VARCHAR(100) DEFAULT NULL,
-    utm_content VARCHAR(100) DEFAULT NULL,
-    utm_term VARCHAR(100) DEFAULT NULL,
-    referrer VARCHAR(500) DEFAULT NULL,
-    admin_notes TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (landing_page_id) REFERENCES landing_pages(id) ON DELETE CASCADE,
-    INDEX idx_status (status),
-    INDEX idx_city (city),
-    INDEX idx_created (created_at),
-    INDEX idx_landing_page (landing_page_id)
-  )`,
   `CREATE TABLE IF NOT EXISTS marketplace_email_verifications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
@@ -416,15 +390,6 @@ export async function initSchema() {
   await ensureColumn("landing_pages", "map_lng", "DOUBLE DEFAULT NULL");
   await ensureColumn("landing_pages", "map_address", "VARCHAR(255) DEFAULT NULL");
   await ensureColumn("landing_pages", "testimonials_json", "TEXT");
-
-  // Landing page generalization: product-style hero, dynamic form, scheduling, SEO.
-  await ensureColumn("landing_pages", "hero_layout", "VARCHAR(20) DEFAULT 'parallax'");
-  await ensureColumn("landing_pages", "hero_eyebrow", "VARCHAR(160) DEFAULT NULL");
-  await ensureColumn("landing_pages", "secondary_cta_text", "VARCHAR(100) DEFAULT NULL");
-  await ensureColumn("landing_pages", "secondary_cta_target", "VARCHAR(500) DEFAULT NULL");
-  await ensureColumn("landing_pages", "form_fields_json", "TEXT");
-  await ensureColumn("landing_pages", "noindex", "TINYINT(1) DEFAULT 0");
-  await ensureColumn("landing_pages", "published_at", "DATETIME DEFAULT NULL");
 
   // Marketplace: add verified column to existing users table.
   await ensureColumn("marketplace_users", "verified", "TINYINT(1) DEFAULT 0");
