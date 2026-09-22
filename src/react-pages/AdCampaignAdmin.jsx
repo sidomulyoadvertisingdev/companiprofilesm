@@ -143,6 +143,7 @@ const emptyCampaign = () => ({
   heroSubtext: "",
   heroImage: "",
   heroBadges: [],
+  heroTrustPoints: [],
   primaryCtaText: "",
   primaryCtaTarget: "",
   secondaryCtaText: "",
@@ -154,8 +155,58 @@ const emptyCampaign = () => ({
   formFields: [],
   ctaBandHeading: "",
   ctaBandText: "",
+  ctaBandBadges: [],
   whatsappShortcutText: "",
 });
+
+// Small {icon, label} array editor — used for both hero trust points and
+// CTA band badges. `icon` is a plain string key (e.g. "check", "shield")
+// looked up against AdCampaignLanding.jsx's ICON_MAP, not a URL/upload.
+function IconLabelRepeater({ label, items, onChange }) {
+  const list = items || [];
+  return (
+    <Field label={label}>
+      <div className="space-y-2">
+        {list.map((it, i) => (
+          <div key={i} className="flex gap-2">
+            <TextInput
+              placeholder="Icon (mis. check, shield, gear, heart, users)"
+              value={it.icon || ""}
+              onChange={(e) => {
+                const next = [...list];
+                next[i] = { ...next[i], icon: e.target.value };
+                onChange(next);
+              }}
+            />
+            <TextInput
+              placeholder="Label"
+              value={it.label || ""}
+              onChange={(e) => {
+                const next = [...list];
+                next[i] = { ...next[i], label: e.target.value };
+                onChange(next);
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => onChange(list.filter((_, idx) => idx !== i))}
+              className="shrink-0 text-red-500 px-2"
+            >
+              <FiTrash2 />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => onChange([...list, { icon: "", label: "" }])}
+          className="text-xs font-medium text-blue-600 inline-flex items-center gap-1"
+        >
+          <FiPlus /> Tambah item
+        </button>
+      </div>
+    </Field>
+  );
+}
 
 function BadgesRepeater({ badges, onChange }) {
   const list = badges || [];
@@ -233,7 +284,9 @@ function SectionItemEditor({ type, item, onChange, onRemove }) {
           )}
           <TextInput
             className="mb-2"
-            placeholder="Icon URL (opsional)"
+            placeholder={
+              type === "areas" ? "URL foto (opsional, kosongkan untuk placeholder)" : "Icon key (mis. frown, hand, shield)"
+            }
             value={item.icon || ""}
             onChange={(e) => set("icon", e.target.value)}
           />
@@ -530,6 +583,11 @@ function CampaignForm({ initial, onSaved, onCancel }) {
         </Field>
         <ImageUploadField label="Hero Image" value={form.heroImage} onChange={(v) => set("heroImage", v)} />
         <BadgesRepeater badges={form.heroBadges} onChange={(v) => set("heroBadges", v)} />
+        <IconLabelRepeater
+          label="Trust points (3 ikon kecil di bawah tombol CTA)"
+          items={form.heroTrustPoints}
+          onChange={(v) => set("heroTrustPoints", v)}
+        />
       </Card>
 
       <Card className="mb-4">
@@ -566,6 +624,11 @@ function CampaignForm({ initial, onSaved, onCancel }) {
         <Field label="WhatsApp shortcut text">
           <TextInput value={form.whatsappShortcutText} onChange={(e) => set("whatsappShortcutText", e.target.value)} />
         </Field>
+        <IconLabelRepeater
+          label="Badges (3 ikon kecil di sisi CTA band)"
+          items={form.ctaBandBadges}
+          onChange={(v) => set("ctaBandBadges", v)}
+        />
       </Card>
 
       <Card className="mb-4">

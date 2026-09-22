@@ -1,17 +1,43 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   FiCheckCircle,
   FiAlertCircle,
   FiMapPin,
   FiChevronDown,
+  FiChevronRight,
   FiMessageCircle,
   FiArrowRight,
+  FiFrown,
+  FiTrash2,
+  FiClock,
+  FiThumbsUp,
+  FiShield,
+  FiClipboard,
+  FiEdit3,
+  FiGift,
+  FiSettings,
+  FiHeart,
+  FiUsers,
+  FiUser,
+  FiHome,
+  FiPhone,
+  FiMail,
+  FiTag,
+  FiHelpCircle,
+  FiLock,
+  FiImage,
+  FiPackage,
 } from "react-icons/fi";
 
 // Self-contained ad-campaign landing page. Deliberately does NOT import
 // anything from LandingPage.jsx / the general CMS landing-page engine —
 // this component is a standalone parallel feature.
+
+const NAVY = "#0B1E3D";
+const GOLD = "#D4AF37";
+const ORANGE = "#F97316";
+const GREEN = "#16A34A";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -37,18 +63,60 @@ function isWaLink(target) {
   return typeof target === "string" && /wa\.me|api\.whatsapp\.com/.test(target);
 }
 
-function CtaButton({ text, target, variant = "primary", className = "", accent }) {
+// Icon-key -> react-icons/fi component lookup. Section/item JSON stores a
+// plain string key (e.g. "frown", "shield"); this is never a photo/image —
+// photos are handled separately via ImagePlaceholder below.
+const ICON_MAP = {
+  frown: FiFrown,
+  broom: FiTrash2,
+  clock: FiClock,
+  hand: FiThumbsUp,
+  shield: FiShield,
+  document: FiClipboard,
+  pencil: FiEdit3,
+  gift: FiGift,
+  gear: FiSettings,
+  settings: FiSettings,
+  heart: FiHeart,
+  users: FiUsers,
+  check: FiCheckCircle,
+};
+
+const FORM_FIELD_ICONS = {
+  name: FiHome,
+  pic_name: FiUser,
+  whatsapp: FiPhone,
+  email: FiMail,
+  city: FiMapPin,
+  district: FiTag,
+  address: FiMapPin,
+  tray_type: FiPackage,
+  daily_portion: FiClipboard,
+  current_label: FiTag,
+  pain_point: FiHelpCircle,
+  notes: FiEdit3,
+};
+
+// Clean, deliberate empty-state for any photo field that hasn't been
+// uploaded yet through the admin editor — never a broken <img>.
+function ImagePlaceholder({ label = "Foto akan ditambahkan", className = "" }) {
+  return (
+    <div
+      className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 dark:border-white/15 dark:bg-white/[0.03] dark:text-slate-500 ${className}`}
+    >
+      <FiImage size={28} aria-hidden="true" />
+      <span className="text-xs font-medium text-center px-3">{label}</span>
+    </div>
+  );
+}
+
+function CtaButton({ text, target, variant = "primary", className = "", accent, arrow }) {
   if (!text) return null;
+  const showArrow = arrow !== undefined ? arrow : variant === "primary";
   const base =
     "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 font-semibold text-sm sm:text-base transition-transform active:scale-[0.98] shadow-sm";
-  const styles =
-    variant === "primary"
-      ? "text-white hover:opacity-90"
-      : "border-2 bg-white/90 hover:bg-white dark:bg-transparent dark:text-white";
-  const style =
-    variant === "primary"
-      ? { backgroundColor: accent }
-      : { borderColor: accent, color: accent };
+  const styles = "text-white hover:opacity-90";
+  const style = { backgroundColor: accent };
 
   const isAnchor = typeof target === "string" && target.startsWith("#");
   const href = target || "#";
@@ -62,15 +130,115 @@ function CtaButton({ text, target, variant = "primary", className = "", accent }
       style={style}
     >
       {text}
-      <FiArrowRight aria-hidden="true" />
+      {showArrow && <FiArrowRight aria-hidden="true" />}
     </a>
+  );
+}
+
+function TopNav({ campaign, accent }) {
+  const sampleTarget = campaign.primaryCtaTarget || "#sample-form";
+  return (
+    <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#0a0a1a]/95 backdrop-blur border-b border-slate-200 dark:border-white/10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        <a href="#produk" className="flex items-center gap-2.5 shrink-0">
+          <span
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-extrabold text-sm shrink-0"
+            style={{ backgroundColor: accent }}
+          >
+            S
+          </span>
+          <span className="leading-tight">
+            <span className="block text-sm font-bold text-[#1d1d1f] dark:text-white">
+              SIDOMULYO ADVERTISING
+            </span>
+            <span className="block text-[9px] font-medium tracking-widest uppercase text-slate-400 dark:text-slate-500">
+              Solusi Visual untuk Bisnis Anda
+            </span>
+          </span>
+        </a>
+
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[#4b5563] dark:text-slate-300">
+          <a href="#produk" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
+            Produk
+          </a>
+          <a href="#cara-kerja" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
+            Cara Kerja
+          </a>
+          <a href="#area-layanan" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
+            Area Layanan
+          </a>
+          <a href="#faq" className="hover:text-[#1d1d1f] dark:hover:text-white transition-colors">
+            FAQ
+          </a>
+        </nav>
+
+        <a
+          href={sampleTarget}
+          className="inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-sm shrink-0"
+          style={{ backgroundColor: ORANGE }}
+        >
+          <FiGift aria-hidden="true" /> <span className="hidden sm:inline">Minta Sample Gratis</span>
+          <span className="sm:hidden">Sample Gratis</span>
+        </a>
+      </div>
+    </header>
+  );
+}
+
+// Splits a headline string and wraps the given word(s) as a filled green pill,
+// matching the mockup where "GRATIS" appears as a badge inline in the headline.
+function HighlightedHeadline({ text, highlight = "GRATIS" }) {
+  if (!text) return null;
+  const parts = text.split(new RegExp(`(${highlight})`, "g"));
+  return (
+    <>
+      {parts.map((part, i) =>
+        part === highlight ? (
+          <span
+            key={i}
+            className="inline-block align-middle text-white text-[0.85em] font-extrabold px-2.5 py-0.5 rounded-full mx-0.5"
+            style={{ backgroundColor: GREEN }}
+          >
+            {part}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+}
+
+function HeroBadgeStack({ badges }) {
+  const active = (badges || []).filter(Boolean);
+  if (!active.length) return null;
+  return (
+    <div
+      className="absolute -top-4 right-3 sm:-top-6 sm:right-6 w-28 h-28 sm:w-32 sm:h-32 rounded-full flex flex-col items-center justify-center text-center gap-0.5 shadow-lg border-4 border-white p-2 z-10"
+      style={{ backgroundColor: NAVY }}
+    >
+      {active.map((b, i) => (
+        <span
+          key={i}
+          className="text-[9px] sm:text-[10px] font-extrabold uppercase leading-tight tracking-wide"
+          style={{ color: String(b).toLowerCase() === "praktis" ? "#4ADE80" : "#ffffff" }}
+        >
+          {b}
+        </span>
+      ))}
+    </div>
   );
 }
 
 function Hero({ campaign, accent }) {
   const badges = Array.isArray(campaign.heroBadges) ? campaign.heroBadges : [];
+  const trustPoints = Array.isArray(campaign.heroTrustPoints) ? campaign.heroTrustPoints : [];
+
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-[#0a0a1a] dark:to-[#0a0a1a] pt-10 pb-16 sm:pt-16 sm:pb-24">
+    <section
+      id="produk"
+      className="relative overflow-hidden bg-gradient-to-b from-slate-50 to-white dark:from-[#0a0a1a] dark:to-[#0a0a1a] pt-10 pb-16 sm:pt-16 sm:pb-24 scroll-mt-16"
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 grid md:grid-cols-2 gap-10 items-center">
         <div className="order-1">
           {campaign.heroEyebrow && (
@@ -81,8 +249,8 @@ function Hero({ campaign, accent }) {
               {campaign.heroEyebrow}
             </span>
           )}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight text-[#1d1d1f] dark:text-white">
-            {campaign.heroHeadline}
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight" style={{ color: NAVY }}>
+            <HighlightedHeadline text={campaign.heroHeadline} />
           </h1>
           {campaign.heroSubtext && (
             <p className="mt-4 text-base sm:text-lg text-[#4b5563] dark:text-slate-300 max-w-xl">
@@ -90,94 +258,109 @@ function Hero({ campaign, accent }) {
             </p>
           )}
 
-          {badges.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-5">
-              {badges.map((b, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 dark:bg-white/10 dark:text-slate-200"
-                >
-                  <FiCheckCircle style={{ color: accent }} />
-                  {b}
-                </span>
-              ))}
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={ORANGE} />
+            <CtaButton
+              text={campaign.secondaryCtaText}
+              target={campaign.secondaryCtaTarget}
+              accent={GREEN}
+              arrow={false}
+            />
+          </div>
+
+          {trustPoints.length > 0 && (
+            <div className="flex flex-wrap gap-x-6 gap-y-3 mt-7">
+              {trustPoints.map((tp, i) => {
+                const Icon = ICON_MAP[tp.icon] || FiCheckCircle;
+                const color = i === 0 ? GREEN : i === 1 ? accent : NAVY;
+                return (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-[#374151] dark:text-slate-300"
+                  >
+                    <Icon style={{ color }} aria-hidden="true" />
+                    {tp.label}
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
 
-        <div className="order-2 md:order-2">
-          <img
-            src={campaign.heroImage || "/hero-product.webp"}
-            alt={campaign.title}
-            className="w-full rounded-3xl shadow-xl object-cover aspect-[4/3] md:aspect-square"
-            loading="eager"
-          />
-        </div>
-
-        <div className="order-3 md:order-3 hidden md:flex flex-wrap gap-3 mt-2">
-          <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={accent} />
-          <CtaButton
-            text={campaign.secondaryCtaText}
-            target={campaign.secondaryCtaTarget}
-            variant="secondary"
-            accent={accent}
-          />
-        </div>
-
-        <div className="order-3 md:hidden flex flex-col gap-3">
-          <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={accent} className="w-full" />
-          <CtaButton
-            text={campaign.secondaryCtaText}
-            target={campaign.secondaryCtaTarget}
-            variant="secondary"
-            accent={accent}
-            className="w-full"
-          />
+        <div className="order-2 relative">
+          {campaign.heroImage ? (
+            <img
+              src={campaign.heroImage}
+              alt={campaign.title}
+              className="w-full rounded-3xl shadow-xl object-cover aspect-[4/3] md:aspect-square"
+              loading="eager"
+            />
+          ) : (
+            <ImagePlaceholder
+              label="Foto produk akan ditambahkan"
+              className="w-full aspect-[4/3] md:aspect-square rounded-3xl shadow-xl"
+            />
+          )}
+          <HeroBadgeStack badges={badges} />
         </div>
       </div>
     </section>
   );
 }
 
-function CardGrid({ heading, badge, items, accent }) {
-  const active = (items || []).filter((it) => it.active !== false);
-  if (!active.length) return null;
+function IconCard({ icon, title, desc, iconBg, iconColor, delay = 0 }) {
+  const Icon = ICON_MAP[icon] || FiCheckCircle;
   return (
-    <section className="py-14 sm:py-20 px-4 sm:px-6">
+    <Reveal
+      delay={delay}
+      className="rounded-2xl bg-white dark:bg-white/5 border border-slate-100 dark:border-white/10 p-6 shadow-sm hover:shadow-md transition-shadow"
+    >
+      <div
+        className="w-11 h-11 rounded-full flex items-center justify-center text-lg mb-4"
+        style={{ backgroundColor: iconBg, color: iconColor }}
+      >
+        <Icon aria-hidden="true" />
+      </div>
+      <h3 className="font-semibold text-[#1d1d1f] dark:text-white mb-1.5">{title}</h3>
+      {desc && <p className="text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">{desc}</p>}
+    </Reveal>
+  );
+}
+
+function SectionHeading({ heading, subheading }) {
+  return (
+    <Reveal className="text-center max-w-2xl mx-auto mb-10">
+      <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: NAVY }}>
+        {heading}
+      </h2>
+      {subheading && (
+        <p className="mt-2 text-sm sm:text-base text-[#6e6e73] dark:text-slate-400">{subheading}</p>
+      )}
+    </Reveal>
+  );
+}
+
+function ProblemsSection({ section }) {
+  const items = (section.items || []).filter((it) => it.active !== false);
+  if (!items.length) return null;
+  return (
+    <section className="py-14 sm:py-20 px-4 sm:px-6 bg-sky-50/70 dark:bg-white/[0.03]">
       <div className="max-w-6xl mx-auto">
-        <Reveal className="text-center max-w-2xl mx-auto mb-10">
-          {badge && (
-            <span
-              className="inline-block text-xs font-bold tracking-wide uppercase px-3 py-1 rounded-full mb-3"
-              style={{ color: accent, backgroundColor: `${accent}1a` }}
-            >
-              {badge}
-            </span>
-          )}
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#1d1d1f] dark:text-white">{heading}</h2>
-        </Reveal>
+        <SectionHeading
+          heading={section.heading}
+          subheading="Kami memahami tantangan Anda, karena itu kami hadir dengan solusi yang tepat."
+        />
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {active.map((item, i) => (
-            <Reveal
+          {items.map((item, i) => (
+            <IconCard
               key={i}
+              icon={item.icon}
+              title={item.title}
+              desc={item.desc}
+              iconBg="#FEE2E2"
+              iconColor="#DC2626"
               delay={i * 0.06}
-              className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 shadow-sm hover:shadow-md transition-shadow"
-            >
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center text-xl mb-4"
-                style={{ backgroundColor: `${accent}1a`, color: accent }}
-              >
-                {item.icon ? (
-                  <img src={item.icon} alt="" className="w-6 h-6 object-contain" />
-                ) : (
-                  <FiCheckCircle />
-                )}
-              </div>
-              <h3 className="font-semibold text-[#1d1d1f] dark:text-white mb-1.5">{item.title}</h3>
-              {item.desc && (
-                <p className="text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">{item.desc}</p>
-              )}
-            </Reveal>
+            />
           ))}
         </div>
       </div>
@@ -185,82 +368,29 @@ function CardGrid({ heading, badge, items, accent }) {
   );
 }
 
-function StepsSection({ heading, badge, items, accent }) {
-  const active = (items || []).filter((it) => it.active !== false);
-  if (!active.length) return null;
+function SolutionSection({ section }) {
+  const items = (section.items || []).filter((it) => it.active !== false);
+  if (!items.length) return null;
   return (
-    <section className="py-14 sm:py-20 px-4 sm:px-6 bg-slate-50 dark:bg-white/[0.03]">
-      <div className="max-w-5xl mx-auto">
-        <Reveal className="text-center max-w-2xl mx-auto mb-12">
-          {badge && (
-            <span
-              className="inline-block text-xs font-bold tracking-wide uppercase px-3 py-1 rounded-full mb-3"
-              style={{ color: accent, backgroundColor: `${accent}1a` }}
-            >
-              {badge}
-            </span>
-          )}
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#1d1d1f] dark:text-white">{heading}</h2>
-        </Reveal>
-        <div className="grid sm:grid-cols-3 gap-6 relative">
-          {active.map((item, i) => (
-            <Reveal key={i} delay={i * 0.08} className="relative text-center">
-              <div
-                className="w-14 h-14 mx-auto rounded-full flex items-center justify-center text-lg font-bold text-white mb-4"
-                style={{ backgroundColor: accent }}
-              >
-                {item.number || i + 1}
-              </div>
-              <h3 className="font-semibold text-[#1d1d1f] dark:text-white mb-1.5">{item.title}</h3>
-              {item.desc && (
-                <p className="text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">{item.desc}</p>
-              )}
-            </Reveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FaqSection({ heading, items, accent }) {
-  const active = (items || []).filter((it) => it.active !== false);
-  const [openIndex, setOpenIndex] = useState(0);
-  if (!active.length) return null;
-  return (
-    <section className="py-14 sm:py-20 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto">
-        <Reveal className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#1d1d1f] dark:text-white">{heading}</h2>
-        </Reveal>
-        <div className="space-y-3">
-          {active.map((item, i) => {
-            const isOpen = openIndex === i;
+    <section id="solusi" className="py-14 sm:py-20 px-4 sm:px-6 bg-green-50/60 dark:bg-white/[0.03] scroll-mt-16">
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading
+          heading={section.heading}
+          subheading="Dirancang khusus untuk kebutuhan operasional SPPG yang dinamis."
+        />
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {items.map((item, i) => {
+            const blue = i % 2 === 0;
             return (
-              <div
+              <IconCard
                 key={i}
-                className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 overflow-hidden"
-              >
-                <button
-                  type="button"
-                  onClick={() => setOpenIndex(isOpen ? -1 : i)}
-                  className="w-full flex items-center justify-between gap-4 text-left px-5 py-4"
-                  aria-expanded={isOpen}
-                >
-                  <span className="font-medium text-[#1d1d1f] dark:text-white text-sm sm:text-base">
-                    {item.question}
-                  </span>
-                  <FiChevronDown
-                    className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                    style={{ color: accent }}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-4 text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
-                    {item.answer}
-                  </div>
-                )}
-              </div>
+                icon={item.icon}
+                title={item.title}
+                desc={item.desc}
+                iconBg={blue ? "#DBEAFE" : "#DCFCE7"}
+                iconColor={blue ? "#2563EB" : "#16A34A"}
+                delay={i * 0.06}
+              />
             );
           })}
         </div>
@@ -269,59 +399,62 @@ function FaqSection({ heading, items, accent }) {
   );
 }
 
-function SectionsLoop({ sections, accent }) {
-  if (!Array.isArray(sections)) return null;
-  return sections.map((section, idx) => {
-    const key = `${section.type}-${idx}`;
-    if (section.type === "problems" || section.type === "benefits" || section.type === "areas") {
-      const badge = section.type === "areas" ? section.badge || "Area Free Sample" : section.badge;
-      const items =
-        section.type === "areas"
-          ? (section.items || []).map((it) => ({ ...it, icon: it.icon }))
-          : section.items;
-      return <CardGrid key={key} heading={section.heading} badge={badge} items={items} accent={accent} />;
-    }
-    if (section.type === "steps") {
-      return (
-        <StepsSection key={key} heading={section.heading} badge={section.badge} items={section.items} accent={accent} />
-      );
-    }
-    if (section.type === "faq") {
-      return <FaqSection key={key} heading={section.heading} items={section.items} accent={accent} />;
-    }
-    return null;
-  });
+function StepCard({ step, accent }) {
+  return (
+    <div className="flex-1 text-center">
+      <div
+        className="w-12 h-12 mx-auto rounded-full flex items-center justify-center text-base font-bold text-white mb-3"
+        style={{ backgroundColor: accent }}
+      >
+        {step.number || "•"}
+      </div>
+      <h4 className="font-semibold text-sm text-[#1d1d1f] dark:text-white mb-1">{step.title}</h4>
+      {step.desc && <p className="text-xs text-[#6e6e73] dark:text-slate-400 leading-relaxed">{step.desc}</p>}
+    </div>
+  );
 }
 
-function CtaBand({ campaign, accent }) {
-  if (!campaign.ctaBandHeading && !campaign.ctaBandText) return null;
+function StepsInfo({ section, accent }) {
+  const items = (section.items || []).filter((it) => it.active !== false);
   return (
-    <section className="py-14 sm:py-20 px-4 sm:px-6" style={{ backgroundColor: `${accent}0d` }}>
-      <Reveal className="max-w-3xl mx-auto text-center">
-        {campaign.ctaBandHeading && (
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-3">
-            {campaign.ctaBandHeading}
-          </h2>
+    <div>
+      <Reveal>
+        {section.badge && (
+          <span
+            className="inline-block text-xs font-bold px-3 py-1 rounded-full mb-3 text-white"
+            style={{ backgroundColor: GREEN }}
+          >
+            {section.badge}
+          </span>
         )}
-        {campaign.ctaBandText && (
-          <p className="text-[#4b5563] dark:text-slate-300 mb-6">{campaign.ctaBandText}</p>
-        )}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={accent} />
-        </div>
-        {campaign.whatsappShortcutText && (
-          <p className="mt-4 text-xs sm:text-sm text-[#6e6e73] dark:text-slate-400 inline-flex items-center gap-1.5 justify-center">
-            <FiMessageCircle /> {campaign.whatsappShortcutText}
-          </p>
-        )}
+        <h2 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: NAVY }}>
+          {section.heading}
+        </h2>
+        <p className="text-sm sm:text-base text-[#6e6e73] dark:text-slate-400 mb-8">
+          Proses mudah, cepat, dan tanpa biaya.
+        </p>
       </Reveal>
-    </section>
+      {items.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-start gap-4">
+          {items.map((step, i) => (
+            <Fragment key={i}>
+              <StepCard step={step} accent={accent} />
+              {i < items.length - 1 && (
+                <div className="hidden sm:flex items-center justify-center text-slate-300 dark:text-white/20 pt-3">
+                  <FiChevronRight size={20} aria-hidden="true" />
+                </div>
+              )}
+            </Fragment>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 const PHONE_RE = /^(\+?62|0)8[0-9]{7,12}$/;
 
-function LeadForm({ campaign, accent }) {
+function LeadFormCard({ campaign, accent }) {
   const fields = useMemo(
     () => (Array.isArray(campaign.formFields) ? campaign.formFields : []),
     [campaign.formFields]
@@ -416,55 +549,48 @@ function LeadForm({ campaign, accent }) {
   if (success) {
     const waTarget = isWaLink(success.secondaryCtaTarget) ? success.secondaryCtaTarget : null;
     return (
-      <section id="sample-form" className="py-14 sm:py-20 px-4 sm:px-6">
-        <div className="max-w-lg mx-auto text-center rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-8 shadow-sm">
-          <FiCheckCircle className="mx-auto text-4xl mb-4" style={{ color: accent }} />
-          <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white mb-2">Terima kasih!</h3>
-          <p className="text-sm text-[#6e6e73] dark:text-slate-400 mb-6">
-            Data Anda sudah kami terima. Tim kami akan segera menghubungi Anda.
-          </p>
-          {waTarget && (
-            <a
-              href={waTarget}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold text-white text-sm"
-              style={{ backgroundColor: accent }}
-            >
-              <FiMessageCircle /> Lanjut Chat WhatsApp
-            </a>
-          )}
-        </div>
-      </section>
+      <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm overflow-hidden text-center p-8">
+        <FiCheckCircle className="mx-auto text-4xl mb-4" style={{ color: accent }} />
+        <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white mb-2">Terima kasih!</h3>
+        <p className="text-sm text-[#6e6e73] dark:text-slate-400 mb-6">
+          Data Anda sudah kami terima. Tim kami akan segera menghubungi Anda.
+        </p>
+        {waTarget && (
+          <a
+            href={waTarget}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 font-semibold text-white text-sm"
+            style={{ backgroundColor: GREEN }}
+          >
+            <FiMessageCircle /> Lanjut Chat WhatsApp
+          </a>
+        )}
+      </div>
     );
   }
 
   return (
-    <section id="sample-form" className="py-14 sm:py-20 px-4 sm:px-6 bg-slate-50 dark:bg-white/[0.03]">
-      <div className="max-w-lg mx-auto">
-        <Reveal className="text-center mb-8">
-          {campaign.formTitle && (
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#1d1d1f] dark:text-white mb-2">
-              {campaign.formTitle}
-            </h2>
-          )}
-          {campaign.formSubtext && (
-            <p className="text-sm sm:text-base text-[#6e6e73] dark:text-slate-400">{campaign.formSubtext}</p>
-          )}
-        </Reveal>
+    <div className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm overflow-hidden">
+      <div className="px-6 sm:px-8 py-6" style={{ backgroundColor: NAVY }}>
+        {campaign.formTitle && (
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5">{campaign.formTitle}</h2>
+        )}
+        {campaign.formSubtext && <p className="text-sm text-slate-300">{campaign.formSubtext}</p>}
+      </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 p-6 sm:p-8 shadow-sm space-y-4"
-        >
-          {submitError && (
-            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-500/10 rounded-lg px-3 py-2">
-              <FiAlertCircle /> {submitError}
-            </div>
-          )}
-          {fields.map((f) => (
+      <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-4">
+        {submitError && (
+          <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-500/10 rounded-lg px-3 py-2">
+            <FiAlertCircle /> {submitError}
+          </div>
+        )}
+        {fields.map((f) => {
+          const Icon = FORM_FIELD_ICONS[f.key] || (f.type === "tel" ? FiPhone : f.type === "email" ? FiMail : f.type === "textarea" ? FiEdit3 : FiUser);
+          return (
             <div key={f.key}>
-              <label className="block text-sm font-medium text-[#1d1d1f] dark:text-slate-200 mb-1.5">
+              <label className="flex items-center gap-1.5 text-sm font-medium text-[#1d1d1f] dark:text-slate-200 mb-1.5">
+                <Icon className="shrink-0" style={{ color: accent }} aria-hidden="true" />
                 {f.label} {f.required && <span className="text-red-500">*</span>}
               </label>
               {f.type === "textarea" ? (
@@ -500,47 +626,292 @@ function LeadForm({ campaign, accent }) {
               )}
               {errors[f.key] && <p className="mt-1 text-xs text-red-500">{errors[f.key]}</p>}
             </div>
-          ))}
+          );
+        })}
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full rounded-full py-3.5 font-semibold text-white text-sm sm:text-base disabled:opacity-60"
-            style={{ backgroundColor: accent }}
-          >
-            {submitting ? "Mengirim..." : campaign.primaryCtaText || "Kirim"}
-          </button>
-        </form>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3.5 font-semibold text-white text-sm sm:text-base disabled:opacity-60"
+          style={{ backgroundColor: ORANGE }}
+        >
+          {submitting ? "Mengirim..." : "📤 Kirim Permintaan Sample"}
+        </button>
+
+        <p className="flex items-center justify-center gap-1.5 text-xs text-[#6e6e73] dark:text-slate-400 pt-1">
+          <FiLock aria-hidden="true" /> Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.
+        </p>
+      </form>
+    </div>
+  );
+}
+
+function SampleSection({ stepsSection, campaign, accent }) {
+  if (!stepsSection && !campaign.formEnabled) return null;
+  return (
+    <section
+      id="cara-kerja"
+      className="py-14 sm:py-20 px-4 sm:px-6 bg-white dark:bg-[#0a0a1a] scroll-mt-16"
+    >
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
+        <Reveal>{stepsSection ? <StepsInfo section={stepsSection} accent={accent} /> : <div />}</Reveal>
+        <Reveal delay={0.1}>
+          <LeadFormCard campaign={campaign} accent={accent} />
+        </Reveal>
       </div>
     </section>
   );
 }
 
-function StickyMobileCta({ campaign, accent }) {
+function AreaCard({ item, delay }) {
+  return (
+    <Reveal delay={delay} className="relative rounded-2xl overflow-hidden shadow-sm aspect-[4/3]">
+      {item.icon ? (
+        <img src={item.icon} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+      ) : (
+        <ImagePlaceholder label="Foto belum diupload" className="w-full h-full" />
+      )}
+      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-4 py-3">
+        <span className="inline-flex items-center gap-1.5 text-white text-sm font-semibold">
+          <FiMapPin aria-hidden="true" /> {item.title}
+        </span>
+      </div>
+    </Reveal>
+  );
+}
+
+function AreasSection({ section }) {
+  const items = (section.items || []).filter((it) => it.active !== false);
+  if (!items.length) return null;
+  return (
+    <section id="area-layanan" className="py-14 sm:py-20 px-4 sm:px-6 bg-white dark:bg-[#0a0a1a] scroll-mt-16">
+      <div className="max-w-6xl mx-auto">
+        <SectionHeading heading={section.heading} subheading="Prioritas untuk SPPG aktif di 3 wilayah ini." />
+        <div className="grid sm:grid-cols-3 gap-5">
+          {items.map((item, i) => (
+            <AreaCard key={i} item={item} delay={i * 0.08} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FaqSection({ section, accent }) {
+  const items = (section.items || []).filter((it) => it.active !== false);
+  const [openIndex, setOpenIndex] = useState(0);
+  if (!items.length) return null;
+  return (
+    <section id="faq" className="py-14 sm:py-20 px-4 sm:px-6 bg-white dark:bg-[#0a0a1a] scroll-mt-16">
+      <div className="max-w-3xl mx-auto">
+        <Reveal className="text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl font-bold" style={{ color: NAVY }}>
+            {section.heading}
+          </h2>
+        </Reveal>
+        <div className="space-y-3">
+          {items.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <div
+                key={i}
+                className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 overflow-hidden"
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenIndex(isOpen ? -1 : i)}
+                  className="w-full flex items-center gap-3 text-left px-5 py-4"
+                  aria-expanded={isOpen}
+                >
+                  <span
+                    className="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{ backgroundColor: `${accent}1a`, color: accent }}
+                  >
+                    <FiHelpCircle aria-hidden="true" />
+                  </span>
+                  <span className="flex-1 font-medium text-[#1d1d1f] dark:text-white text-sm sm:text-base">
+                    {item.question}
+                  </span>
+                  <FiChevronDown
+                    className={`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    style={{ color: accent }}
+                  />
+                </button>
+                {isOpen && (
+                  <div className="px-5 pb-4 pl-16 text-sm text-[#6e6e73] dark:text-slate-400 leading-relaxed">
+                    {item.answer}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function SectionsLoop({ sections, stepsSection, accent }) {
+  if (!Array.isArray(sections)) return null;
+  return sections.map((section, idx) => {
+    const key = `${section.type}-${idx}`;
+    if (section.type === "problems") return <ProblemsSection key={key} section={section} />;
+    if (section.type === "benefits") return <SolutionSection key={key} section={section} />;
+    if (section.type === "areas") return <AreasSection key={key} section={section} />;
+    if (section.type === "faq") return <FaqSection key={key} section={section} accent={accent} />;
+    // "steps" is rendered together with the lead form by SampleSection, not here.
+    if (section.type === "steps" && section !== stepsSection) {
+      return <StepsInfoStandalone key={key} section={section} accent={accent} />;
+    }
+    return null;
+  });
+}
+
+// Fallback in the unlikely case a campaign has more than one "steps" section —
+// renders any extra ones as a plain info block instead of silently dropping them.
+function StepsInfoStandalone({ section, accent }) {
+  return (
+    <section className="py-14 sm:py-20 px-4 sm:px-6 bg-slate-50 dark:bg-white/[0.03]">
+      <div className="max-w-5xl mx-auto">
+        <StepsInfo section={section} accent={accent} />
+      </div>
+    </section>
+  );
+}
+
+function splitTwoLines(text) {
+  if (!text) return [text || "", ""];
+  const idx = text.indexOf(". ");
+  if (idx === -1) return [text, ""];
+  return [text.slice(0, idx + 1), text.slice(idx + 2)];
+}
+
+function CtaBand({ campaign }) {
+  if (!campaign.ctaBandHeading && !campaign.ctaBandText) return null;
+  const [line1, line2] = splitTwoLines(campaign.ctaBandHeading);
+  const badges = Array.isArray(campaign.ctaBandBadges) ? campaign.ctaBandBadges : [];
+
+  return (
+    <section className="py-14 sm:py-20 px-4 sm:px-6" style={{ backgroundColor: NAVY }}>
+      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+        <Reveal className="text-center md:text-left">
+          {campaign.ctaBandHeading && (
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 leading-tight">
+              <span className="block text-white">{line1}</span>
+              {line2 && <span className="block" style={{ color: GOLD }}>{line2}</span>}
+            </h2>
+          )}
+          {campaign.ctaBandText && <p className="text-slate-300 mb-6">{campaign.ctaBandText}</p>}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
+            <CtaButton
+              text={campaign.primaryCtaText ? `${campaign.primaryCtaText} Sekarang` : null}
+              target={campaign.primaryCtaTarget}
+              accent={ORANGE}
+            />
+          </div>
+          {campaign.whatsappShortcutText && (
+            <p className="mt-4 text-xs sm:text-sm text-slate-400 inline-flex items-center gap-1.5 justify-center md:justify-start">
+              <FiMessageCircle /> {campaign.whatsappShortcutText}
+            </p>
+          )}
+        </Reveal>
+
+        {badges.length > 0 && (
+          <Reveal delay={0.1} className="flex flex-row md:flex-col flex-wrap gap-4 justify-center md:justify-start">
+            {badges.map((b, i) => {
+              const Icon = ICON_MAP[b.icon] || FiShield;
+              return (
+                <span key={i} className="inline-flex items-center gap-2.5 text-sm sm:text-base font-medium text-white">
+                  <span
+                    className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                    style={{ backgroundColor: "rgba(255,255,255,0.12)", color: "#93C5FD" }}
+                  >
+                    <Icon aria-hidden="true" />
+                  </span>
+                  {b.label}
+                </span>
+              );
+            })}
+          </Reveal>
+        )}
+      </div>
+    </section>
+  );
+}
+
+const FOOTER_KEYWORDS = ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"];
+
+function Footer({ campaign }) {
+  return (
+    <footer className="pt-12 pb-8 px-4 sm:px-6" style={{ backgroundColor: NAVY }}>
+      <div className="max-w-6xl mx-auto grid sm:grid-cols-3 gap-8 items-center text-center sm:text-left">
+        <div className="flex items-center gap-2.5 justify-center sm:justify-start">
+          <span
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-extrabold text-sm shrink-0"
+            style={{ backgroundColor: "#2563EB" }}
+          >
+            S
+          </span>
+          <span className="leading-tight">
+            <span className="block text-sm font-bold text-white">SIDOMULYO ADVERTISING</span>
+            <span className="block text-[9px] font-medium tracking-widest uppercase text-slate-400">
+              Solusi Visual untuk Bisnis Anda
+            </span>
+          </span>
+        </div>
+
+        <div>
+          <p className="text-sm sm:text-base font-bold text-white mb-1.5">
+            Partner Visual untuk Operasional SPPG yang Lebih Baik
+          </p>
+          <p className="text-[11px] uppercase tracking-widest text-slate-400">
+            {FOOTER_KEYWORDS.join(" | ")}
+          </p>
+        </div>
+
+        {campaign.whatsappShortcutText && (
+          <div className="flex items-center gap-2.5 justify-center sm:justify-end">
+            <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: GREEN }}>
+              <FiMessageCircle className="text-white" aria-hidden="true" />
+            </span>
+            <span className="text-left">
+              <span className="block text-sm font-bold text-white">{campaign.whatsappShortcutText}</span>
+              <span className="block text-xs text-slate-400">di WhatsApp kami</span>
+              <span className="block text-xs text-slate-400">Kami siap membantu Anda.</span>
+            </span>
+          </div>
+        )}
+      </div>
+    </footer>
+  );
+}
+
+function StickyMobileCta({ campaign }) {
   if (!campaign.primaryCtaText) return null;
   return (
     <div
       className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 dark:bg-[#0a0a1a]/95 backdrop-blur border-t border-slate-200 dark:border-white/10 px-4 py-3"
       style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
     >
-      <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={accent} className="w-full" />
+      <CtaButton text={campaign.primaryCtaText} target={campaign.primaryCtaTarget} accent={ORANGE} className="w-full" />
     </div>
   );
 }
 
 export default function AdCampaignLanding({ campaign }) {
   const accent = campaign.accentColor || "#0A4DA6";
+  const sections = Array.isArray(campaign.sections) ? campaign.sections : [];
+  const stepsSection = sections.find((s) => s.type === "steps");
 
   return (
     <main className="pb-24 md:pb-0">
+      <TopNav campaign={campaign} accent={accent} />
       <Hero campaign={campaign} accent={accent} />
-      <SectionsLoop sections={campaign.sections} accent={accent} />
-      <CtaBand campaign={campaign} accent={accent} />
-      <LeadForm campaign={campaign} accent={accent} />
-      <footer className="py-8 px-4 text-center text-xs text-[#6e6e73] dark:text-slate-500 flex items-center justify-center gap-1.5">
-        <FiMapPin /> Sidomulyo Advertising & Printing
-      </footer>
-      <StickyMobileCta campaign={campaign} accent={accent} />
+      <SectionsLoop sections={sections} stepsSection={stepsSection} accent={accent} />
+      <SampleSection stepsSection={stepsSection} campaign={campaign} accent={accent} />
+      <CtaBand campaign={campaign} />
+      <Footer campaign={campaign} />
+      <StickyMobileCta campaign={campaign} />
     </main>
   );
 }
