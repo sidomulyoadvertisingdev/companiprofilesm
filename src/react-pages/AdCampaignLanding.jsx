@@ -52,6 +52,7 @@ const GREEN = "#16A34A";
 // "Teks Lainnya" card). A key that was never set falls back to the original
 // copy; one the admin cleared ("") is hidden.
 const PAGE_SETTING_DEFAULTS = {
+  topbarEnabled: true,
   topbarLogo: "",
   topbarBrand: "SIDOMULYO ADVERTISING",
   topbarTagline: "Solusi Visual untuk Bisnis Anda",
@@ -68,6 +69,7 @@ const PAGE_SETTING_DEFAULTS = {
   heroHighlight: "GRATIS",
   ctaBandButtonText: "",
   footerTagline: "Partner Visual untuk Operasional SPPG yang Lebih Baik",
+  footerEnabled: true,
   footerKeywords: ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"],
   footerLogo: "",
   footerBrand: "SIDOMULYO ADVERTISING",
@@ -1817,13 +1819,13 @@ export default function AdCampaignLanding({ campaign }) {
 
   return (
     <main className="pb-24 md:pb-0">
-      <TopNav campaign={campaign} ctaTarget={ctaTarget} />
+      {settingText(campaign, "topbarEnabled") !== false && <TopNav campaign={campaign} ctaTarget={ctaTarget} />}
       <Hero campaign={campaign} ctaTarget={ctaTarget} />
       {configurator && <ConfiguratorSection section={configurator} campaign={campaign} />}
       <SectionsLoop sections={sections} stepsSection={stepsSection} accent={accent} />
       <SampleSection stepsSection={stepsSection} campaign={campaign} accent={accent} />
       <CtaBand campaign={campaign} />
-      <Footer campaign={campaign} />
+      {settingText(campaign, "footerEnabled") !== false && <Footer campaign={campaign} />}
       <StickyMobileCta campaign={campaign} ctaTarget={ctaTarget} />
     </main>
   );

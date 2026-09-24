@@ -92,6 +92,7 @@ const SUBHEADING_DEFAULTS = {
 // Same idea for page_settings_json (see PAGE_SETTING_DEFAULTS in
 // AdCampaignLanding.jsx).
 const PAGE_SETTING_DEFAULTS = {
+  topbarEnabled: true,
   topbarLogo: "",
   topbarBrand: "SIDOMULYO ADVERTISING",
   topbarTagline: "Solusi Visual untuk Bisnis Anda",
@@ -108,6 +109,7 @@ const PAGE_SETTING_DEFAULTS = {
   heroHighlight: "GRATIS",
   ctaBandButtonText: "",
   footerTagline: "Partner Visual untuk Operasional SPPG yang Lebih Baik",
+  footerEnabled: true,
   footerKeywords: ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"],
   footerLogo: "",
   footerBrand: "SIDOMULYO ADVERTISING",
@@ -932,6 +934,12 @@ function CampaignForm({ initial, onSaved, onCancel }) {
       <Card className="mb-4">
         <h3 className="font-semibold mb-1">Topbar</h3>
         <p className="text-xs text-slate-500 mb-4">Pengaturan ini berlaku untuk campaign yang sedang diedit. Kosongkan label menu untuk menyembunyikannya.</p>
+        <Field label="Tampilkan topbar">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" checked={pageSetting("topbarEnabled") !== false} onChange={(e) => setPageSetting("topbarEnabled", e.target.checked)} />
+            Tampilkan topbar di halaman campaign
+          </label>
+        </Field>
         <ImageUploadField label="Logo topbar (opsional)" value={pageSetting("topbarLogo")} onChange={(v) => setPageSetting("topbarLogo", v)} />
         <div className="grid sm:grid-cols-2 gap-x-4">
           <Field label="Nama brand">
@@ -1042,6 +1050,12 @@ function CampaignForm({ initial, onSaved, onCancel }) {
       <Card className="mb-4">
         <h3 className="font-semibold mb-1">Footer</h3>
         <p className="text-xs text-slate-500 mb-4">Atur identitas, pesan tengah, dan kontak WhatsApp di bagian bawah halaman.</p>
+        <Field label="Tampilkan footer">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" checked={pageSetting("footerEnabled") !== false} onChange={(e) => setPageSetting("footerEnabled", e.target.checked)} />
+            Tampilkan footer di halaman campaign
+          </label>
+        </Field>
         <ImageUploadField label="Logo footer (opsional)" value={pageSetting("footerLogo")} onChange={(v) => setPageSetting("footerLogo", v)} />
         <div className="grid sm:grid-cols-2 gap-x-4">
           <Field label="Nama brand footer">
