@@ -92,10 +92,33 @@ const SUBHEADING_DEFAULTS = {
 // Same idea for page_settings_json (see PAGE_SETTING_DEFAULTS in
 // AdCampaignLanding.jsx).
 const PAGE_SETTING_DEFAULTS = {
+  topbarLogo: "",
+  topbarBrand: "SIDOMULYO ADVERTISING",
+  topbarTagline: "Solusi Visual untuk Bisnis Anda",
+  topbarNavProduct: "Produk",
+  topbarNavSteps: "Cara Kerja",
+  topbarNavAreas: "Area Layanan",
+  topbarNavTestimonials: "Testimoni",
+  topbarNavFaq: "FAQ",
+  topbarCtaText: "Minta Sample Gratis",
+  topbarCtaMobileText: "Sample Gratis",
+  topbarCtaTarget: "",
+  topbarButtonColor: "#2563EB",
+  topbarBackgroundColor: "#0a0a1a",
   heroHighlight: "GRATIS",
   ctaBandButtonText: "",
   footerTagline: "Partner Visual untuk Operasional SPPG yang Lebih Baik",
   footerKeywords: ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"],
+  footerLogo: "",
+  footerBrand: "SIDOMULYO ADVERTISING",
+  footerBrandTagline: "Solusi Visual untuk Bisnis Anda",
+  footerBackgroundColor: "#0B1E3D",
+  footerBrandColor: "#2563EB",
+  footerWhatsappColor: "#16A34A",
+  footerWhatsappTitle: null,
+  footerWhatsappLine1: "di WhatsApp kami",
+  footerWhatsappLine2: "Kami siap membantu Anda.",
+  footerWhatsappUrl: "",
   formPrivacyNote: "Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.",
 };
 
@@ -907,6 +930,46 @@ function CampaignForm({ initial, onSaved, onCancel }) {
       </Card>
 
       <Card className="mb-4">
+        <h3 className="font-semibold mb-1">Topbar</h3>
+        <p className="text-xs text-slate-500 mb-4">Pengaturan ini berlaku untuk campaign yang sedang diedit. Kosongkan label menu untuk menyembunyikannya.</p>
+        <ImageUploadField label="Logo topbar (opsional)" value={pageSetting("topbarLogo")} onChange={(v) => setPageSetting("topbarLogo", v)} />
+        <div className="grid sm:grid-cols-2 gap-x-4">
+          <Field label="Nama brand">
+            <TextInput value={pageSetting("topbarBrand")} onChange={(e) => setPageSetting("topbarBrand", e.target.value)} />
+          </Field>
+          <Field label="Tagline brand">
+            <TextInput value={pageSetting("topbarTagline")} onChange={(e) => setPageSetting("topbarTagline", e.target.value)} />
+          </Field>
+          {[
+            ["topbarNavProduct", "Menu Produk"],
+            ["topbarNavSteps", "Menu Cara Kerja"],
+            ["topbarNavAreas", "Menu Area Layanan"],
+            ["topbarNavTestimonials", "Menu Testimoni"],
+            ["topbarNavFaq", "Menu FAQ"],
+          ].map(([key, label]) => (
+            <Field key={key} label={label}>
+              <TextInput value={pageSetting(key)} onChange={(e) => setPageSetting(key, e.target.value)} />
+            </Field>
+          ))}
+          <Field label="Teks tombol (desktop)">
+            <TextInput value={pageSetting("topbarCtaText")} onChange={(e) => setPageSetting("topbarCtaText", e.target.value)} />
+          </Field>
+          <Field label="Teks tombol (mobile)">
+            <TextInput value={pageSetting("topbarCtaMobileText")} onChange={(e) => setPageSetting("topbarCtaMobileText", e.target.value)} />
+          </Field>
+          <Field label="Tujuan tombol" hint="Kosongkan untuk mengikuti tujuan CTA utama. Bisa berupa #sample-form atau URL lengkap.">
+            <TextInput value={pageSetting("topbarCtaTarget")} onChange={(e) => setPageSetting("topbarCtaTarget", e.target.value)} />
+          </Field>
+          <Field label="Warna tombol dan ikon brand" hint="Kode warna CSS, misalnya #2563EB.">
+            <TextInput value={pageSetting("topbarButtonColor")} onChange={(e) => setPageSetting("topbarButtonColor", e.target.value)} />
+          </Field>
+          <Field label="Warna topbar saat halaman digulir" hint="Kode warna CSS, misalnya #0a0a1a.">
+            <TextInput value={pageSetting("topbarBackgroundColor")} onChange={(e) => setPageSetting("topbarBackgroundColor", e.target.value)} />
+          </Field>
+        </div>
+      </Card>
+
+      <Card className="mb-4">
         <h3 className="font-semibold mb-3">Hero</h3>
         <Field label="Eyebrow">
           <TextInput value={form.heroEyebrow} onChange={(e) => set("heroEyebrow", e.target.value)} />
@@ -977,22 +1040,53 @@ function CampaignForm({ initial, onSaved, onCancel }) {
       </Card>
 
       <Card className="mb-4">
+        <h3 className="font-semibold mb-1">Footer</h3>
+        <p className="text-xs text-slate-500 mb-4">Atur identitas, pesan tengah, dan kontak WhatsApp di bagian bawah halaman.</p>
+        <ImageUploadField label="Logo footer (opsional)" value={pageSetting("footerLogo")} onChange={(v) => setPageSetting("footerLogo", v)} />
+        <div className="grid sm:grid-cols-2 gap-x-4">
+          <Field label="Nama brand footer">
+            <TextInput value={pageSetting("footerBrand")} onChange={(e) => setPageSetting("footerBrand", e.target.value)} />
+          </Field>
+          <Field label="Tagline brand footer">
+            <TextInput value={pageSetting("footerBrandTagline")} onChange={(e) => setPageSetting("footerBrandTagline", e.target.value)} />
+          </Field>
+          <Field label="Judul pesan tengah">
+            <TextInput value={pageSetting("footerTagline")} onChange={(e) => setPageSetting("footerTagline", e.target.value)} />
+          </Field>
+          <Field label="Kata kunci footer (satu per baris)">
+            <TextArea rows={4} value={(pageSetting("footerKeywords") || []).join("\n")} onChange={(e) => setPageSetting("footerKeywords", e.target.value.split("\n"))} />
+          </Field>
+          <Field label="Judul WhatsApp" hint="Kosongkan untuk menyembunyikan blok WhatsApp footer. Sebelum diubah, memakai WhatsApp shortcut text di CTA Band.">
+            <TextInput value={pageSetting("footerWhatsappTitle") ?? form.whatsappShortcutText ?? ""} onChange={(e) => setPageSetting("footerWhatsappTitle", e.target.value)} />
+          </Field>
+          <Field label="Teks WhatsApp baris 1">
+            <TextInput value={pageSetting("footerWhatsappLine1")} onChange={(e) => setPageSetting("footerWhatsappLine1", e.target.value)} />
+          </Field>
+          <Field label="Teks WhatsApp baris 2">
+            <TextInput value={pageSetting("footerWhatsappLine2")} onChange={(e) => setPageSetting("footerWhatsappLine2", e.target.value)} />
+          </Field>
+          <Field label="Link WhatsApp footer" hint="Opsional. Isi URL https://wa.me/... agar seluruh blok kontak dapat diklik.">
+            <TextInput value={pageSetting("footerWhatsappUrl")} onChange={(e) => setPageSetting("footerWhatsappUrl", e.target.value)} />
+          </Field>
+          <Field label="Warna latar footer">
+            <TextInput value={pageSetting("footerBackgroundColor")} onChange={(e) => setPageSetting("footerBackgroundColor", e.target.value)} />
+          </Field>
+          <Field label="Warna ikon brand">
+            <TextInput value={pageSetting("footerBrandColor")} onChange={(e) => setPageSetting("footerBrandColor", e.target.value)} />
+          </Field>
+          <Field label="Warna ikon WhatsApp">
+            <TextInput value={pageSetting("footerWhatsappColor")} onChange={(e) => setPageSetting("footerWhatsappColor", e.target.value)} />
+          </Field>
+        </div>
+      </Card>
+
+      <Card className="mb-4">
         <h3 className="font-semibold mb-3">Teks Lainnya</h3>
         <Field label="Kata yang di-highlight di headline" hint='Ditampilkan sebagai pil hijau, mis. "GRATIS". Kosongkan untuk tanpa highlight.'>
           <TextInput value={pageSetting("heroHighlight")} onChange={(e) => setPageSetting("heroHighlight", e.target.value)} />
         </Field>
         <Field label="Teks tombol CTA band" hint='Kosongkan untuk memakai Primary CTA Text + " Sekarang".'>
           <TextInput value={pageSetting("ctaBandButtonText")} onChange={(e) => setPageSetting("ctaBandButtonText", e.target.value)} />
-        </Field>
-        <Field label="Tagline footer">
-          <TextInput value={pageSetting("footerTagline")} onChange={(e) => setPageSetting("footerTagline", e.target.value)} />
-        </Field>
-        <Field label="Kata kunci footer (satu per baris)">
-          <TextArea
-            rows={4}
-            value={(pageSetting("footerKeywords") || []).join("\n")}
-            onChange={(e) => setPageSetting("footerKeywords", e.target.value.split("\n"))}
-          />
         </Field>
         <Field label="Catatan privasi di bawah form sample">
           <TextInput value={pageSetting("formPrivacyNote")} onChange={(e) => setPageSetting("formPrivacyNote", e.target.value)} />

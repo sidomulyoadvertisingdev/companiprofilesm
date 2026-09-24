@@ -52,10 +52,33 @@ const GREEN = "#16A34A";
 // "Teks Lainnya" card). A key that was never set falls back to the original
 // copy; one the admin cleared ("") is hidden.
 const PAGE_SETTING_DEFAULTS = {
+  topbarLogo: "",
+  topbarBrand: "SIDOMULYO ADVERTISING",
+  topbarTagline: "Solusi Visual untuk Bisnis Anda",
+  topbarNavProduct: "Produk",
+  topbarNavSteps: "Cara Kerja",
+  topbarNavAreas: "Area Layanan",
+  topbarNavTestimonials: "Testimoni",
+  topbarNavFaq: "FAQ",
+  topbarCtaText: "Minta Sample Gratis",
+  topbarCtaMobileText: "Sample Gratis",
+  topbarCtaTarget: "",
+  topbarButtonColor: BLUE,
+  topbarBackgroundColor: "#0a0a1a",
   heroHighlight: "GRATIS",
   ctaBandButtonText: "",
   footerTagline: "Partner Visual untuk Operasional SPPG yang Lebih Baik",
   footerKeywords: ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"],
+  footerLogo: "",
+  footerBrand: "SIDOMULYO ADVERTISING",
+  footerBrandTagline: "Solusi Visual untuk Bisnis Anda",
+  footerBackgroundColor: NAVY,
+  footerBrandColor: BLUE,
+  footerWhatsappColor: GREEN,
+  footerWhatsappTitle: null,
+  footerWhatsappLine1: "di WhatsApp kami",
+  footerWhatsappLine2: "Kami siap membantu Anda.",
+  footerWhatsappUrl: "",
   formPrivacyNote: "Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.",
 };
 
@@ -166,19 +189,28 @@ function CtaButton({ text, target, variant = "primary", className = "", accent, 
 function navLinks(campaign, hasConfigurator) {
   const types = new Set((campaign.sections || []).map((s) => s.type));
   return [
-    [hasConfigurator ? "#pilih-produk" : "#produk", "Produk", true],
-    ["#cara-kerja", "Cara Kerja", types.has("steps") || campaign.formEnabled],
-    ["#area-layanan", "Area Layanan", types.has("areas")],
-    ["#testimoni", "Testimoni", types.has("testimonials")],
-    ["#faq", "FAQ", types.has("faq")],
-  ].filter(([, , show]) => show);
+    [hasConfigurator ? "#pilih-produk" : "#produk", "topbarNavProduct", true],
+    ["#cara-kerja", "topbarNavSteps", types.has("steps") || campaign.formEnabled],
+    ["#area-layanan", "topbarNavAreas", types.has("areas")],
+    ["#testimoni", "topbarNavTestimonials", types.has("testimonials")],
+    ["#faq", "topbarNavFaq", types.has("faq")],
+  ].map(([href, key, show]) => [href, settingText(campaign, key), show])
+    .filter(([, label, show]) => show && String(label || "").trim());
 }
 
 // Transparent over the full-screen video hero (Netflix-style), then turns
 // solid once the visitor scrolls past the top so it stays readable over the
 // light content sections below.
 function TopNav({ campaign, ctaTarget }) {
-  const sampleTarget = ctaTarget || campaign.primaryCtaTarget || "#sample-form";
+  const sampleTarget = settingText(campaign, "topbarCtaTarget") || ctaTarget || campaign.primaryCtaTarget || "#sample-form";
+  const brandTarget = ctaTarget ? "#pilih-produk" : "#produk";
+  const logo = settingText(campaign, "topbarLogo");
+  const brand = settingText(campaign, "topbarBrand");
+  const tagline = settingText(campaign, "topbarTagline");
+  const ctaText = settingText(campaign, "topbarCtaText");
+  const mobileCtaText = settingText(campaign, "topbarCtaMobileText");
+  const buttonColor = settingText(campaign, "topbarButtonColor") || BLUE;
+  const backgroundColor = settingText(campaign, "topbarBackgroundColor") || "#0a0a1a";
   const [solid, setSolid] = useState(false);
 
   useEffect(() => {
@@ -191,24 +223,27 @@ function TopNav({ campaign, ctaTarget }) {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-30 transition-colors duration-300 ${
-        solid ? "bg-[#0a0a1a]/95 backdrop-blur border-b border-white/10" : "bg-gradient-to-b from-black/70 to-transparent"
+        solid ? "backdrop-blur border-b border-white/10" : "bg-gradient-to-b from-black/70 to-transparent"
       }`}
+      style={solid ? { backgroundColor } : undefined}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
-        <a href="#produk" className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-          <span
-            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white font-extrabold text-xs sm:text-sm shrink-0"
-            style={{ backgroundColor: BLUE }}
-          >
-            S
-          </span>
+        <a href={brandTarget} className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          {logo ? (
+            <img src={logo} alt={brand || "Logo campaign"} className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-contain shrink-0" />
+          ) : (
+            <span
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white font-extrabold text-xs sm:text-sm shrink-0"
+              style={{ backgroundColor: buttonColor }}
+            >
+              {brand?.trim().charAt(0) || "S"}
+            </span>
+          )}
           <span className="leading-tight min-w-0">
             <span className="block text-xs sm:text-sm font-extrabold tracking-wide text-white truncate max-w-[130px] sm:max-w-none">
-              SIDOMULYO ADVERTISING
+              {brand}
             </span>
-            <span className="hidden sm:block text-[9px] font-medium tracking-widest uppercase text-white/60">
-              Solusi Visual untuk Bisnis Anda
-            </span>
+            {tagline && <span className="hidden sm:block text-[9px] font-medium tracking-widest uppercase text-white/60">{tagline}</span>}
           </span>
         </a>
 
@@ -220,14 +255,16 @@ function TopNav({ campaign, ctaTarget }) {
           ))}
         </nav>
 
-        <a
-          href={sampleTarget}
-          className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm shrink-0 hover:opacity-90 transition-opacity"
-          style={{ backgroundColor: BLUE }}
-        >
-          <FiGift aria-hidden="true" /> <span className="hidden sm:inline">Minta Sample Gratis</span>
-          <span className="sm:hidden">Sample Gratis</span>
-        </a>
+        {(ctaText || mobileCtaText) && (
+          <a
+            href={sampleTarget}
+            className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-sm shrink-0 hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: buttonColor }}
+          >
+            <FiGift aria-hidden="true" /> <span className="hidden sm:inline">{ctaText || mobileCtaText}</span>
+            <span className="sm:hidden">{mobileCtaText || ctaText}</span>
+          </a>
+        )}
       </div>
     </header>
   );
@@ -1695,21 +1732,31 @@ function CtaBand({ campaign }) {
 
 
 function Footer({ campaign }) {
+  const logo = settingText(campaign, "footerLogo");
+  const brand = settingText(campaign, "footerBrand");
+  const brandTagline = settingText(campaign, "footerBrandTagline");
+  const whatsappTitle = settingText(campaign, "footerWhatsappTitle") ?? campaign.whatsappShortcutText;
+  const rawWhatsappUrl = settingText(campaign, "footerWhatsappUrl");
+  const whatsappUrl = /^https?:\/\//i.test(rawWhatsappUrl || "") ? rawWhatsappUrl : "";
+  const Contact = whatsappUrl ? "a" : "div";
+
   return (
-    <footer className="pt-12 pb-8 px-4 sm:px-6" style={{ backgroundColor: NAVY }}>
+    <footer className="pt-12 pb-8 px-4 sm:px-6" style={{ backgroundColor: settingText(campaign, "footerBackgroundColor") || NAVY }}>
       <div className="max-w-6xl mx-auto grid sm:grid-cols-3 gap-8 items-center text-center sm:text-left">
         <div className="flex items-center gap-2.5 justify-center sm:justify-start">
-          <span
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-extrabold text-sm shrink-0"
-            style={{ backgroundColor: "#2563EB" }}
-          >
-            S
-          </span>
-          <span className="leading-tight">
-            <span className="block text-sm font-bold text-white">SIDOMULYO ADVERTISING</span>
-            <span className="block text-[9px] font-medium tracking-widest uppercase text-slate-400">
-              Solusi Visual untuk Bisnis Anda
+          {logo ? (
+            <img src={logo} alt={brand || "Logo campaign"} className="w-9 h-9 rounded-full object-contain shrink-0" />
+          ) : (
+            <span
+              className="w-9 h-9 rounded-full flex items-center justify-center text-white font-extrabold text-sm shrink-0"
+              style={{ backgroundColor: settingText(campaign, "footerBrandColor") || BLUE }}
+            >
+              {brand?.trim().charAt(0) || "S"}
             </span>
+          )}
+          <span className="leading-tight">
+            {brand && <span className="block text-sm font-bold text-white">{brand}</span>}
+            {brandTagline && <span className="block text-[9px] font-medium tracking-widest uppercase text-slate-400">{brandTagline}</span>}
           </span>
         </div>
 
@@ -1722,17 +1769,17 @@ function Footer({ campaign }) {
           </p>
         </div>
 
-        {campaign.whatsappShortcutText && (
-          <div className="flex items-center gap-2.5 justify-center sm:justify-end">
-            <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: GREEN }}>
+        {whatsappTitle && (
+          <Contact href={whatsappUrl || undefined} target={whatsappUrl ? "_blank" : undefined} rel={whatsappUrl ? "noopener noreferrer" : undefined} className="flex items-center gap-2.5 justify-center sm:justify-end">
+            <span className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: settingText(campaign, "footerWhatsappColor") || GREEN }}>
               <FiMessageCircle className="text-white" aria-hidden="true" />
             </span>
             <span className="text-left">
-              <span className="block text-sm font-bold text-white">{campaign.whatsappShortcutText}</span>
-              <span className="block text-xs text-slate-400">di WhatsApp kami</span>
-              <span className="block text-xs text-slate-400">Kami siap membantu Anda.</span>
+              <span className="block text-sm font-bold text-white">{whatsappTitle}</span>
+              {settingText(campaign, "footerWhatsappLine1") && <span className="block text-xs text-slate-400">{settingText(campaign, "footerWhatsappLine1")}</span>}
+              {settingText(campaign, "footerWhatsappLine2") && <span className="block text-xs text-slate-400">{settingText(campaign, "footerWhatsappLine2")}</span>}
             </span>
-          </div>
+          </Contact>
         )}
       </div>
     </footer>
