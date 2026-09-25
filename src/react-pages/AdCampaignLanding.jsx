@@ -31,7 +31,6 @@ import {
   FiSend,
   FiStar,
   FiCheck,
-  FiChevronLeft,
   FiShoppingCart,
   FiX,
   FiArrowLeft,
@@ -1493,27 +1492,8 @@ function ProductModal({ product, section, campaign, onClose }) {
 function ConfiguratorSection({ section, campaign }) {
   const products = (section.items || []).filter((it) => it.active !== false && it.title);
   const [openIdx, setOpenIdx] = useState(-1);
-  const [canSlide, setCanSlide] = useState(false);
-  const rowRef = useRef(null);
-
-  useEffect(() => {
-    const row = rowRef.current;
-    if (!row) return undefined;
-
-    const updateCanSlide = () => setCanSlide(row.scrollWidth > row.clientWidth + 1);
-    updateCanSlide();
-
-    const observer = new ResizeObserver(updateCanSlide);
-    observer.observe(row);
-    return () => observer.disconnect();
-  }, [products.length]);
 
   if (!products.length) return null;
-
-  function scrollRow(dir) {
-    const el = rowRef.current;
-    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
-  }
 
   return (
     <section id="pilih-produk" className="relative bg-black text-white overflow-hidden scroll-mt-16">
@@ -1542,35 +1522,10 @@ function ConfiguratorSection({ section, campaign }) {
           </p>
         )}
 
-        <div className="relative -mx-4 sm:mx-0 mt-4">
-          {canSlide && (
-            <button
-              type="button"
-              onClick={() => scrollRow(-1)}
-              aria-label="Geser ke kiri"
-              className="hidden md:flex absolute left-0 top-4 bottom-4 z-20 w-10 items-center justify-center rounded-md bg-black/60 hover:bg-black/90 text-white"
-            >
-              <FiChevronLeft size={24} />
-            </button>
-          )}
-          <div
-            ref={rowRef}
-            className="flex flex-nowrap gap-3 sm:gap-6 overflow-x-auto px-4 sm:px-12 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {products.map((p, i) => (
-              <PosterCard key={i} item={p} index={i} onSelect={() => setOpenIdx(i)} />
-            ))}
-          </div>
-          {canSlide && (
-            <button
-              type="button"
-              onClick={() => scrollRow(1)}
-              aria-label="Geser ke kanan"
-              className="hidden md:flex absolute right-0 top-4 bottom-4 z-20 w-10 items-center justify-center rounded-md bg-black/60 hover:bg-black/90 text-white"
-            >
-              <FiChevronRight size={24} />
-            </button>
-          )}
+        <div className="mx-auto mt-6 flex max-w-4xl flex-wrap justify-center gap-x-6 gap-y-8 px-4 sm:px-0">
+          {products.map((p, i) => (
+            <PosterCard key={i} item={p} index={i} onSelect={() => setOpenIdx(i)} />
+          ))}
         </div>
       </div>
 
