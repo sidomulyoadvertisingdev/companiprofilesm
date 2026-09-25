@@ -79,6 +79,10 @@ const ANSWER_LABELS = {
   varian: "Varian",
   isi_label: "Isi Label",
   pilihan: "Pilihan Pengiriman",
+  address_source: "Sumber Alamat",
+  registered_address: "Alamat SPPG di Database",
+  sppg_id: "ID SPPG",
+  sppg_status: "Status SPPG",
   gps_latitude: "Latitude GPS",
   gps_longitude: "Longitude GPS",
 };
@@ -135,7 +139,7 @@ const PAGE_SETTING_DEFAULTS = {
 const CONFIGURATOR_TEXT_FIELDS = [
   ["variantLabel", "Judul pilihan varian", "Pilih varian"],
   ["contentLabel", "Judul pilihan isi label", "Mau isi label apa saja?"],
-  ["addressLabel", "Judul form alamat", "Kirim alamat SPPG Anda"],
+  ["addressLabel", "Judul form SPPG", "Ketik nama SPPG Anda"],
   ["nameLabel", "Label kolom nama", "Nama SPPG"],
   ["submitText", "Teks tombol kirim", "Kirim Alamat ke WhatsApp"],
   ["waGreeting", "Pembuka pesan WhatsApp", "Halo Sidomulyo, saya mau"],
@@ -712,7 +716,7 @@ function SectionsRepeater({ sections, onChange }) {
                       <span className="block text-[11px] text-slate-500 mb-0.5">{label}</span>
                       <TextInput
                         placeholder={placeholder}
-                        value={section[key] || ""}
+                        value={key === "addressLabel" && section[key] === "Kirim alamat SPPG Anda" ? "Ketik nama SPPG Anda" : section[key] || ""}
                         onChange={(e) => updateSection(i, { [key]: e.target.value })}
                       />
                     </div>
@@ -1578,6 +1582,99 @@ function LeadsTab() {
   );
 }
 
+function parseSppgCsv(text) {
+  const records = [];
+  let row = [], cell = "", quoted = false;
+  const input = text.replace(/^\uFEFF/, "");
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+    if (char === '"') {
+      if (quoted && input[i + 1] === '"') { cell += '"'; i++; } else quoted = !quoted;
+    } else if (char === "," && !quoted) {
+      row.push(cell.trim()); cell = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && input[i + 1] === "\n") i++;
+      row.push(cell.trim());
+      if (row.some(Boolean)) records.push(row);
+      row = []; cell = "";
+    } else cell += char;
+  }
+  if (quoted) throw new Error("Tanda kutip CSV tidak lengkap");
+  row.push(cell.trim());
+  if (row.some(Boolean)) records.push(row);
+  const header = records.shift()?.map((v) => v.toLocaleLowerCase("id-ID")) || [];
+  const nameIndex = header.findIndex((v) => ["nama", "nama sppg", "name"].includes(v));
+  const addressIndex = header.findIndex((v) => ["alamat", "alamat sppg", "address"].includes(v));
+  if (nameIndex < 0 || addressIndex < 0) throw new Error("CSV harus memiliki kolom 'Nama SPPG' dan 'Alamat SPPG'");
+  const rows = records.map((r) => ({ name: r[nameIndex], address: r[addressIndex] }));
+  if (!rows.length || rows.some((r) => !r.name || !r.address)) throw new Error("Setiap baris wajib berisi nama dan alamat");
+  return rows;
+}
+
+function SppgDirectoryTab() {
+  const [items, setItems] = useState([]);
+  const [query, setQuery] = useState("");
+  const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
+  const [file, setFile] = useState(null);
+  const [notice, setNotice] = useState("");
+  const [saving, setSaving] = useState(false);
+  const load = useCallback(async () => {
+    setItems(await api(`/api/admin/sppg-directory?q=${encodeURIComponent(query)}`));
+  }, [query]);
+  useEffect(() => { load().catch((e) => setNotice(e.message)); }, [load]);
+
+  async function saveRows(rows) {
+    setSaving(true); setNotice("");
+    try {
+      const result = await api("/api/admin/sppg-directory", { method: "POST", body: JSON.stringify({ rows }) });
+      setNotice(`${result.count} data SPPG berhasil disimpan.`);
+      setName(""); setAddress(""); setFile(null);
+      await load();
+    } catch (error) { setNotice(error.message); }
+    finally { setSaving(false); }
+  }
+
+  async function importFile() {
+    if (!file) return;
+    try { await saveRows(parseSppgCsv(await file.text())); }
+    catch (error) { setNotice(error.message); }
+  }
+
+  async function remove(id) {
+    if (!window.confirm("Hapus SPPG ini dari daftar?")) return;
+    try { await api(`/api/admin/sppg-directory?id=${id}`, { method: "DELETE" }); await load(); }
+    catch (error) { setNotice(error.message); }
+  }
+
+  return <div className="space-y-4">
+    <h2 className="text-lg font-semibold">Database SPPG</h2>
+    <Card>
+      <p className="mb-3 text-sm text-slate-600">Nama yang tersimpan di sini menjadi pilihan wajib pada popup produk. Alamatnya otomatis terisi saat SPPG dipilih.</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <TextInput placeholder="Nama SPPG" value={name} onChange={(e) => setName(e.target.value)} />
+        <TextInput placeholder="Alamat lengkap SPPG" value={address} onChange={(e) => setAddress(e.target.value)} />
+      </div>
+      <button type="button" disabled={saving || !name.trim() || !address.trim()} onClick={() => saveRows([{ name, address }])} className="mt-3 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Simpan SPPG</button>
+    </Card>
+    <Card>
+      <p className="mb-2 text-sm font-semibold">Impor CSV</p>
+      <p className="mb-3 text-xs text-slate-500">Kolom wajib: Nama SPPG, Alamat SPPG. Nama yang sudah ada akan diperbarui alamatnya.</p>
+      <input type="file" accept=".csv,text/csv" onChange={(e) => setFile(e.target.files?.[0] || null)} className="block text-sm" />
+      <button type="button" disabled={saving || !file} onClick={importFile} className="mt-3 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Impor data</button>
+    </Card>
+    {notice && <p role="status" className="text-sm text-blue-700">{notice}</p>}
+    <Card>
+      <TextInput placeholder="Cari SPPG" value={query} onChange={(e) => setQuery(e.target.value)} />
+      <p className="my-3 text-xs text-slate-500">Menampilkan maksimal 100 data. Gunakan pencarian untuk data lainnya.</p>
+      <div className="divide-y divide-slate-100">{items.map((item) => <div key={item.id} className="flex items-start gap-3 py-3 text-sm">
+        <div className="flex-1"><strong>{item.name}</strong><p className="text-slate-600">{item.address}</p></div>
+        <button type="button" onClick={() => remove(item.id)} className="text-red-600" aria-label={`Hapus ${item.name}`}><FiTrash2 /></button>
+      </div>)}</div>
+    </Card>
+  </div>;
+}
+
 // The same three tabs work inside the dashboard sidebar and on the standalone route.
 export default function AdCampaignAdmin({ embedded = false, googleMapsApiKey = "" } = {}) {
   const [tab, setTab] = useState("campaigns");
@@ -1609,6 +1706,12 @@ export default function AdCampaignAdmin({ embedded = false, googleMapsApiKey = "
         </button>
         <button
           role="tab"
+          aria-selected={tab === "sppg"}
+          onClick={() => setTab("sppg")}
+          className={`-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold ${tab === "sppg" ? "border-blue-700 text-blue-700" : "border-transparent text-slate-600"}`}
+        >Database SPPG</button>
+        <button
+          role="tab"
           aria-selected={tab === "leads"}
           onClick={() => setTab("leads")}
           className={`-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
@@ -1629,7 +1732,7 @@ export default function AdCampaignAdmin({ embedded = false, googleMapsApiKey = "
         </button>
       </div>
 
-      {tab === "campaigns" ? <CampaignsTab /> : tab === "leads" ? <LeadsTab /> : <AdCampaignAnalytics googleMapsApiKey={googleMapsApiKey} onOpenLeads={() => setTab("leads")} />}
+      {tab === "campaigns" ? <CampaignsTab /> : tab === "sppg" ? <SppgDirectoryTab /> : tab === "leads" ? <LeadsTab /> : <AdCampaignAnalytics googleMapsApiKey={googleMapsApiKey} onOpenLeads={() => setTab("leads")} />}
     </>
   );
 

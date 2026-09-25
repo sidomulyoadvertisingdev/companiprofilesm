@@ -2,6 +2,8 @@ import {
   ensureAdCampaignSchema,
   getAdCampaignBySlug,
   createAdCampaignLead,
+  getSppgById,
+  getSppgByName,
 } from "../../lib/ad-campaigns.js";
 import { rateLimit } from "../../lib/rate-limiter.js";
 import { cleanHtml } from "../../lib/sanitize.js";
@@ -116,6 +118,23 @@ export async function POST({ request, clientAddress }) {
   }
   if (isConfigurator && !answers.address) {
     return json({ message: "Alamat SPPG wajib diisi" }, 400);
+  }
+  if (isConfigurator) {
+    const sppgId = Number(body.sppgId);
+    const sppg = Number.isInteger(sppgId) && sppgId > 0 ? await getSppgById(sppgId) : null;
+    if (body.manualSppg === true) {
+      if (name.length < 2 || name.length > 255) return json({ message: "Nama SPPG harus 2–255 karakter" }, 400);
+      if (await getSppgByName(name)) return json({ message: "Nama SPPG sudah terdaftar. Pilih dari daftar." }, 400);
+      if (!["manual", "maps"].includes(answers.address_source)) return json({ message: "Pilih sumber alamat yang valid" }, 400);
+      answers.sppg_status = "Belum terdaftar";
+    } else {
+      if (!sppg || sppg.name !== name) return json({ message: "Pilih nama SPPG dari daftar atau gunakan opsi belum terdaftar" }, 400);
+      if (!["database", "manual", "maps"].includes(answers.address_source)) return json({ message: "Sumber alamat tidak valid" }, 400);
+      if (answers.address_source === "database") answers.address = sppg.address;
+      answers.sppg_id = String(sppg.id);
+      answers.registered_address = sppg.address;
+      answers.sppg_status = "Terdaftar";
+    }
   }
 
   const lead = await createAdCampaignLead({

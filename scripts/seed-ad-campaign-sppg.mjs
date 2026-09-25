@@ -70,7 +70,7 @@ const campaign = {
       // Popup copy (all editable in admin).
       variantLabel: "Pilih varian",
       contentLabel: "Mau isi label apa saja?",
-      addressLabel: "Kirim alamat SPPG Anda",
+      addressLabel: "Ketik nama SPPG Anda",
       nameLabel: "Nama SPPG",
       submitText: "Kirim Alamat ke WhatsApp",
       waGreeting: "Halo Sidomulyo, saya mau",

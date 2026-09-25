@@ -60,6 +60,15 @@ const TABLES = [
     FOREIGN KEY (ad_campaign_id) REFERENCES ad_campaigns(id) ON DELETE CASCADE,
     INDEX idx_status (status), INDEX idx_city (city), INDEX idx_created (created_at), INDEX idx_campaign (ad_campaign_id)
   )`,
+  `CREATE TABLE IF NOT EXISTS sppg_directory (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    address TEXT NOT NULL,
+    name_key VARCHAR(255) NOT NULL UNIQUE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_name (name)
+  )`,
 ];
 
 // Additive, safe-default column check for deployments where ad_campaigns
@@ -88,6 +97,53 @@ export async function ensureAdCampaignSchema() {
   // Misc page copy that used to be hardcoded (headline highlight word,
   // footer tagline/keywords, CTA band button, form privacy note).
   await ensureColumn("ad_campaigns", "page_settings_json", "TEXT DEFAULT NULL");
+}
+
+export async function searchSppgDirectory(query = "", limit = 30) {
+  const q = String(query).trim();
+  const safeLimit = Math.min(Math.max(Number(limit) || 30, 1), 100);
+  const [rows] = await db.execute(
+    `SELECT id, name, address FROM sppg_directory WHERE name LIKE ? ORDER BY name LIMIT ${safeLimit}`,
+    [`%${q}%`]
+  );
+  return rows;
+}
+
+export async function getSppgById(id) {
+  const [rows] = await db.execute("SELECT id, name, address FROM sppg_directory WHERE id = ? LIMIT 1", [id]);
+  return rows[0] || null;
+}
+
+export async function getSppgByName(name) {
+  const [rows] = await db.execute("SELECT id, name, address FROM sppg_directory WHERE name_key = ? LIMIT 1", [String(name).trim().toLocaleLowerCase("id-ID")]);
+  return rows[0] || null;
+}
+
+export async function upsertSppgDirectory(rows) {
+  const connection = await db.getConnection();
+  try {
+    await connection.beginTransaction();
+    for (const row of rows) {
+      const name = String(row.name || "").trim();
+      const address = String(row.address || "").trim();
+      if (!name || !address || name.length > 255 || address.length > 3000) throw new Error("Nama dan alamat SPPG wajib diisi (maksimal 255/3000 karakter)");
+      await connection.execute(
+        `INSERT INTO sppg_directory (name, address, name_key) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE name = VALUES(name), address = VALUES(address)`,
+        [name, address, name.toLocaleLowerCase("id-ID")]
+      );
+    }
+    await connection.commit();
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+export async function deleteSppgDirectory(id) {
+  await db.execute("DELETE FROM sppg_directory WHERE id = ?", [id]);
 }
 
 function parseJson(value, fallback) {

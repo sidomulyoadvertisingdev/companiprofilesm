@@ -1067,14 +1067,16 @@ const DEFAULT_CONTENT_OPTIONS = [
 const CONFIGURATOR_TEXT_DEFAULTS = {
   variantLabel: "Pilih varian",
   contentLabel: "Mau isi label apa saja?",
-  addressLabel: "Kirim alamat SPPG Anda",
+  addressLabel: "Ketik nama SPPG Anda",
   nameLabel: "Nama SPPG",
   submitText: "Kirim Alamat ke WhatsApp",
   waGreeting: "Halo Sidomulyo, saya mau",
 };
 
 function configText(section, key) {
-  return (section[key] || "").trim() || CONFIGURATOR_TEXT_DEFAULTS[key];
+  const value = (section[key] || "").trim();
+  if (key === "addressLabel" && value === "Kirim alamat SPPG Anda") return CONFIGURATOR_TEXT_DEFAULTS.addressLabel;
+  return value || CONFIGURATOR_TEXT_DEFAULTS[key];
 }
 
 const DEFAULT_ORDER_OPTIONS = [
@@ -1185,6 +1187,12 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
   const [contents, setContents] = useState([]);
   const [orderOption, setOrderOption] = useState("");
   const [info, setInfo] = useState({ name: "", address: "" });
+  const [sppgId, setSppgId] = useState(null);
+  const [manualSppg, setManualSppg] = useState(false);
+  const [registeredAddress, setRegisteredAddress] = useState("");
+  const [sppgMatches, setSppgMatches] = useState([]);
+  const [sppgLoading, setSppgLoading] = useState(false);
+  const [addressSource, setAddressSource] = useState("database");
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [detectingAddress, setDetectingAddress] = useState(false);
@@ -1196,6 +1204,23 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
   // The big photo follows the selected variant's own photo, falling back to
   // the product photo when that variant has none (or nothing is picked yet).
   const photo = variants.find((v) => v.name === variant)?.image || product.image;
+
+  useEffect(() => {
+    if (sppgId || manualSppg || info.name.trim().length < 2) return;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setSppgLoading(true);
+      try {
+        const response = await fetch(`/api/sppg-directory?q=${encodeURIComponent(info.name.trim())}`, { signal: controller.signal });
+        if (response.ok) setSppgMatches(await response.json());
+      } catch (error) {
+        if (error.name !== "AbortError") setSppgMatches([]);
+      } finally {
+        if (!controller.signal.aborted) setSppgLoading(false);
+      }
+    }, 250);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [info.name, sppgId, manualSppg]);
 
   // Esc to close + lock page scroll behind the modal.
   useEffect(() => {
@@ -1239,7 +1264,8 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
       });
       const address = results?.[0]?.formatted_address;
       if (!address) throw new Error("Alamat tidak ditemukan. Isi alamat secara manual.");
-      setInfo((current) => ({ ...current, address: current.address.trim() || address }));
+      setInfo((current) => ({ ...current, address }));
+      setAddressSource("maps");
       setDetectedCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
       setErrors((current) => ({ ...current, address: undefined }));
     } catch (err) {
@@ -1254,24 +1280,6 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
       setDetectingAddress(false);
     }
   }, [googleMapsApiKey]);
-
-  useEffect(() => {
-    if (!orderOption || !navigator.permissions?.query) return;
-    let active = true;
-    let permission;
-    navigator.permissions.query({ name: "geolocation" }).then((status) => {
-      if (!active) return;
-      permission = status;
-      if (status.state === "granted") detectAddress();
-      status.onchange = () => {
-        if (active && status.state === "granted") detectAddress();
-      };
-    }).catch(() => {});
-    return () => {
-      active = false;
-      if (permission) permission.onchange = null;
-    };
-  }, [orderOption, detectAddress]);
 
   function toggleContent(opt) {
     setContents((c) => (c.includes(opt) ? c.filter((x) => x !== opt) : [...c, opt]));
@@ -1296,8 +1304,10 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
       `Isi label: ${contents.join(", ")}`,
       "",
       `${configText(section, "nameLabel")}: ${info.name.trim()}`,
+      `Status SPPG: ${manualSppg ? "Belum terdaftar" : "Terdaftar"}`,
       `Alamat: ${info.address.trim()}`,
-      detectedCoords ? `Titik lokasi: https://www.google.com/maps?q=${detectedCoords.lat},${detectedCoords.lng}` : null,
+      `Sumber alamat: ${addressSource === "database" ? "Database SPPG" : addressSource === "maps" ? "Rekomendasi Maps" : "Diisi manual"}`,
+      addressSource === "maps" && detectedCoords ? `Titik lokasi: https://www.google.com/maps?q=${detectedCoords.lat},${detectedCoords.lng}` : null,
     ];
     return lines.filter((l) => l !== null).join("\n");
   }
@@ -1305,7 +1315,8 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
   async function handleSend(e) {
     e.preventDefault();
     const errs = {};
-    if (!info.name.trim()) errs.name = "Wajib diisi";
+    if (manualSppg && info.name.trim().length < 2) errs.name = "Ketik nama SPPG minimal 2 karakter";
+    else if (!manualSppg && !sppgId) errs.name = "Pilih dari daftar atau pilih opsi SPPG belum terdaftar";
     if (!info.address.trim()) errs.address = "Wajib diisi";
     setErrors(errs);
     if (Object.keys(errs).length) return;
@@ -1319,6 +1330,8 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
         body: JSON.stringify({
           campaignSlug: campaign.slug,
           source: "product_configurator",
+          sppgId,
+          manualSppg,
           name: info.name,
           answers: {
             produk: product.title,
@@ -1326,7 +1339,8 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
             isi_label: contents.join(", "),
             pilihan: orderOption,
             address: info.address,
-            ...(detectedCoords ? { gps_latitude: detectedCoords.lat, gps_longitude: detectedCoords.lng } : {}),
+            address_source: addressSource,
+            ...(addressSource === "maps" && detectedCoords ? { gps_latitude: detectedCoords.lat, gps_longitude: detectedCoords.lng } : {}),
           },
           utmSource: params.get("utm_source"),
           utmMedium: params.get("utm_medium"),
@@ -1341,10 +1355,13 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
         setErrors({ form: data.message || "Data belum lengkap." });
         return;
       }
-      // Any other failure (rate limit, network) still continues to WhatsApp —
-      // the chat itself is the conversion that matters most here.
+      if (!res.ok) {
+        setErrors({ form: "Data belum berhasil divalidasi. Coba kirim lagi." });
+        return;
+      }
     } catch {
-      // Same as above: fall through to WhatsApp.
+      setErrors({ form: "Koneksi terputus. Coba kirim lagi." });
+      return;
     } finally {
       setSubmitting(false);
     }
@@ -1491,42 +1508,74 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
               </div>
               <p className="text-sm font-semibold text-white/70 mb-2.5">{configText(section, "addressLabel")}</p>
               <div className="space-y-3">
-                <div>
+                <div className="relative">
                   <input
                     className={darkInput}
                     aria-label={configText(section, "nameLabel")}
                     autoComplete="organization"
-                    placeholder={configText(section, "nameLabel")}
+                    placeholder="Ketik nama SPPG Anda"
                     value={info.name}
-                    onChange={(e) => setInfo((current) => ({ ...current, name: e.target.value }))}
+                    onChange={(e) => {
+                      setInfo({ name: e.target.value, address: "" });
+                      setSppgId(null);
+                      if (!manualSppg) setAddressSource("database");
+                      setRegisteredAddress("");
+                      setSppgMatches([]);
+                      setDetectedCoords(null);
+                    }}
                   />
+                  {!sppgId && !manualSppg && info.name.trim().length >= 2 && (
+                    <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-white/20 bg-[#252525] shadow-xl">
+                      {sppgMatches.map((item) => (
+                        <button key={item.id} type="button" className="block w-full border-b border-white/10 px-4 py-3 text-left text-sm text-white hover:bg-white/10" onClick={() => {
+                          setSppgId(item.id);
+                          setManualSppg(false);
+                          setRegisteredAddress(item.address);
+                          setInfo({ name: item.name, address: item.address });
+                          setAddressSource("database");
+                          setSppgMatches([]);
+                          setLocationError("");
+                          setErrors((current) => ({ ...current, name: undefined, address: undefined }));
+                        }}>
+                          <span className="block font-semibold">{item.name}</span>
+                          <span className="block text-xs text-white/60">{item.address}</span>
+                        </button>
+                      ))}
+                      {!sppgLoading && !sppgMatches.length && <p className="px-4 py-3 text-xs text-white/60">Nama SPPG tidak ditemukan dalam database.</p>}
+                      <button type="button" className="block w-full px-4 py-3 text-left text-sm font-semibold text-green-300 hover:bg-white/10" onClick={() => {
+                        setManualSppg(true);
+                        setSppgId(null);
+                        setSppgMatches([]);
+                        setInfo((current) => ({ ...current, address: "" }));
+                        setAddressSource("manual");
+                        setErrors((current) => ({ ...current, name: undefined }));
+                      }}>SPPG belum ada di database — ketik manual</button>
+                    </div>
+                  )}
+                  {sppgId && <p className="mt-1 text-xs text-green-400">SPPG terdaftar ✓</p>}
+                  {manualSppg && <div className="mt-2 flex items-center gap-3 text-xs"><span className="text-amber-300">SPPG belum terdaftar — isi nama dan alamat manual.</span><button type="button" className="underline text-white" onClick={() => { setManualSppg(false); setInfo({ name: "", address: "" }); setAddressSource("database"); setDetectedCoords(null); }}>Cari di database</button></div>}
                   {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
                 </div>
-                <div>
+                {(sppgId || manualSppg) && <div>
                   <label htmlFor="sppg-address" className="block text-sm text-white/70 mb-2">Alamat SPPG</label>
+                  <div className="mb-2 flex flex-wrap gap-2 text-xs">
+                    {sppgId && <button type="button" onClick={() => { setAddressSource("database"); setInfo((v) => ({ ...v, address: registeredAddress })); setDetectedCoords(null); }} className={`rounded-md border px-3 py-2 ${addressSource === "database" ? "border-green-400 text-green-300" : "border-white/25 text-white/70"}`}>Alamat database</button>}
+                    <button type="button" onClick={() => { setAddressSource("manual"); setInfo((v) => ({ ...v, address: "" })); setDetectedCoords(null); setLocationError(""); }} className={`rounded-md border px-3 py-2 ${addressSource === "manual" ? "border-green-400 text-green-300" : "border-white/25 text-white/70"}`}>Ketik sendiri</button>
+                    <button type="button" onClick={detectAddress} disabled={detectingAddress} className={`rounded-md border px-3 py-2 disabled:opacity-50 ${addressSource === "maps" ? "border-green-400 text-green-300" : "border-white/25 text-white/70"}`}>{detectingAddress ? "Mendeteksi..." : "Rekomendasi Maps"}</button>
+                  </div>
                   <textarea
                     id="sppg-address"
                     className={darkInput}
                     rows={3}
                     placeholder="Alamat lengkap (jalan, desa/kelurahan, kecamatan, kota)"
                     value={info.address}
-                    onChange={(e) => setInfo((current) => ({ ...current, address: e.target.value }))}
+                    readOnly={addressSource === "database"}
+                    onChange={(e) => { setInfo((current) => ({ ...current, address: e.target.value })); setAddressSource("manual"); setDetectedCoords(null); }}
                   />
+                  <p className="mt-2 text-xs text-white/60">{manualSppg ? "Belum ada alamat pembanding di database. Periksa alamat pengiriman sebelum dikirim." : addressSource === "database" ? "Alamat awal sesuai data SPPG dari admin." : info.address.trim().toLocaleLowerCase("id-ID") === registeredAddress.trim().toLocaleLowerCase("id-ID") ? "Teks alamat sama dengan data SPPG dari admin." : "Teks alamat tidak sama dengan data SPPG admin. Periksa apakah lokasi pengiriman benar."}</p>
                   {errors.address && <p className="mt-1 text-xs text-red-400">{errors.address}</p>}
-                </div>
+                </div>}
               </div>
-              {!info.address.trim() && (
-                <button
-                  type="button"
-                  onClick={detectAddress}
-                  disabled={detectingAddress}
-                  className="mt-3 inline-flex items-center gap-2 rounded-md border border-white/25 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10 disabled:opacity-60"
-                >
-                  <FiMapPin aria-hidden="true" />
-                  {detectingAddress ? "Mendeteksi alamat..." : "Izinkan Lokasi & Isi Alamat Otomatis"}
-                </button>
-              )}
-              {info.address.trim() && <p className="mt-2 text-xs text-white/50">Periksa alamat yang terisi otomatis sebelum dikirim.</p>}
               {locationError && <p role="alert" className="mt-2 text-xs text-amber-300">{locationError}</p>}
               {errors.form && <p className="mt-3 text-sm text-red-400">{errors.form}</p>}
               <button
