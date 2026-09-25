@@ -75,6 +75,7 @@ const PAGE_SETTING_DEFAULTS = {
   footerBrand: "SIDOMULYO ADVERTISING",
   footerBrandTagline: "Solusi Visual untuk Bisnis Anda",
   footerBackgroundColor: NAVY,
+  footerTextColor: "#ffffff",
   footerBrandColor: BLUE,
   footerWhatsappColor: GREEN,
   footerWhatsappTitle: null,
@@ -232,7 +233,7 @@ function TopNav({ campaign, ctaTarget }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
         <a href={brandTarget} className="flex items-center gap-2 sm:gap-2.5 min-w-0">
           {logo ? (
-            <img src={logo} alt={brand || "Logo campaign"} className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-contain shrink-0" />
+            <img src={logo} alt={brand || "Logo campaign"} className="h-8 sm:h-9 w-auto object-contain shrink-0" />
           ) : (
             <span
               className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-white font-extrabold text-xs sm:text-sm shrink-0"
@@ -1043,7 +1044,7 @@ function FaqSection({ section, accent }) {
 
 // ---------------------------------------------------------------------------
 // "Pilih Produk" configurator — Netflix-style dark section rendered directly
-// under the video hero: an auto-scrolling row of product posters. Clicking one
+// under the video hero: a row of product posters. Clicking one
 // opens a modal (photo, variants, label contents, two order buttons), then
 // SPPG name/WA/address, which saves a lead and hands the full order summary
 // to Sidomulyo's WhatsApp.
@@ -1169,66 +1170,6 @@ function PosterCard({ item, index, onSelect }) {
       </span>
     </button>
   );
-}
-
-// Keeps the product row gliding sideways on its own (Netflix-style) while
-// still letting visitors swipe/scroll it by hand. The rendered list holds the
-// products twice, so jumping back by one copy's width loops seamlessly.
-// Pauses while hovered/touched, while `paused` is set (modal open), and for
-// visitors who prefer reduced motion.
-function useAutoScroll(ref, paused) {
-  const hold = useRef(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return undefined;
-    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return undefined;
-
-    let pos = el.scrollLeft;
-    let frame;
-    let resumeTimer;
-    const SPEED = 0.5; // px per frame, ~30px/s
-
-    const tick = () => {
-      if (!hold.current && !paused) {
-        // Re-sync with any manual scrolling since the last frame.
-        if (Math.abs(el.scrollLeft - pos) > 2) pos = el.scrollLeft;
-        pos += SPEED;
-        // One copy's exact width: offset of the first card of the second copy.
-        const kids = el.children;
-        const period = kids.length > 1 ? kids[kids.length / 2].offsetLeft - kids[0].offsetLeft : 0;
-        if (period > 0 && pos >= period) pos -= period;
-        el.scrollLeft = pos;
-      }
-      frame = requestAnimationFrame(tick);
-    };
-
-    const stop = () => {
-      clearTimeout(resumeTimer);
-      hold.current = true;
-    };
-    const resumeSoon = () => {
-      clearTimeout(resumeTimer);
-      resumeTimer = setTimeout(() => {
-        pos = el.scrollLeft;
-        hold.current = false;
-      }, 1500);
-    };
-
-    el.addEventListener("pointerenter", stop);
-    el.addEventListener("pointerleave", resumeSoon);
-    el.addEventListener("touchstart", stop, { passive: true });
-    el.addEventListener("touchend", resumeSoon);
-    frame = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(frame);
-      clearTimeout(resumeTimer);
-      el.removeEventListener("pointerenter", stop);
-      el.removeEventListener("pointerleave", resumeSoon);
-      el.removeEventListener("touchstart", stop);
-      el.removeEventListener("touchend", resumeSoon);
-    };
-  }, [ref, paused]);
 }
 
 function ProductModal({ product, section, campaign, onClose }) {
@@ -1553,17 +1494,10 @@ function ConfiguratorSection({ section, campaign }) {
   const products = (section.items || []).filter((it) => it.active !== false && it.title);
   const [openIdx, setOpenIdx] = useState(-1);
   const rowRef = useRef(null);
-  useAutoScroll(rowRef, openIdx !== -1);
 
   if (!products.length) return null;
 
-  // Repeat the products until one copy comfortably overflows a wide screen,
-  // then render that copy twice for the seamless auto-scroll loop.
-  const copy = [];
-  while (copy.length < Math.max(8, products.length)) {
-    products.forEach((p, i) => copy.push({ p, i }));
-  }
-  const loop = [...copy, ...copy];
+  const canSlide = products.length > 2;
 
   function scrollRow(dir) {
     const el = rowRef.current;
@@ -1598,30 +1532,34 @@ function ConfiguratorSection({ section, campaign }) {
         )}
 
         <div className="relative -mx-4 sm:mx-0 mt-4">
-          <button
-            type="button"
-            onClick={() => scrollRow(-1)}
-            aria-label="Geser ke kiri"
-            className="hidden md:flex absolute left-0 top-4 bottom-4 z-20 w-10 items-center justify-center rounded-md bg-black/60 hover:bg-black/90 text-white"
-          >
-            <FiChevronLeft size={24} />
-          </button>
+          {canSlide && (
+            <button
+              type="button"
+              onClick={() => scrollRow(-1)}
+              aria-label="Geser ke kiri"
+              className="hidden md:flex absolute left-0 top-4 bottom-4 z-20 w-10 items-center justify-center rounded-md bg-black/60 hover:bg-black/90 text-white"
+            >
+              <FiChevronLeft size={24} />
+            </button>
+          )}
           <div
             ref={rowRef}
-            className="flex gap-3 sm:gap-6 overflow-x-auto px-4 sm:px-12 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            className={`flex gap-3 sm:gap-6 px-4 sm:px-12 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${canSlide ? "overflow-x-auto" : "flex-wrap"}`}
           >
-            {loop.map(({ p, i }, k) => (
-              <PosterCard key={k} item={p} index={i} onSelect={() => setOpenIdx(i)} />
+            {products.map((p, i) => (
+              <PosterCard key={i} item={p} index={i} onSelect={() => setOpenIdx(i)} />
             ))}
           </div>
-          <button
-            type="button"
-            onClick={() => scrollRow(1)}
-            aria-label="Geser ke kanan"
-            className="hidden md:flex absolute right-0 top-4 bottom-4 z-20 w-10 items-center justify-center rounded-md bg-black/60 hover:bg-black/90 text-white"
-          >
-            <FiChevronRight size={24} />
-          </button>
+          {canSlide && (
+            <button
+              type="button"
+              onClick={() => scrollRow(1)}
+              aria-label="Geser ke kanan"
+              className="hidden md:flex absolute right-0 top-4 bottom-4 z-20 w-10 items-center justify-center rounded-md bg-black/60 hover:bg-black/90 text-white"
+            >
+              <FiChevronRight size={24} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -1734,6 +1672,7 @@ function CtaBand({ campaign }) {
 
 
 function Footer({ campaign }) {
+  const footerTextColor = settingText(campaign, "footerTextColor");
   const logo = settingText(campaign, "footerLogo");
   const brand = settingText(campaign, "footerBrand");
   const brandTagline = settingText(campaign, "footerBrandTagline");
@@ -1743,11 +1682,11 @@ function Footer({ campaign }) {
   const Contact = whatsappUrl ? "a" : "div";
 
   return (
-    <footer className="pt-12 pb-8 px-4 sm:px-6" style={{ backgroundColor: settingText(campaign, "footerBackgroundColor") || NAVY }}>
+    <footer className="pt-12 pb-8 px-4 sm:px-6" style={{ backgroundColor: settingText(campaign, "footerBackgroundColor") || NAVY, color: footerTextColor }}>
       <div className="max-w-6xl mx-auto grid sm:grid-cols-3 gap-8 items-center text-center sm:text-left">
         <div className="flex items-center gap-2.5 justify-center sm:justify-start">
           {logo ? (
-            <img src={logo} alt={brand || "Logo campaign"} className="w-9 h-9 rounded-full object-contain shrink-0" />
+            <img src={logo} alt={brand || "Logo campaign"} className="h-12 sm:h-14 w-auto object-contain shrink-0" />
           ) : (
             <span
               className="w-9 h-9 rounded-full flex items-center justify-center text-white font-extrabold text-sm shrink-0"
@@ -1757,16 +1696,16 @@ function Footer({ campaign }) {
             </span>
           )}
           <span className="leading-tight">
-            {brand && <span className="block text-sm font-bold text-white">{brand}</span>}
-            {brandTagline && <span className="block text-[9px] font-medium tracking-widest uppercase text-slate-400">{brandTagline}</span>}
+            {brand && <span className="block text-sm font-bold">{brand}</span>}
+            {brandTagline && <span className="block text-[9px] font-medium tracking-widest uppercase opacity-70">{brandTagline}</span>}
           </span>
         </div>
 
         <div>
           {settingText(campaign, "footerTagline") && (
-            <p className="text-sm sm:text-base font-bold text-white mb-1.5">{settingText(campaign, "footerTagline")}</p>
+            <p className="text-sm sm:text-base font-bold mb-1.5">{settingText(campaign, "footerTagline")}</p>
           )}
-          <p className="text-[11px] uppercase tracking-widest text-slate-400">
+          <p className="text-[11px] uppercase tracking-widest opacity-70">
             {cleanList(settingText(campaign, "footerKeywords")).join(" | ")}
           </p>
         </div>
@@ -1777,9 +1716,9 @@ function Footer({ campaign }) {
               <FiMessageCircle className="text-white" aria-hidden="true" />
             </span>
             <span className="text-left">
-              <span className="block text-sm font-bold text-white">{whatsappTitle}</span>
-              {settingText(campaign, "footerWhatsappLine1") && <span className="block text-xs text-slate-400">{settingText(campaign, "footerWhatsappLine1")}</span>}
-              {settingText(campaign, "footerWhatsappLine2") && <span className="block text-xs text-slate-400">{settingText(campaign, "footerWhatsappLine2")}</span>}
+              <span className="block text-sm font-bold">{whatsappTitle}</span>
+              {settingText(campaign, "footerWhatsappLine1") && <span className="block text-xs opacity-70">{settingText(campaign, "footerWhatsappLine1")}</span>}
+              {settingText(campaign, "footerWhatsappLine2") && <span className="block text-xs opacity-70">{settingText(campaign, "footerWhatsappLine2")}</span>}
             </span>
           </Contact>
         )}

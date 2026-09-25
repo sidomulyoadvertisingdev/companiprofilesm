@@ -21,7 +21,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 py-20 grid md:grid-cols-4 gap-12 text-left">
         <div>
           <div className="flex flex-col items-start mb-4">
-            <img src={site.logo} alt={site.name} className="h-8 md:h-9 w-auto mb-1.5" />
+            <img src={site.logo} alt={site.name} className="h-14 md:h-16 w-auto mb-1.5" />
             <p className="text-xs font-semibold tracking-widest uppercase text-blue-600 dark:text-blue-500">
               {dict.footer.tagline}
             </p>

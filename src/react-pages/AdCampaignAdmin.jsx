@@ -1085,6 +1085,9 @@ function CampaignForm({ initial, onSaved, onCancel }) {
           <Field label="Warna latar footer">
             <TextInput value={pageSetting("footerBackgroundColor")} onChange={(e) => setPageSetting("footerBackgroundColor", e.target.value)} />
           </Field>
+          <Field label="Warna teks footer">
+            <TextInput value={pageSetting("footerTextColor")} onChange={(e) => setPageSetting("footerTextColor", e.target.value)} />
+          </Field>
           <Field label="Warna ikon brand">
             <TextInput value={pageSetting("footerBrandColor")} onChange={(e) => setPageSetting("footerBrandColor", e.target.value)} />
           </Field>
