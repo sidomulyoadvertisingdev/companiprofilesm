@@ -91,8 +91,9 @@ export async function POST({ request, clientAddress }) {
     return json({ message: "Nama wajib diisi" }, 400);
   }
 
+  const isConfigurator = body.source === "product_configurator";
   const rawWhatsapp = typeof body.whatsapp === "string" ? body.whatsapp.replace(/[\s-]/g, "") : "";
-  if (!PHONE_RE.test(rawWhatsapp)) {
+  if ((!isConfigurator || rawWhatsapp) && !PHONE_RE.test(rawWhatsapp)) {
     return json({ message: "Nomor WhatsApp tidak valid" }, 400);
   }
 
@@ -112,6 +113,9 @@ export async function POST({ request, clientAddress }) {
       const clean = stripTags(value);
       if (clean !== null) answers[String(key).slice(0, 100)] = clean;
     }
+  }
+  if (isConfigurator && !answers.address) {
+    return json({ message: "Alamat SPPG wajib diisi" }, 400);
   }
 
   const lead = await createAdCampaignLead({

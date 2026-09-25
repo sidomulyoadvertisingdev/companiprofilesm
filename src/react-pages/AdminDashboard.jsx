@@ -7,6 +7,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
 import { getSite, getServices, getProducts, getPortfolio, getPartners, getTestimonials } from "../lib/content.js";
 import { post, put, del, upload } from "../lib/admin-api.js";
+import { loadGoogleMaps } from "../lib/google-maps-client.js";
 import {
   FiGrid, FiBox, FiBriefcase, FiUsers, FiMessageSquare, FiSettings,
   FiBell, FiLogOut, FiChevronDown, FiChevronLeft, FiChevronRight,
@@ -30,7 +31,6 @@ import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import "leaflet/dist/leaflet.css";
 import AdCampaignAdmin from "./AdCampaignAdmin.jsx";
 
 const TABS = [
@@ -39,11 +39,6 @@ const TABS = [
   { key: "portfolio", label: "Portofolio", icon: FiBriefcase, group: "Konten" },
   { key: "posts", label: "Blog", icon: FiFileText, group: "Konten" },
   { key: "landing", label: "Landing Page", icon: FiLayout, group: "Konten" },
-  // Renders AdCampaignAdmin.jsx (a self-contained component with its own
-  // data/API layer, fully isolated from the rest of this CMS) as a normal
-  // tab here — so the sidebar and dashboard chrome stay put while using it,
-  // same as every other tab. It's also still reachable as its own page at
-  // /admin/campaigns for a direct/bookmarkable link.
   { key: "campaigns", label: "Landing Page Campaign", icon: FiGift, group: "Konten" },
   { key: "partners", label: "Mitra", icon: FiUsers, group: "Konten" },
   { key: "testimonials", label: "Testimoni", icon: FiMessageSquare, group: "Konten" },
@@ -59,7 +54,7 @@ const TABS = [
 
 const GROUPS = ["Konten", "Marketplace", "Pengaturan"];
 
-export default function AdminDashboard({ admin }) {
+export default function AdminDashboard({ admin, googleMapsApiKey }) {
   const [tab, setTab] = useState(null);
   const [site, setSite] = useState(null);
   const [services, setServices] = useState([]);
@@ -290,8 +285,8 @@ export default function AdminDashboard({ admin }) {
 
       <div className="flex-1 min-w-0 flex flex-col overflow-y-auto">
         <Topbar title={activeTab?.label || "Dashboard"} admin={admin} onLogout={logout} onMenu={() => setSidebarOpen(true)} dark={dark} onToggleDark={() => setDark((d) => !d)} messages={messages} onOpenMessage={openMessageFromNotif} />
-        <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6">
-          {!tab && <AnalyticsDashboard />}
+        <div className={`${tab === "campaigns" ? "max-w-none" : "max-w-6xl mx-auto"} w-full px-4 sm:px-6 py-6`}>
+          {!tab && <AnalyticsDashboard googleMapsApiKey={googleMapsApiKey} />}
           {tab === "services" && (
             <CrudTable rows={services} fields={[
               { key: "title", label: "Judul" }, { key: "slug", label: "Slug" },
@@ -322,7 +317,7 @@ export default function AdminDashboard({ admin }) {
           )}
           {tab === "posts" && <BlogManager posts={posts} onChanged={load} />}
           {tab === "landing" && <LandingPageManager pages={landingPages} onChanged={load} />}
-          {tab === "campaigns" && <AdCampaignAdmin embedded />}
+          {tab === "campaigns" && <AdCampaignAdmin embedded googleMapsApiKey={googleMapsApiKey} />}
           {tab === "messages" && <MessagesManager messages={messages} onChanged={load} focusId={messageFocusId} onFocused={() => setMessageFocusId(null)} />}
           {tab === "partners" && (
             <CrudTable rows={partners} fields={[
@@ -2144,72 +2139,84 @@ function actionMeta(e) {
   };
 }
 
-function VisitorMap() {
+function VisitorMap({ googleMapsApiKey }) {
   const mapRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [count, setCount] = useState(0);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    let map = null;
     let cancelled = false;
-    let L = null;
 
     async function init() {
       if (!mapRef.current) return;
-      const leaflet = await import("leaflet");
-      L = leaflet.default;
-      if (cancelled) return;
-
-      const markers = L.layerGroup();
-      map = L.map(mapRef.current, { scrollWheelZoom: false }).setView([-2.5, 118], 4);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap",
-        maxZoom: 18,
-      }).addTo(map);
-      markers.addTo(map);
-
       try {
+        if (!googleMapsApiKey) throw new Error("GOOGLE_MAPS_API_KEY belum diatur di server.");
+        const maps = await loadGoogleMaps(googleMapsApiKey);
+        if (cancelled) return;
+        const map = new maps.Map(mapRef.current, {
+          center: { lat: -2.5, lng: 118 },
+          zoom: 4,
+          scrollwheel: false,
+          mapTypeControl: false,
+          streetViewControl: false,
+        });
         const res = await fetch("/api/admin/analytics/visitors-map");
+        if (!res.ok) throw new Error("Data lokasi pengunjung gagal dimuat.");
         const d = await res.json();
-        if (cancelled || !map) return;
-        const pts = d.data || [];
+        if (cancelled) return;
+        const pts = (d.data || []).filter((p) => Number.isFinite(Number(p.latitude)) && Number.isFinite(Number(p.longitude)));
         setCount(pts.length);
-
-        const gpsIcon = L.divIcon({
-          className: "",
-          html: `<span style="display:block;width:12px;height:12px;border-radius:9999px;background:#0A4DA6;border:2px solid #fff;box-shadow:0 0 0 2px rgba(249,115,22,.4)"></span>`,
-          iconSize: [12, 12],
-        });
-        const ipIcon = L.divIcon({
-          className: "",
-          html: `<span style="display:block;width:12px;height:12px;border-radius:9999px;background:#94a3b8;border:2px solid #fff;box-shadow:0 0 0 2px rgba(148,163,184,.4)"></span>`,
-          iconSize: [12, 12],
-        });
-
+        const infoWindow = new maps.InfoWindow();
         let hasGps = false;
         pts.forEach((p) => {
           const isGps = p.location_source === "gps";
           if (isGps) hasGps = true;
-          const m = L.marker([p.latitude, p.longitude], { icon: isGps ? gpsIcon : ipIcon });
+          const marker = new maps.Marker({
+            map,
+            position: { lat: Number(p.latitude), lng: Number(p.longitude) },
+            icon: {
+              path: maps.SymbolPath.CIRCLE,
+              scale: 6,
+              fillColor: isGps ? "#0A4DA6" : "#94a3b8",
+              fillOpacity: 1,
+              strokeColor: "#ffffff",
+              strokeWeight: 2,
+            },
+          });
           const when = new Date(p.last_seen).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-          m.bindPopup(
-            `<div style="font-size:12px;min-width:140px"><strong>${p.city || "-"}</strong><br/>${p.region || ""}${p.region && p.country ? ", " : ""}${p.country || ""}<br/><span style="color:#6e6e73">${p.device_type || ""} · ${when}</span><br/><span style="color:#6e6e73">IP: ${p.ip_address || "-"}</span><br/><span style="color:${isGps ? "#0A4DA6" : "#94a3b8"}">${isGps ? "GPS" : "IP"}</span></div>`
-          );
-          markers.addLayer(m);
+          marker.addListener("click", () => {
+            const content = document.createElement("div");
+            content.style.cssText = "font-size:12px;min-width:140px;line-height:1.6";
+            const title = document.createElement("strong");
+            title.textContent = p.city || "-";
+            content.append(title, document.createElement("br"));
+            content.append(document.createTextNode([p.region, p.country].filter(Boolean).join(", ")));
+            content.append(document.createElement("br"));
+            content.append(document.createTextNode(`${p.device_type || ""} · ${when}`));
+            content.append(document.createElement("br"));
+            content.append(document.createTextNode(`IP: ${p.ip_address || "-"}`));
+            content.append(document.createElement("br"));
+            content.append(document.createTextNode(isGps ? "GPS" : "IP"));
+            infoWindow.setContent(content);
+            infoWindow.open({ map, anchor: marker });
+          });
         });
 
         if (hasGps) {
           const gpsPts = pts.filter((p) => p.location_source === "gps");
-          const avgLat = gpsPts.reduce((s, p) => s + p.latitude, 0) / gpsPts.length;
-          const avgLng = gpsPts.reduce((s, p) => s + p.longitude, 0) / gpsPts.length;
-          map.setView([avgLat, avgLng], 6);
+          const avgLat = gpsPts.reduce((s, p) => s + Number(p.latitude), 0) / gpsPts.length;
+          const avgLng = gpsPts.reduce((s, p) => s + Number(p.longitude), 0) / gpsPts.length;
+          map.setCenter({ lat: avgLat, lng: avgLng });
+          map.setZoom(6);
         } else if (pts.length) {
-          const avgLat = pts.reduce((s, p) => s + p.latitude, 0) / pts.length;
-          const avgLng = pts.reduce((s, p) => s + p.longitude, 0) / pts.length;
-          map.setView([avgLat, avgLng], 5);
+          const avgLat = pts.reduce((s, p) => s + Number(p.latitude), 0) / pts.length;
+          const avgLng = pts.reduce((s, p) => s + Number(p.longitude), 0) / pts.length;
+          map.setCenter({ lat: avgLat, lng: avgLng });
+          map.setZoom(5);
         }
-      } catch {
-        /* ignore map load errors */
+      } catch (err) {
+        if (!cancelled) setError(err.message || "Peta gagal dimuat.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -2219,9 +2226,8 @@ function VisitorMap() {
 
     return () => {
       cancelled = true;
-      if (map) map.remove();
     };
-  }, []);
+  }, [googleMapsApiKey]);
 
   return (
     <div className="relative rounded-2xl overflow-hidden border border-[#e5e5e5] dark:border-slate-700 mb-2">
@@ -2231,7 +2237,12 @@ function VisitorMap() {
           Memuat peta lokasi…
         </div>
       )}
-      {!loading && count === 0 && (
+      {!loading && error && (
+        <div className="absolute inset-0 flex items-center justify-center px-4 text-center text-xs text-red-600 dark:text-red-400 bg-white/90 dark:bg-slate-900/90">
+          {error}
+        </div>
+      )}
+      {!loading && !error && count === 0 && (
         <div className="absolute inset-0 flex items-center justify-center text-xs text-[#6e6e73] dark:text-slate-400">
           Belum ada data lokasi
         </div>
@@ -2240,7 +2251,7 @@ function VisitorMap() {
   );
 }
 
-function AnalyticsDashboard() {
+function AnalyticsDashboard({ googleMapsApiKey }) {
   const [range, setRange] = useState("30d");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -2492,7 +2503,7 @@ function AnalyticsDashboard() {
 
             <div className="bg-white dark:bg-[#1a1a2e] rounded-3xl border border-[#e5e5e5] dark:border-slate-700 p-5">
               <h3 className="text-sm font-bold text-[#1d1d1f] dark:text-white mb-3">Lokasi Pengunjung</h3>
-              <VisitorMap />
+              <VisitorMap googleMapsApiKey={googleMapsApiKey} />
               <div className="flex items-center gap-4 mt-3 mb-4 text-[11px] text-[#6e6e73] dark:text-slate-400">
                 <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-700" /> GPS (akurat)</span>
                 <span className="inline-flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-slate-400" /> IP (perkiraan)</span>
@@ -3261,4 +3272,3 @@ function NavMenuManager({ site, onChanged }) {
     </div>
   );
 }
-

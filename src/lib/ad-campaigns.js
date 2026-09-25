@@ -360,9 +360,9 @@ export async function getAdCampaignLeads({
     params.push(city);
   }
   if (q) {
-    where.push("(l.name LIKE ? OR l.whatsapp LIKE ? OR l.email LIKE ?)");
+    where.push("(l.name LIKE ? OR l.whatsapp LIKE ? OR l.email LIKE ? OR l.answers_json LIKE ?)");
     const like = `%${q}%`;
-    params.push(like, like, like);
+    params.push(like, like, like, like);
   }
   if (dateFrom) {
     where.push("l.created_at >= ?");

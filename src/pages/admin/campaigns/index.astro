@@ -7,8 +7,9 @@ import { ensureAdCampaignSchema } from "../../../lib/ad-campaigns.js";
 await ensureAdCampaignSchema();
 
 const admin = Astro.locals.admin;
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || "";
 ---
 
 <AdminLayout title="Ad Campaigns - Sidomulyo Advertising CMS">
-  <AdCampaignAdmin client:load admin={admin} />
+  <AdCampaignAdmin client:load admin={admin} googleMapsApiKey={googleMapsApiKey} />
 </AdminLayout>

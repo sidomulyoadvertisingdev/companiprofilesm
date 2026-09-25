@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import AdCampaignAnalytics from "./AdCampaignAnalytics.jsx";
 import {
   FiPlus,
   FiTrash2,
@@ -9,6 +10,10 @@ import {
   FiDownload,
   FiMessageCircle,
   FiArrowLeft,
+  FiUsers,
+  FiBarChart2,
+  FiSearch,
+  FiGrid,
 } from "react-icons/fi";
 
 // Self-contained admin mini-app for the ad-campaigns feature. Does NOT
@@ -74,6 +79,8 @@ const ANSWER_LABELS = {
   varian: "Varian",
   isi_label: "Isi Label",
   pilihan: "Pilihan Pengiriman",
+  gps_latitude: "Latitude GPS",
+  gps_longitude: "Longitude GPS",
 };
 
 // The landing page's built-in section subheadings, shown here as the field's
@@ -1147,6 +1154,10 @@ function CampaignsTab() {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null); // null=list, {} for new, object for edit
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1168,6 +1179,13 @@ function CampaignsTab() {
     load();
   }
 
+  const filteredCampaigns = campaigns.filter((campaign) => {
+    const matchesQuery = `${campaign.title} ${campaign.slug}`.toLowerCase().includes(query.trim().toLowerCase());
+    return matchesQuery && (!statusFilter || campaign.status === statusFilter);
+  });
+  const totalPages = Math.max(1, Math.ceil(filteredCampaigns.length / pageSize));
+  const visibleCampaigns = filteredCampaigns.slice((page - 1) * pageSize, page * pageSize);
+
   if (editing !== null) {
     return (
       <CampaignForm
@@ -1183,58 +1201,88 @@ function CampaignsTab() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Campaigns</h2>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="relative block">
+            <FiSearch aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              aria-label="Cari campaign"
+              value={query}
+              onChange={(event) => { setQuery(event.target.value); setPage(1); }}
+              placeholder="Cari campaign..."
+              className="w-56 rounded-lg border border-slate-200 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-800 outline-none focus:border-blue-500"
+            />
+          </label>
+          <select
+            aria-label="Filter status campaign"
+            value={statusFilter}
+            onChange={(event) => { setStatusFilter(event.target.value); setPage(1); }}
+            className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-700"
+          >
+            <option value="">Semua status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+        </div>
         <button
           onClick={() => setEditing(emptyCampaign())}
-          className="bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold inline-flex items-center gap-1.5"
+          className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-800"
         >
-          <FiPlus /> Campaign Baru
+          <FiPlus /> Tambah Campaign
         </button>
       </div>
-      {loading ? (
-        <p className="text-sm text-slate-500">Memuat...</p>
-      ) : campaigns.length === 0 ? (
-        <p className="text-sm text-slate-500">Belum ada campaign.</p>
-      ) : (
-        <div className="space-y-3">
-          {campaigns.map((c) => (
-            <Card key={c.id} className="flex items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{c.title}</h3>
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      c.status === "published" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"
-                    }`}
-                  >
-                    {c.status}
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <table className="w-full min-w-[760px] text-left text-sm">
+          <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <tr>
+              <th className="px-5 py-4">Nama Campaign</th>
+              <th className="px-5 py-4">Status</th>
+              <th className="px-5 py-4">Dibuat</th>
+              <th className="px-5 py-4">Landing Page</th>
+              <th className="px-5 py-4 text-right">Aksi</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {loading ? (
+              <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500">Memuat campaign...</td></tr>
+            ) : visibleCampaigns.length === 0 ? (
+              <tr><td colSpan={5} className="px-5 py-8 text-center text-slate-500">Tidak ada campaign yang sesuai.</td></tr>
+            ) : visibleCampaigns.map((campaign) => (
+              <tr key={campaign.id} className="hover:bg-slate-50/70">
+                <td className="px-5 py-4">
+                  <span className="font-semibold text-slate-900">{campaign.title}</span>
+                  <span className="mt-1 block text-xs text-slate-500">/promo/{campaign.slug}</span>
+                </td>
+                <td className="px-5 py-4">
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${campaign.status === "published" ? "bg-green-50 text-green-700" : "bg-slate-100 text-slate-600"}`}>
+                    {campaign.status === "published" ? "Published" : "Draft"}
                   </span>
-                </div>
-                <p className="text-xs text-slate-500 mt-0.5">/promo/{c.slug}</p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <a
-                  href={`/promo/${c.slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-slate-500 hover:text-slate-800"
-                  title="Buka halaman"
-                >
-                  <FiExternalLink size={16} />
-                </a>
-                <button onClick={() => setEditing(c)} className="text-xs font-medium px-3 py-1.5 rounded-lg border">
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(c.id)}
-                  className="text-xs font-medium px-3 py-1.5 rounded-lg border border-red-300 text-red-600"
-                >
-                  Hapus
-                </button>
-              </div>
-            </Card>
-          ))}
+                </td>
+                <td className="px-5 py-4 text-slate-600">{campaign.createdAt ? new Date(campaign.createdAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "-"}</td>
+                <td className="px-5 py-4">
+                  <a href={`/promo/${campaign.slug}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-medium text-blue-700 hover:underline">
+                    Buka halaman <FiExternalLink size={14} />
+                  </a>
+                </td>
+                <td className="px-5 py-4">
+                  <div className="flex items-center justify-end gap-2">
+                    <button onClick={() => setEditing(campaign)} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Edit</button>
+                    <button onClick={() => handleDelete(campaign.id)} className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">Hapus</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {!loading && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
+          <span>Menampilkan {filteredCampaigns.length ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, filteredCampaigns.length)} dari {filteredCampaigns.length} campaign</span>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setPage((current) => Math.max(current - 1, 1))} disabled={page <= 1} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 disabled:opacity-40">Sebelumnya</button>
+            <span>Halaman {page} dari {totalPages}</span>
+            <button type="button" onClick={() => setPage((current) => Math.min(current + 1, totalPages))} disabled={page >= totalPages} className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 disabled:opacity-40">Berikutnya</button>
+          </div>
         </div>
       )}
     </div>
@@ -1260,14 +1308,14 @@ function LeadRow({ lead, onUpdated }) {
     }
   }
 
-  const waHref = `https://wa.me/${lead.whatsapp.replace(/[^0-9]/g, "")}`;
+  const waHref = lead.whatsapp ? `https://wa.me/${lead.whatsapp.replace(/[^0-9]/g, "")}` : "";
 
   return (
     <>
       <tr className="border-b border-slate-100 text-sm">
         <td className="py-2.5 pr-3">{lead.name}</td>
-        <td className="py-2.5 pr-3">{lead.whatsapp}</td>
-        <td className="py-2.5 pr-3">{lead.city || "-"}</td>
+        <td className="py-2.5 pr-3">{lead.whatsapp || "-"}</td>
+        <td className="max-w-xs py-2.5 pr-3 text-xs text-slate-600">{lead.answers?.address || lead.city || "-"}</td>
         <td className="py-2.5 pr-3">{lead.campaignTitle}</td>
         <td className="py-2.5 pr-3">
           <select
@@ -1290,14 +1338,16 @@ function LeadRow({ lead, onUpdated }) {
         </td>
         <td className="py-2.5 pr-3">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs px-2 py-1 rounded-lg border inline-flex items-center gap-1"
-            >
-              <FiMessageCircle size={12} /> WA
-            </a>
+            {waHref && (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs px-2 py-1 rounded-lg border inline-flex items-center gap-1"
+              >
+                <FiMessageCircle size={12} /> WA
+              </a>
+            )}
             <button
               onClick={() => save({ status: "sample_sent" })}
               className="text-xs px-2 py-1 rounded-lg border"
@@ -1460,7 +1510,7 @@ function LeadsTab() {
             ))}
           </select>
           <TextInput placeholder="Kota" value={filters.city} onChange={(e) => setFilter("city", e.target.value)} />
-          <TextInput placeholder="Cari nama/wa/email" value={filters.q} onChange={(e) => setFilter("q", e.target.value)} />
+          <TextInput placeholder="Cari nama SPPG/alamat/WA" value={filters.q} onChange={(e) => setFilter("q", e.target.value)} />
           <TextInput type="date" value={filters.dateFrom} onChange={(e) => setFilter("dateFrom", e.target.value)} />
           <TextInput type="date" value={filters.dateTo} onChange={(e) => setFilter("dateTo", e.target.value)} />
         </div>
@@ -1476,9 +1526,9 @@ function LeadsTab() {
             <table className="w-full">
               <thead>
                 <tr className="text-left text-xs font-semibold text-slate-500 border-b border-slate-200">
-                  <th className="pb-2 pr-3">Nama</th>
+                  <th className="pb-2 pr-3">Nama SPPG</th>
                   <th className="pb-2 pr-3">WhatsApp</th>
-                  <th className="pb-2 pr-3">Kota</th>
+                  <th className="pb-2 pr-3">Alamat SPPG</th>
                   <th className="pb-2 pr-3">Campaign</th>
                   <th className="pb-2 pr-3">Status</th>
                   <th className="pb-2 pr-3">Tanggal</th>
@@ -1528,12 +1578,8 @@ function LeadsTab() {
   );
 }
 
-// `embedded`: true when rendered as a tab inside AdminDashboard.jsx (the
-// dashboard's own sidebar/topbar/content-width chrome already applies, so
-// this skips its standalone full-page background, back-link, and heading
-// to avoid doubling up). Defaults to false for the standalone /admin/campaigns
-// route, which still works on its own as a direct/bookmarkable URL.
-export default function AdCampaignAdmin({ embedded = false } = {}) {
+// The same three tabs work inside the dashboard sidebar and on the standalone route.
+export default function AdCampaignAdmin({ embedded = false, googleMapsApiKey = "" } = {}) {
   const [tab, setTab] = useState("campaigns");
 
   const body = (
@@ -1550,26 +1596,40 @@ export default function AdCampaignAdmin({ embedded = false } = {}) {
         </>
       )}
 
-      <div className="flex gap-2 mb-6">
+      <div role="tablist" aria-label="Bagian landing page campaign" className="mb-5 flex gap-1 overflow-x-auto border-b border-slate-200">
         <button
+          role="tab"
+          aria-selected={tab === "campaigns"}
           onClick={() => setTab("campaigns")}
-          className={`px-4 py-2 rounded-xl text-sm font-semibold ${
-            tab === "campaigns" ? "bg-blue-700 text-white" : "bg-white border"
+          className={`-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
+            tab === "campaigns" ? "border-blue-700 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-900"
           }`}
         >
-          Campaigns
+          <FiGrid aria-hidden="true" /> Campaigns
         </button>
         <button
+          role="tab"
+          aria-selected={tab === "leads"}
           onClick={() => setTab("leads")}
-          className={`px-4 py-2 rounded-xl text-sm font-semibold ${
-            tab === "leads" ? "bg-blue-700 text-white" : "bg-white border"
+          className={`-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
+            tab === "leads" ? "border-blue-700 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-900"
           }`}
         >
-          Leads
+          <FiUsers aria-hidden="true" /> Leads
+        </button>
+        <button
+          role="tab"
+          aria-selected={tab === "analytics"}
+          onClick={() => setTab("analytics")}
+          className={`-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
+            tab === "analytics" ? "border-blue-700 text-blue-700" : "border-transparent text-slate-600 hover:text-slate-900"
+          }`}
+        >
+          <FiBarChart2 aria-hidden="true" /> Analisa Iklan
         </button>
       </div>
 
-      {tab === "campaigns" ? <CampaignsTab /> : <LeadsTab />}
+      {tab === "campaigns" ? <CampaignsTab /> : tab === "leads" ? <LeadsTab /> : <AdCampaignAnalytics googleMapsApiKey={googleMapsApiKey} onOpenLeads={() => setTab("leads")} />}
     </>
   );
 
@@ -1577,7 +1637,7 @@ export default function AdCampaignAdmin({ embedded = false } = {}) {
 
   return (
     <div className="min-h-screen bg-[#f5f5f7]">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">{body}</div>
+      <div className="w-full px-4 sm:px-6 py-6">{body}</div>
     </div>
   );
 }

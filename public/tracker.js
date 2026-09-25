@@ -11,12 +11,18 @@
     return id;
   }
 
-  // Stable device ID via fingerprint (no permission needed). Falls back to cookie.
+  // Keep the visitor id stable even when fingerprint loading finishes after
+  // the first pageview or location request.
   let fingerprintId = null;
+  const visitorId = getCookieId();
   function getVisitorId() {
-    if (fingerprintId) return fingerprintId;
-    return getCookieId();
+    return visitorId;
   }
+
+  const promoMatch = location.pathname.match(/^\/promo\/([^/]+)/);
+  const campaignSlug = promoMatch ? decodeURIComponent(promoMatch[1]) : "";
+  const pageUrl = location.pathname + location.search;
+  const utm = new URLSearchParams(location.search);
 
   async function initFingerprint() {
     try {
@@ -35,13 +41,25 @@
       visitorId: getVisitorId(),
       fingerprint: fingerprintId,
       eventType: type,
-      pageUrl: location.pathname + location.search,
+      pageUrl,
+      campaign: campaignSlug,
+      utmSource: utm.get("utm_source") || "",
+      utmMedium: utm.get("utm_medium") || "",
+      utmCampaign: utm.get("utm_campaign") || "",
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "",
       locale: navigator.language || "",
       screenWidth: screen.width,
       screenHeight: screen.height,
       ...data,
     };
+    if (campaignSlug && type === "pageview") {
+      return fetch("/api/analytics/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        keepalive: true,
+      }).catch(() => {});
+    }
     if (navigator.sendBeacon) {
       const blob = new Blob([JSON.stringify(body)], { type: "application/json" });
       navigator.sendBeacon("/api/analytics/track", blob);
@@ -55,7 +73,7 @@
     }
   }
 
-  track("pageview");
+  const pageviewReady = track("pageview");
 
   document.addEventListener("click", function (e) {
     const el = e.target.closest("[data-track]");
@@ -66,21 +84,33 @@
     });
   });
 
-  if (navigator.geolocation) {
+  window.sidomulyoTrackLocation = function (latitude, longitude) {
+    return Promise.resolve(pageviewReady).then(() => fetch("/api/analytics/location", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ visitorId: getVisitorId(), pageUrl, latitude, longitude }),
+    })).catch(() => {});
+  };
+
+  function requestLocation() {
+    if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       function (pos) {
-        fetch("/api/analytics/location", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            visitorId: getVisitorId(),
-            latitude: pos.coords.latitude,
-            longitude: pos.coords.longitude,
-          }),
-        }).catch(() => {});
+        window.sidomulyoTrackLocation(pos.coords.latitude, pos.coords.longitude);
       },
       function () {},
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 600000 }
     );
+  }
+
+  if (campaignSlug) {
+    // The promo form owns the permission prompt. Reuse permission if granted.
+    if (navigator.permissions?.query) {
+      navigator.permissions.query({ name: "geolocation" }).then((permission) => {
+        if (permission.state === "granted") requestLocation();
+      }).catch(() => {});
+    }
+  } else {
+    requestLocation();
   }
 })();

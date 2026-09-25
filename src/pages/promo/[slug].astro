@@ -80,6 +80,7 @@ if (faqItems.length) {
 }
 
 const structuredData = { "@context": "https://schema.org", "@graph": graph };
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || "";
 ---
 
 <AdCampaignLayout
@@ -91,5 +92,5 @@ const structuredData = { "@context": "https://schema.org", "@graph": graph };
   noindex={campaign.noindex}
   structuredData={structuredData}
 >
-  <AdCampaignLanding client:load campaign={campaign} />
+  <AdCampaignLanding client:load campaign={campaign} googleMapsApiKey={googleMapsApiKey} />
 </AdCampaignLayout>

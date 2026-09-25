@@ -32,8 +32,8 @@ export async function POST({ request }) {
     const formSubmittedVal = formSubmitted ? 1 : 0;
 
     await db.execute(
-      `INSERT INTO analytics_events (visitor_id, fingerprint, event_type, page_url, element_target, element_text, city, region, country, device_type, browser, os, screen_width, screen_height, timezone, locale, campaign, utm_source, utm_medium, utm_campaign, scroll_depth, duration_ms, form_submitted, user_agent, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [visitorId, fingerprintClean, eventType, pageUrlClean, elementTargetClean, elementTextClean, geo.city, geo.region, geo.country, ua.deviceType, ua.browser, ua.os, screenWidth || null, screenHeight || null, timezoneClean, localeClean, campaignClean, utmSourceClean, utmMediumClean, utmCampaignClean, scrollDepthVal, durationVal, formSubmittedVal, userAgent, ip]
+      `INSERT INTO analytics_events (visitor_id, fingerprint, event_type, page_url, element_target, element_text, latitude, longitude, location_source, city, region, country, device_type, browser, os, screen_width, screen_height, timezone, locale, campaign, utm_source, utm_medium, utm_campaign, scroll_depth, duration_ms, form_submitted, user_agent, ip_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [visitorId, fingerprintClean, eventType, pageUrlClean, elementTargetClean, elementTextClean, geo.latitude, geo.longitude, "ip", geo.city, geo.region, geo.country, ua.deviceType, ua.browser, ua.os, screenWidth || null, screenHeight || null, timezoneClean, localeClean, campaignClean, utmSourceClean, utmMediumClean, utmCampaignClean, scrollDepthVal, durationVal, formSubmittedVal, userAgent, ip]
     );
 
     const isClick = eventType === "click" ? 1 : 0;

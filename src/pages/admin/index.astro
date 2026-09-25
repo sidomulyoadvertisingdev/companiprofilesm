@@ -3,8 +3,9 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
 import AdminDashboard from "../../react-pages/AdminDashboard.jsx";
 
 const admin = Astro.locals.admin;
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || "";
 ---
 
 <AdminLayout title="Dashboard Admin - Sidomulyo Advertising CMS">
-  <AdminDashboard client:load admin={admin} />
+  <AdminDashboard client:load admin={admin} googleMapsApiKey={googleMapsApiKey} />
 </AdminLayout>

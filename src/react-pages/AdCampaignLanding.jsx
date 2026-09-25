@@ -1,4 +1,5 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { loadGoogleMaps } from "../lib/google-maps-client.js";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   FiCheckCircle,
@@ -1045,7 +1046,7 @@ function FaqSection({ section, accent }) {
 // "Pilih Produk" configurator — Netflix-style dark section rendered directly
 // under the video hero: a row of product posters. Clicking one
 // opens a modal (photo, variants, label contents, two order buttons), then
-// SPPG name/WA/address, which saves a lead and hands the full order summary
+// SPPG name/address, which saves a lead and hands the full order summary
 // to Sidomulyo's WhatsApp.
 // Content comes from a `type: "configurator"` entry in sections_json.
 // ---------------------------------------------------------------------------
@@ -1171,7 +1172,7 @@ function PosterCard({ item, index, onSelect }) {
   );
 }
 
-function ProductModal({ product, section, campaign, onClose }) {
+function ProductModal({ product, section, campaign, googleMapsApiKey, onClose }) {
   const variants = normalizeVariants(product.variants);
   const contentOptions = cleanList(section.contentOptions).length
     ? cleanList(section.contentOptions)
@@ -1183,11 +1184,15 @@ function ProductModal({ product, section, campaign, onClose }) {
   const [variant, setVariant] = useState(variants.length === 1 ? variants[0].name : "");
   const [contents, setContents] = useState([]);
   const [orderOption, setOrderOption] = useState("");
-  const [info, setInfo] = useState({ name: "", whatsapp: "", address: "" });
+  const [info, setInfo] = useState({ name: "", address: "" });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  const [detectingAddress, setDetectingAddress] = useState(false);
+  const [locationError, setLocationError] = useState("");
+  const [detectedCoords, setDetectedCoords] = useState(null);
   const [waUrl, setWaUrl] = useState("");
   const scrollRef = useRef(null);
+  const locatingRef = useRef(false);
   // The big photo follows the selected variant's own photo, falling back to
   // the product photo when that variant has none (or nothing is picked yet).
   const photo = variants.find((v) => v.name === variant)?.image || product.image;
@@ -1207,6 +1212,66 @@ function ProductModal({ product, section, campaign, onClose }) {
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 });
   }, [orderOption]);
+
+  const detectAddress = useCallback(async () => {
+    if (locatingRef.current) return;
+    if (!navigator.geolocation) {
+      setLocationError("Browser ini tidak mendukung lokasi. Isi alamat secara manual.");
+      return;
+    }
+    locatingRef.current = true;
+    setDetectingAddress(true);
+    setLocationError("");
+    try {
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 12000,
+          maximumAge: 60000,
+        });
+      });
+      window.sidomulyoTrackLocation?.(position.coords.latitude, position.coords.longitude);
+      if (!googleMapsApiKey) throw new Error("Layanan alamat otomatis belum tersedia. Isi alamat secara manual.");
+      const maps = await loadGoogleMaps(googleMapsApiKey);
+      const geocoder = new maps.Geocoder();
+      const { results } = await geocoder.geocode({
+        location: { lat: position.coords.latitude, lng: position.coords.longitude },
+      });
+      const address = results?.[0]?.formatted_address;
+      if (!address) throw new Error("Alamat tidak ditemukan. Isi alamat secara manual.");
+      setInfo((current) => ({ ...current, address: current.address.trim() || address }));
+      setDetectedCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
+      setErrors((current) => ({ ...current, address: undefined }));
+    } catch (err) {
+      const message = err?.code === 1
+        ? "Izin lokasi ditolak. Aktifkan izin lokasi di browser atau isi alamat manual."
+        : err?.code === 2 || err?.code === 3
+          ? "Lokasi belum dapat dideteksi. Coba lagi atau isi alamat manual."
+          : err?.message || "Alamat gagal dideteksi. Isi alamat secara manual.";
+      setLocationError(message);
+    } finally {
+      locatingRef.current = false;
+      setDetectingAddress(false);
+    }
+  }, [googleMapsApiKey]);
+
+  useEffect(() => {
+    if (!orderOption || !navigator.permissions?.query) return;
+    let active = true;
+    let permission;
+    navigator.permissions.query({ name: "geolocation" }).then((status) => {
+      if (!active) return;
+      permission = status;
+      if (status.state === "granted") detectAddress();
+      status.onchange = () => {
+        if (active && status.state === "granted") detectAddress();
+      };
+    }).catch(() => {});
+    return () => {
+      active = false;
+      if (permission) permission.onchange = null;
+    };
+  }, [orderOption, detectAddress]);
 
   function toggleContent(opt) {
     setContents((c) => (c.includes(opt) ? c.filter((x) => x !== opt) : [...c, opt]));
@@ -1231,8 +1296,8 @@ function ProductModal({ product, section, campaign, onClose }) {
       `Isi label: ${contents.join(", ")}`,
       "",
       `${configText(section, "nameLabel")}: ${info.name.trim()}`,
-      `No. WA: ${info.whatsapp.trim()}`,
       `Alamat: ${info.address.trim()}`,
+      detectedCoords ? `Titik lokasi: https://www.google.com/maps?q=${detectedCoords.lat},${detectedCoords.lng}` : null,
     ];
     return lines.filter((l) => l !== null).join("\n");
   }
@@ -1241,7 +1306,6 @@ function ProductModal({ product, section, campaign, onClose }) {
     e.preventDefault();
     const errs = {};
     if (!info.name.trim()) errs.name = "Wajib diisi";
-    if (!PHONE_RE.test(info.whatsapp.replace(/[\s-]/g, ""))) errs.whatsapp = "Nomor WhatsApp tidak valid";
     if (!info.address.trim()) errs.address = "Wajib diisi";
     setErrors(errs);
     if (Object.keys(errs).length) return;
@@ -1254,14 +1318,15 @@ function ProductModal({ product, section, campaign, onClose }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           campaignSlug: campaign.slug,
+          source: "product_configurator",
           name: info.name,
-          whatsapp: info.whatsapp,
           answers: {
             produk: product.title,
             varian: variant || "-",
             isi_label: contents.join(", "),
             pilihan: orderOption,
             address: info.address,
+            ...(detectedCoords ? { gps_latitude: detectedCoords.lat, gps_longitude: detectedCoords.lng } : {}),
           },
           utmSource: params.get("utm_source"),
           utmMedium: params.get("utm_medium"),
@@ -1425,38 +1490,44 @@ function ProductModal({ product, section, campaign, onClose }) {
                 {variant && <> · {variant}</>} · {contents.join(", ")}
               </div>
               <p className="text-sm font-semibold text-white/70 mb-2.5">{configText(section, "addressLabel")}</p>
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="space-y-3">
                 <div>
                   <input
                     className={darkInput}
+                    aria-label={configText(section, "nameLabel")}
+                    autoComplete="organization"
                     placeholder={configText(section, "nameLabel")}
                     value={info.name}
-                    onChange={(e) => setInfo({ ...info, name: e.target.value })}
+                    onChange={(e) => setInfo((current) => ({ ...current, name: e.target.value }))}
                   />
                   {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
                 </div>
                 <div>
-                  <input
-                    className={darkInput}
-                    type="tel"
-                    inputMode="tel"
-                    placeholder="No. WhatsApp (08xx)"
-                    value={info.whatsapp}
-                    onChange={(e) => setInfo({ ...info, whatsapp: e.target.value })}
-                  />
-                  {errors.whatsapp && <p className="mt-1 text-xs text-red-400">{errors.whatsapp}</p>}
-                </div>
-                <div className="sm:col-span-2">
+                  <label htmlFor="sppg-address" className="block text-sm text-white/70 mb-2">Alamat SPPG</label>
                   <textarea
+                    id="sppg-address"
                     className={darkInput}
                     rows={3}
                     placeholder="Alamat lengkap (jalan, desa/kelurahan, kecamatan, kota)"
                     value={info.address}
-                    onChange={(e) => setInfo({ ...info, address: e.target.value })}
+                    onChange={(e) => setInfo((current) => ({ ...current, address: e.target.value }))}
                   />
                   {errors.address && <p className="mt-1 text-xs text-red-400">{errors.address}</p>}
                 </div>
               </div>
+              {!info.address.trim() && (
+                <button
+                  type="button"
+                  onClick={detectAddress}
+                  disabled={detectingAddress}
+                  className="mt-3 inline-flex items-center gap-2 rounded-md border border-white/25 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10 disabled:opacity-60"
+                >
+                  <FiMapPin aria-hidden="true" />
+                  {detectingAddress ? "Mendeteksi alamat..." : "Izinkan Lokasi & Isi Alamat Otomatis"}
+                </button>
+              )}
+              {info.address.trim() && <p className="mt-2 text-xs text-white/50">Periksa alamat yang terisi otomatis sebelum dikirim.</p>}
+              {locationError && <p role="alert" className="mt-2 text-xs text-amber-300">{locationError}</p>}
               {errors.form && <p className="mt-3 text-sm text-red-400">{errors.form}</p>}
               <button
                 type="submit"
@@ -1489,7 +1560,7 @@ function ProductModal({ product, section, campaign, onClose }) {
   );
 }
 
-function ConfiguratorSection({ section, campaign }) {
+function ConfiguratorSection({ section, campaign, googleMapsApiKey }) {
   const products = (section.items || []).filter((it) => it.active !== false && it.title);
   const [openIdx, setOpenIdx] = useState(-1);
 
@@ -1535,6 +1606,7 @@ function ConfiguratorSection({ section, campaign }) {
           product={products[openIdx]}
           section={section}
           campaign={campaign}
+          googleMapsApiKey={googleMapsApiKey}
           onClose={() => setOpenIdx(-1)}
         />
       )}
@@ -1711,7 +1783,7 @@ function StickyMobileCta({ campaign, ctaTarget }) {
   );
 }
 
-export default function AdCampaignLanding({ campaign }) {
+export default function AdCampaignLanding({ campaign, googleMapsApiKey }) {
   const accent = campaign.accentColor || "#0A4DA6";
   const sections = Array.isArray(campaign.sections) ? campaign.sections : [];
   const stepsSection = sections.find((s) => s.type === "steps");
@@ -1726,7 +1798,7 @@ export default function AdCampaignLanding({ campaign }) {
     <main className="pb-24 md:pb-0">
       {settingText(campaign, "topbarEnabled") !== false && <TopNav campaign={campaign} ctaTarget={ctaTarget} />}
       <Hero campaign={campaign} ctaTarget={ctaTarget} />
-      {configurator && <ConfiguratorSection section={configurator} campaign={campaign} />}
+      {configurator && <ConfiguratorSection section={configurator} campaign={campaign} googleMapsApiKey={googleMapsApiKey} />}
       <SectionsLoop sections={sections} stepsSection={stepsSection} accent={accent} />
       <SampleSection stepsSection={stepsSection} campaign={campaign} accent={accent} />
       <CtaBand campaign={campaign} />
