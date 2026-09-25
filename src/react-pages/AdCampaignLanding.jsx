@@ -1493,11 +1493,22 @@ function ProductModal({ product, section, campaign, onClose }) {
 function ConfiguratorSection({ section, campaign }) {
   const products = (section.items || []).filter((it) => it.active !== false && it.title);
   const [openIdx, setOpenIdx] = useState(-1);
+  const [canSlide, setCanSlide] = useState(false);
   const rowRef = useRef(null);
 
-  if (!products.length) return null;
+  useEffect(() => {
+    const row = rowRef.current;
+    if (!row) return undefined;
 
-  const canSlide = products.length > 2;
+    const updateCanSlide = () => setCanSlide(row.scrollWidth > row.clientWidth + 1);
+    updateCanSlide();
+
+    const observer = new ResizeObserver(updateCanSlide);
+    observer.observe(row);
+    return () => observer.disconnect();
+  }, [products.length]);
+
+  if (!products.length) return null;
 
   function scrollRow(dir) {
     const el = rowRef.current;
@@ -1544,7 +1555,7 @@ function ConfiguratorSection({ section, campaign }) {
           )}
           <div
             ref={rowRef}
-            className={`flex gap-3 sm:gap-6 px-4 sm:px-12 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${canSlide ? "overflow-x-auto" : "flex-wrap"}`}
+            className="flex flex-nowrap gap-3 sm:gap-6 overflow-x-auto px-4 sm:px-12 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           >
             {products.map((p, i) => (
               <PosterCard key={i} item={p} index={i} onSelect={() => setOpenIdx(i)} />
