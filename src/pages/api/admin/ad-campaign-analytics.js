@@ -40,7 +40,9 @@ export async function GET({ cookies, url }) {
     const [visitRows, dailyRows, cityRows, pointRows, leadRows, recentLeadRows, leadMapRows] = await Promise.all([
       db.execute(
         `SELECT COUNT(*) AS visits, COUNT(DISTINCT visitor_id) AS visitors,
-                SUM(location_source = 'gps') AS gpsPageviews
+                SUM(location_source = 'gps') AS gpsPageviews,
+                SUM(latitude IS NULL OR longitude IS NULL) AS unlocatedVisits,
+                SUM(ip_address IN ('127.0.0.1', '::1') OR ip_address LIKE '10.%' OR ip_address LIKE '192.168.%') AS privateIpVisits
          FROM analytics_events WHERE ${eventWhere}`,
         [page, since]
       ),
@@ -101,6 +103,8 @@ export async function GET({ cookies, url }) {
         leads,
         conversion: visitors ? Math.round((leads / visitors) * 1000) / 10 : 0,
         gpsPageviews: Number(visitRows[0][0]?.gpsPageviews || 0),
+        unlocatedVisits: Number(visitRows[0][0]?.unlocatedVisits || 0),
+        privateIpVisits: Number(visitRows[0][0]?.privateIpVisits || 0),
       },
       daily: dailyRows[0].reverse().map((row) => ({ date: row.date, visits: Number(row.visits) })),
       cities: cityRows[0].map((row) => ({ ...row, visitors: Number(row.visitors) })),

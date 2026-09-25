@@ -20,7 +20,7 @@ function CampaignMap({ points, leadPoints, apiKey }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if ((!points.length && !leadPoints.length) || !apiKey || !mapRef.current) return;
+    if (!apiKey || !mapRef.current) return;
     let cancelled = false;
     setError("");
     loadGoogleMaps(apiKey).then((maps) => {
@@ -103,11 +103,15 @@ function CampaignMap({ points, leadPoints, apiKey }) {
   }, [points, leadPoints, apiKey]);
 
   if (!apiKey) return <div className="grid h-72 place-items-center rounded-xl bg-slate-100 px-4 text-center text-sm text-slate-500">GOOGLE_MAPS_API_KEY belum diatur di server.</div>;
-  if (!points.length && !leadPoints.length) return <div className="grid h-72 place-items-center rounded-xl bg-slate-100 px-4 text-center text-sm text-slate-500">Belum ada koordinat pengunjung dari landing page ini.</div>;
   return (
     <div className="relative">
       <div ref={mapRef} className="h-72 w-full rounded-xl bg-slate-100" />
       {error && <div className="absolute inset-0 grid place-items-center rounded-xl bg-white/90 px-4 text-center text-sm text-red-600">{error}</div>}
+      {!error && !points.length && !leadPoints.length && (
+        <p className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-lg bg-white/95 px-3 py-2 text-xs text-slate-700 shadow-sm sm:right-auto">
+          Peta siap. Belum ada kunjungan dengan koordinat GPS atau IP publik.
+        </p>
+      )}
     </div>
   );
 }
@@ -182,6 +186,14 @@ export default function AdCampaignAnalytics({ googleMapsApiKey, onOpenLeads }) {
                 <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-green-600" /> SPPG mengisi form</span>
                 <span>{number(data.points?.length)} pengunjung · {number(data.leadPoints?.length)} SPPG</span>
               </div>
+              {(data.summary?.privateIpVisits > 0 || data.summary?.unlocatedVisits > 0) && (
+                <p className="mt-3 text-xs leading-relaxed text-slate-500">
+                  {data.summary.privateIpVisits > 0
+                    ? `${number(data.summary.privateIpVisits)} kunjungan memakai IP lokal/pribadi sehingga asal kota tidak bisa diperkirakan. `
+                    : ""}
+                  Titik GPS baru tersedia setelah pengunjung memberi izin lokasi; IP publik hanya memberi perkiraan kota.
+                </p>
+              )}
             </div>
             <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <h3 className="mb-4 font-bold text-slate-900">Asal Pengunjung</h3>
