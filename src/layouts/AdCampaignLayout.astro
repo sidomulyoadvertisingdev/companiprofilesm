@@ -1,5 +1,6 @@
 ---
 import "../styles/index.css";
+import MetaPixel from "../components/MetaPixel.astro";
 
 const {
   title = "Sidomulyo Advertising",
@@ -39,6 +40,8 @@ const absoluteImage = image?.startsWith("http") ? image : new URL(image, Astro.u
     <meta name="twitter:image" content={absoluteImage} />
 
     <link rel="canonical" href={canonical} />
+
+    <MetaPixel />
 
     {structuredData && (
       <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

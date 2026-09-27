@@ -660,6 +660,7 @@ function LeadFormCard({ campaign, accent }) {
         setSubmitError(data.message || "Gagal mengirim, coba lagi.");
         return;
       }
+      window.fbq?.("track", "Lead", { content_name: campaign.slug });
       setSuccess(data);
     } catch {
       setSubmitError("Gagal mengirim, periksa koneksi internet Anda.");
@@ -1359,6 +1360,7 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
         setErrors({ form: "Data belum berhasil divalidasi. Coba kirim lagi." });
         return;
       }
+      window.fbq?.("track", "Lead", { content_name: campaign.slug, content_category: product.title });
     } catch {
       setErrors({ form: "Koneksi terputus. Coba kirim lagi." });
       return;

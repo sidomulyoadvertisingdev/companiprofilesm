@@ -1,6 +1,7 @@
 ---
 import "../styles/index.css";
 import ChatWidget from "../components/ChatWidget.jsx";
+import MetaPixel from "../components/MetaPixel.astro";
 
 const {
   title = "Sidomulyo Advertising",
@@ -32,6 +33,8 @@ const {
     <meta name="twitter:image" content={image} />
 
     <link rel="canonical" href={Astro.url} />
+
+    <MetaPixel />
 
     <style is:inline define:vars={{ accent }}>
       :root { --lp-accent: {accent}; }

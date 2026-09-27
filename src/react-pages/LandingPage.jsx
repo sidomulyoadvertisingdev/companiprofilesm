@@ -320,6 +320,7 @@ export default function LandingPage({ initialData, productsData }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, subject: `Lead dari landing: ${page.title}` }),
       });
+      window.fbq?.("track", "Lead", { content_name: page.slug });
       setSent(true);
     } catch {
       setSent(true);
