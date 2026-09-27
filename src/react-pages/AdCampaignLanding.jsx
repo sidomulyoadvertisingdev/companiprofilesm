@@ -1175,6 +1175,35 @@ function PosterCard({ item, index, onSelect }) {
   );
 }
 
+async function reverseGeocodeAddress(latitude, longitude) {
+  const providers = [
+    {
+      url: `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2&addressdetails=1&accept-language=id`,
+      read: (data) => data?.display_name?.trim() || "",
+    },
+    {
+      url: `https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}&lang=default`,
+      read: (data) => {
+        const props = data?.features?.[0]?.properties || {};
+        return [props.name, props.street, props.housenumber, props.district, props.city || props.county, props.state, props.country]
+          .filter(Boolean)
+          .join(", ");
+      },
+    },
+  ];
+  for (const provider of providers) {
+    try {
+      const res = await fetch(provider.url, { signal: AbortSignal.timeout(6000) });
+      if (!res.ok) continue;
+      const address = provider.read(await res.json());
+      if (address) return address;
+    } catch {
+      continue;
+    }
+  }
+  return "";
+}
+
 function ProductModal({ product, section, campaign, googleMapsApiKey, onClose }) {
   const variants = normalizeVariants(product.variants);
   const contentOptions = cleanList(section.contentOptions).length
@@ -1256,18 +1285,24 @@ function ProductModal({ product, section, campaign, googleMapsApiKey, onClose })
           maximumAge: 60000,
         });
       });
-      window.sidomulyoTrackLocation?.(position.coords.latitude, position.coords.longitude);
-      if (!googleMapsApiKey) throw new Error("Layanan alamat otomatis belum tersedia. Isi alamat secara manual.");
-      const maps = await loadGoogleMaps(googleMapsApiKey);
-      const geocoder = new maps.Geocoder();
-      const { results } = await geocoder.geocode({
-        location: { lat: position.coords.latitude, lng: position.coords.longitude },
-      });
-      const address = results?.[0]?.formatted_address;
+      const { latitude, longitude } = position.coords;
+      window.sidomulyoTrackLocation?.(latitude, longitude);
+      let address = "";
+      if (googleMapsApiKey) {
+        try {
+          const maps = await loadGoogleMaps(googleMapsApiKey);
+          const geocoder = new maps.Geocoder();
+          const { results } = await geocoder.geocode({ location: { lat: latitude, lng: longitude } });
+          address = results?.[0]?.formatted_address || "";
+        } catch {
+          address = "";
+        }
+      }
+      if (!address) address = await reverseGeocodeAddress(latitude, longitude);
       if (!address) throw new Error("Alamat tidak ditemukan. Isi alamat secara manual.");
       setInfo((current) => ({ ...current, address }));
       setAddressSource("maps");
-      setDetectedCoords({ lat: position.coords.latitude, lng: position.coords.longitude });
+      setDetectedCoords({ lat: latitude, lng: longitude });
       setErrors((current) => ({ ...current, address: undefined }));
     } catch (err) {
       const message = err?.code === 1
