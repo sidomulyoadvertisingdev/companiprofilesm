@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "seed": "node scripts/seed.mjs",
     "seed:sppg-campaign": "node scripts/seed-ad-campaign-sppg.mjs",
-    "seed:sppg-templates": "node scripts/seed-ad-campaign-templates.mjs"
+    "seed:sppg-templates": "node scripts/seed-ad-campaign-templates.mjs",
+    "seed:sppg-kab-semarang": "node scripts/seed-ad-campaign-sppg-kab-semarang.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^9.5.5",
