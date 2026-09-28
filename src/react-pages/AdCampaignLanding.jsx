@@ -1,205 +1,49 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { loadGoogleMaps } from "../lib/google-maps-client.js";
-import { AnimatePresence, motion } from "framer-motion";
+import { Fragment, useEffect, useState } from "react";
 import {
   FiCheckCircle,
-  FiAlertCircle,
   FiMapPin,
   FiChevronDown,
   FiChevronRight,
   FiMessageCircle,
-  FiArrowRight,
-  FiFrown,
-  FiTrash2,
-  FiClock,
-  FiThumbsUp,
-  FiShield,
-  FiClipboard,
-  FiEdit3,
   FiGift,
-  FiSettings,
-  FiHeart,
-  FiUsers,
-  FiUser,
-  FiHome,
-  FiPhone,
-  FiMail,
-  FiTag,
+  FiShield,
   FiHelpCircle,
-  FiLock,
   FiImage,
-  FiPackage,
-  FiSend,
   FiStar,
-  FiCheck,
-  FiShoppingCart,
-  FiX,
-  FiArrowLeft,
 } from "react-icons/fi";
+import {
+  Reveal,
+  ImagePlaceholder,
+  CtaButton,
+  HighlightedHeadline,
+  HeroBackground,
+  LeadFormCard,
+  Avatar,
+  ProductModal,
+} from "./ad-campaign/shared.jsx";
+import {
+  NAVY,
+  GOLD,
+  BLUE,
+  GREEN,
+  PreviewContext,
+  settingText,
+  templateOf,
+  campaignModel,
+  ICON_MAP,
+  navLinks,
+  cleanList,
+  splitTwoLines,
+} from "./ad-campaign/config.js";
+import SplitTemplate from "./ad-campaign/SplitTemplate.jsx";
+import SalesTemplate from "./ad-campaign/SalesTemplate.jsx";
 
 // Self-contained ad-campaign landing page. Deliberately does NOT import
 // anything from LandingPage.jsx / the general CMS landing-page engine —
 // this component is a standalone parallel feature.
-
-const NAVY = "#0B1E3D";
-const GOLD = "#D4AF37";
-// Primary CTA color — reuses the site's own brand blue (tailwind.config.js
-// `brand.primary`) instead of orange, per brand guidance.
-const BLUE = "#2563EB";
-const GREEN = "#16A34A";
-
-// Page-level copy stored in page_settings_json (editable in the admin's
-// "Teks Lainnya" card). A key that was never set falls back to the original
-// copy; one the admin cleared ("") is hidden.
-const PAGE_SETTING_DEFAULTS = {
-  topbarEnabled: true,
-  topbarLogo: "",
-  topbarBrand: "SIDOMULYO ADVERTISING",
-  topbarTagline: "Solusi Visual untuk Bisnis Anda",
-  topbarNavProduct: "Produk",
-  topbarNavSteps: "Cara Kerja",
-  topbarNavAreas: "Area Layanan",
-  topbarNavTestimonials: "Testimoni",
-  topbarNavFaq: "FAQ",
-  topbarCtaText: "Minta Sample Gratis",
-  topbarCtaMobileText: "Sample Gratis",
-  topbarCtaTarget: "",
-  topbarButtonColor: BLUE,
-  topbarBackgroundColor: "#0a0a1a",
-  heroHighlight: "GRATIS",
-  ctaBandButtonText: "",
-  footerTagline: "Partner Visual untuk Operasional SPPG yang Lebih Baik",
-  footerEnabled: true,
-  footerKeywords: ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"],
-  footerLogo: "",
-  footerBrand: "SIDOMULYO ADVERTISING",
-  footerBrandTagline: "Solusi Visual untuk Bisnis Anda",
-  footerBackgroundColor: NAVY,
-  footerTextColor: "#ffffff",
-  footerBrandColor: BLUE,
-  footerWhatsappColor: GREEN,
-  footerWhatsappTitle: null,
-  footerWhatsappLine1: "di WhatsApp kami",
-  footerWhatsappLine2: "Kami siap membantu Anda.",
-  footerWhatsappUrl: "",
-  formPrivacyNote: "Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.",
-};
-
-function settingText(campaign, key) {
-  const value = campaign.pageSettings?.[key];
-  return value === undefined || value === null ? PAGE_SETTING_DEFAULTS[key] : value;
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
-};
-
-function Reveal({ children, className, delay = 0 }) {
-  return (
-    <motion.div
-      className={className}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-60px" }}
-      variants={fadeUp}
-      transition={{ delay }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function isWaLink(target) {
-  return typeof target === "string" && /wa\.me|api\.whatsapp\.com/.test(target);
-}
-
-// Icon-key -> react-icons/fi component lookup. Section/item JSON stores a
-// plain string key (e.g. "frown", "shield"); this is never a photo/image —
-// photos are handled separately via ImagePlaceholder below.
-const ICON_MAP = {
-  frown: FiFrown,
-  broom: FiTrash2,
-  clock: FiClock,
-  hand: FiThumbsUp,
-  shield: FiShield,
-  document: FiClipboard,
-  pencil: FiEdit3,
-  gift: FiGift,
-  gear: FiSettings,
-  settings: FiSettings,
-  heart: FiHeart,
-  users: FiUsers,
-  check: FiCheckCircle,
-};
-
-const FORM_FIELD_ICONS = {
-  name: FiHome,
-  pic_name: FiUser,
-  whatsapp: FiPhone,
-  email: FiMail,
-  city: FiMapPin,
-  district: FiTag,
-  address: FiMapPin,
-  tray_type: FiPackage,
-  daily_portion: FiClipboard,
-  current_label: FiTag,
-  pain_point: FiHelpCircle,
-  notes: FiEdit3,
-};
-
-// Clean, deliberate empty-state for any photo field that hasn't been
-// uploaded yet through the admin editor — never a broken <img>.
-function ImagePlaceholder({ label = "Foto akan ditambahkan", className = "" }) {
-  return (
-    <div
-      className={`flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400 dark:border-white/15 dark:bg-white/[0.03] dark:text-slate-500 ${className}`}
-    >
-      <FiImage size={28} aria-hidden="true" />
-      <span className="text-xs font-medium text-center px-3">{label}</span>
-    </div>
-  );
-}
-
-function CtaButton({ text, target, variant = "primary", className = "", accent, arrow, icon: Icon }) {
-  if (!text) return null;
-  const showArrow = arrow !== undefined ? arrow : variant === "primary";
-  const base =
-    "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3.5 font-semibold text-sm sm:text-base transition-transform active:scale-[0.98] shadow-sm";
-  const styles = "text-white hover:opacity-90";
-  const style = { backgroundColor: accent };
-
-  const isAnchor = typeof target === "string" && target.startsWith("#");
-  const href = target || "#";
-
-  return (
-    <a
-      href={href}
-      target={isAnchor ? undefined : "_blank"}
-      rel={isAnchor ? undefined : "noopener noreferrer"}
-      className={`${base} ${styles} ${className}`}
-      style={style}
-    >
-      {Icon && <Icon aria-hidden="true" />}
-      {text}
-      {showArrow && <FiArrowRight aria-hidden="true" />}
-    </a>
-  );
-}
-
-// Only links whose target section is actually on the page are shown, so a
-// campaign without e.g. testimonials doesn't get a dead "Testimoni" link.
-function navLinks(campaign, hasConfigurator) {
-  const types = new Set((campaign.sections || []).map((s) => s.type));
-  return [
-    [hasConfigurator ? "#pilih-produk" : "#produk", "topbarNavProduct", true],
-    ["#cara-kerja", "topbarNavSteps", types.has("steps") || campaign.formEnabled],
-    ["#area-layanan", "topbarNavAreas", types.has("areas")],
-    ["#testimoni", "topbarNavTestimonials", types.has("testimonials")],
-    ["#faq", "topbarNavFaq", types.has("faq")],
-  ].map(([href, key, show]) => [href, settingText(campaign, key), show])
-    .filter(([, label, show]) => show && String(label || "").trim());
-}
+//
+// The components in this file make up the original "cinematic" template;
+// the default export picks the template set in pageSettings.template.
 
 // Transparent over the full-screen video hero (Netflix-style), then turns
 // solid once the visitor scrolls past the top so it stays readable over the
@@ -273,66 +117,7 @@ function TopNav({ campaign, ctaTarget }) {
   );
 }
 
-// Splits a headline string and wraps the given word(s) as a filled green pill,
-// matching the mockup where "GRATIS" appears as a badge inline in the headline.
-function HighlightedHeadline({ text, highlight }) {
-  if (!text) return null;
-  if (!highlight) return text;
-  // Escape so an admin-typed word with regex characters can't break the split.
-  const escaped = highlight.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const parts = text.split(new RegExp(`(${escaped})`, "g"));
-  return (
-    <>
-      {parts.map((part, i) =>
-        part === highlight ? (
-          <span
-            key={i}
-            className="inline-block align-middle text-white text-[0.85em] font-extrabold px-2.5 py-0.5 rounded-full mx-0.5"
-            style={{ backgroundColor: GREEN }}
-          >
-            {part}
-          </span>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
-    </>
-  );
-}
 
-// Full-bleed background: the admin-uploaded video (muted, looping, inline so
-// iOS autoplays it), with heroImage as its poster. Falls back to the image
-// alone, then to a plain navy gradient, when nothing has been uploaded yet.
-function HeroBackground({ video, image }) {
-  if (video) {
-    return (
-      <video
-        className="absolute inset-0 w-full h-full object-cover"
-        src={video}
-        poster={image || undefined}
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        aria-hidden="true"
-      />
-    );
-  }
-  if (image) {
-    return (
-      <img
-        src={image}
-        alt=""
-        aria-hidden="true"
-        className="absolute inset-0 w-full h-full object-cover"
-        loading="eager"
-        fetchpriority="high"
-      />
-    );
-  }
-  return <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${NAVY}, #000)` }} />;
-}
 
 function Hero({ campaign, ctaTarget }) {
   // With a configurator section, the hero CTAs lead into it instead of the
@@ -574,232 +359,6 @@ function StepsInfo({ section, accent }) {
   );
 }
 
-const PHONE_RE = /^(\+?62|0)8[0-9]{7,12}$/;
-
-function LeadFormCard({ campaign, accent }) {
-  const fields = useMemo(
-    () => (Array.isArray(campaign.formFields) ? campaign.formFields : []),
-    [campaign.formFields]
-  );
-  const initial = useMemo(() => {
-    const obj = {};
-    for (const f of fields) obj[f.key] = "";
-    return obj;
-  }, [fields]);
-
-  const [values, setValues] = useState(initial);
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-  const [success, setSuccess] = useState(null);
-
-  if (!campaign.formEnabled) return null;
-
-  function setField(key, value) {
-    setValues((v) => ({ ...v, [key]: value }));
-  }
-
-  function validate() {
-    const errs = {};
-    for (const f of fields) {
-      const val = (values[f.key] || "").trim();
-      if (f.required && !val) {
-        errs[f.key] = "Wajib diisi";
-        continue;
-      }
-      if (f.type === "tel" && val && !PHONE_RE.test(val.replace(/[\s-]/g, ""))) {
-        errs[f.key] = "Nomor WhatsApp tidak valid";
-      }
-      if (f.type === "email" && val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-        errs[f.key] = "Email tidak valid";
-      }
-    }
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setSubmitError("");
-    if (!validate()) return;
-    setSubmitting(true);
-
-    // Known top-level lead identity fields; everything else is a dynamic answer.
-    // (See form_fields_json seed comment: `name`, `whatsapp`, `email`, `city`
-    // map to the lead's core columns; the rest goes into `answers`.)
-    const KNOWN = ["name", "whatsapp", "email", "city"];
-    const answers = {};
-    for (const f of fields) {
-      if (!KNOWN.includes(f.key)) answers[f.key] = values[f.key];
-    }
-
-    const params = new URLSearchParams(window.location.search);
-
-    try {
-      const res = await fetch("/api/ad-campaign-leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          campaignSlug: campaign.slug,
-          name: values.name,
-          whatsapp: values.whatsapp,
-          email: values.email,
-          city: values.city,
-          message: values.message,
-          answers,
-          utmSource: params.get("utm_source"),
-          utmMedium: params.get("utm_medium"),
-          utmCampaign: params.get("utm_campaign"),
-          utmContent: params.get("utm_content"),
-          utmTerm: params.get("utm_term"),
-          referrer: document.referrer || null,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setSubmitError(data.message || "Gagal mengirim, coba lagi.");
-        return;
-      }
-      window.fbq?.("track", "Lead", { content_name: campaign.slug });
-      setSuccess(data);
-    } catch {
-      setSubmitError("Gagal mengirim, periksa koneksi internet Anda.");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  if (success) {
-    // Prefer the lead-specific link the API builds (prefilled with the
-    // "SAMPLE SPPG" follow-up keyword + the submitter's name); fall back to
-    // the generic hero WhatsApp CTA if that couldn't be built for some
-    // reason (e.g. secondaryCtaTarget isn't a recognizable wa.me link).
-    const waTarget = isWaLink(success.whatsappUrl)
-      ? success.whatsappUrl
-      : isWaLink(success.secondaryCtaTarget)
-      ? success.secondaryCtaTarget
-      : null;
-    return (
-      <div id="sample-form" className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm overflow-hidden text-center p-8 scroll-mt-20">
-        <FiCheckCircle className="mx-auto text-4xl mb-4" style={{ color: accent }} />
-        <h3 className="text-xl font-bold text-[#1d1d1f] dark:text-white mb-2">Terima kasih!</h3>
-        <p className="text-sm text-[#6e6e73] dark:text-slate-400 mb-2">
-          Data Anda sudah kami terima.
-        </p>
-        {waTarget && (
-          <>
-            <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white mb-5 max-w-sm mx-auto">
-              Satu langkah lagi: klik tombol WhatsApp di bawah supaya tim kami bisa langsung follow up pesanan Anda lebih cepat.
-            </p>
-            <a
-              href={waTarget}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3.5 font-semibold text-white text-base shadow-md hover:scale-[1.02] transition-transform animate-pulse"
-              style={{ backgroundColor: GREEN }}
-            >
-              <FiMessageCircle /> Chat WhatsApp Sekarang
-            </a>
-            <p className="text-xs text-[#6e6e73] dark:text-slate-500 mt-3">
-              Pesan otomatis sudah kami siapkan, tinggal klik kirim.
-            </p>
-          </>
-        )}
-        {!waTarget && (
-          <p className="text-sm text-[#6e6e73] dark:text-slate-400">
-            Tim kami akan segera menghubungi Anda.
-          </p>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      id="sample-form"
-      className="rounded-3xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 shadow-sm overflow-hidden scroll-mt-20"
-    >
-      <div className="px-6 sm:px-8 py-6" style={{ backgroundColor: NAVY }}>
-        {campaign.formTitle && (
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-1.5">{campaign.formTitle}</h2>
-        )}
-        {campaign.formSubtext && <p className="text-sm text-slate-300">{campaign.formSubtext}</p>}
-      </div>
-
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-4">
-        {submitError && (
-          <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-500/10 rounded-lg px-3 py-2">
-            <FiAlertCircle /> {submitError}
-          </div>
-        )}
-        {fields.map((f) => {
-          const Icon = FORM_FIELD_ICONS[f.key] || (f.type === "tel" ? FiPhone : f.type === "email" ? FiMail : f.type === "textarea" ? FiEdit3 : FiUser);
-          return (
-            <div key={f.key}>
-              <label className="flex items-center gap-1.5 text-sm font-medium text-[#1d1d1f] dark:text-slate-200 mb-1.5">
-                <Icon className="shrink-0" style={{ color: accent }} aria-hidden="true" />
-                {f.label} {f.required && <span className="text-red-500">*</span>}
-              </label>
-              {f.type === "textarea" ? (
-                <textarea
-                  rows={3}
-                  value={values[f.key] || ""}
-                  onChange={(e) => setField(f.key, e.target.value)}
-                  placeholder={f.placeholder}
-                  className="w-full rounded-xl border border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
-                  style={{ "--tw-ring-color": accent }}
-                />
-              ) : f.type === "select" ? (
-                <select
-                  value={values[f.key] || ""}
-                  onChange={(e) => setField(f.key, e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
-                >
-                  <option value="">Pilih...</option>
-                  {(f.options || []).map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type={f.type || "text"}
-                  value={values[f.key] || ""}
-                  onChange={(e) => setField(f.key, e.target.value)}
-                  placeholder={f.placeholder}
-                  className="w-full rounded-xl border border-slate-300 dark:border-white/10 dark:bg-white/5 dark:text-white px-4 py-2.5 text-sm focus:outline-none focus:ring-2"
-                />
-              )}
-              {errors[f.key] && <p className="mt-1 text-xs text-red-500">{errors[f.key]}</p>}
-            </div>
-          );
-        })}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-full py-3.5 font-semibold text-white text-sm sm:text-base disabled:opacity-60"
-          style={{ backgroundColor: BLUE }}
-        >
-          {submitting ? (
-            "Mengirim..."
-          ) : (
-            <>
-              <FiSend aria-hidden="true" /> Kirim Permintaan Sample
-            </>
-          )}
-        </button>
-
-        {settingText(campaign, "formPrivacyNote") && (
-          <p className="flex items-center justify-center gap-1.5 text-xs text-[#6e6e73] dark:text-slate-400 pt-1">
-            <FiLock aria-hidden="true" /> {settingText(campaign, "formPrivacyNote")}
-          </p>
-        )}
-      </form>
-    </div>
-  );
-}
 
 function SampleSection({ stepsSection, campaign, accent }) {
   if (!stepsSection && !campaign.formEnabled) return null;
@@ -889,31 +448,6 @@ function GallerySection({ section }) {
   );
 }
 
-// Common Indonesian honorifics — skipped when deriving an initial so e.g.
-// "Ibu Sri Wahyuni" and "Ibu Dewi Lestari" don't both show "I".
-const HONORIFICS = ["ibu", "bapak", "bu", "pak", "sdr", "sdri"];
-
-function initialFromName(name) {
-  const words = (name || "").trim().split(/\s+/).filter(Boolean);
-  const word = words.find((w) => !HONORIFICS.includes(w.toLowerCase())) || words[0];
-  return (word || "?").charAt(0).toUpperCase();
-}
-
-function Avatar({ name, image, accent }) {
-  if (image) {
-    return <img src={image} alt={name} className="w-12 h-12 rounded-full object-cover shrink-0" loading="lazy" />;
-  }
-  const initial = initialFromName(name);
-  return (
-    <div
-      className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold shrink-0"
-      style={{ backgroundColor: accent }}
-      aria-hidden="true"
-    >
-      {initial}
-    </div>
-  );
-}
 
 // Plain (non-scroll-reveal) card — used inside the auto-scrolling marquee,
 // where a viewport-triggered entrance animation would refire oddly as
@@ -1052,59 +586,6 @@ function FaqSection({ section, accent }) {
 // Content comes from a `type: "configurator"` entry in sections_json.
 // ---------------------------------------------------------------------------
 
-const DEFAULT_CONTENT_OPTIONS = [
-  "Barcode",
-  "Nama SPPG",
-  "Jam",
-  "Tanggal",
-  "Menu Makanan",
-  "Himbauan",
-  "CP SPPG",
-  "Kandungan Gizi",
-];
-
-// Popup copy — each key is editable on the "Pilih Produk" section in admin;
-// an empty field falls back to these.
-const CONFIGURATOR_TEXT_DEFAULTS = {
-  variantLabel: "Pilih varian",
-  contentLabel: "Mau isi label apa saja?",
-  addressLabel: "Ketik nama SPPG Anda",
-  nameLabel: "Nama SPPG",
-  submitText: "Kirim Alamat ke WhatsApp",
-  waGreeting: "Halo Sidomulyo, saya mau",
-};
-
-function configText(section, key) {
-  const value = (section[key] || "").trim();
-  if (key === "addressLabel" && value === "Kirim alamat SPPG Anda") return CONFIGURATOR_TEXT_DEFAULTS.addressLabel;
-  return value || CONFIGURATOR_TEXT_DEFAULTS[key];
-}
-
-const DEFAULT_ORDER_OPTIONS = [
-  "Kirim sample ke SPPG saya (gratis)",
-  "Kirim sample ke SPPG & saya order sekalian",
-];
-
-// Variants are `{ name, image }` objects; older campaigns stored plain name
-// strings, which are still accepted (they just have no photo of their own).
-function normalizeVariants(list) {
-  return (Array.isArray(list) ? list : [])
-    .map((v) => (typeof v === "string" ? { name: v.trim(), image: "" } : { name: String(v?.name || "").trim(), image: v?.image || "" }))
-    .filter((v) => v.name);
-}
-
-function cleanList(list) {
-  return (Array.isArray(list) ? list : []).map((s) => String(s || "").trim()).filter(Boolean);
-}
-
-// Same wa.me / api.whatsapp.com phone extraction the lead API uses for its
-// follow-up link, done client-side here so the message can carry the whole
-// configurator summary.
-function extractWaPhone(target) {
-  if (!target) return null;
-  const m = String(target).match(/wa\.me\/(\d+)|[?&]phone=(\d+)/);
-  return m ? m[1] || m[2] : null;
-}
 
 // Big outlined rank number overlapping the card's left edge, as on
 // Netflix's "Sedang Tren Sekarang" row.
@@ -1120,33 +601,6 @@ function PosterNumber({ n }) {
   );
 }
 
-function Chip({ selected, onClick, children, check, thumb }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`inline-flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-semibold border transition-colors ${
-        selected ? "bg-white text-black border-white" : "bg-white/5 text-white border-white/20 hover:bg-white/10"
-      }`}
-    >
-      {thumb && <img src={thumb} alt="" className="-ml-1.5 w-11 h-7 rounded object-cover" />}
-      {check && (
-        <span
-          className={`w-4 h-4 rounded-[4px] border flex items-center justify-center ${
-            selected ? "border-black bg-black text-white" : "border-white/50"
-          }`}
-        >
-          {selected && <FiCheck size={12} aria-hidden="true" />}
-        </span>
-      )}
-      {children}
-    </button>
-  );
-}
-
-const darkInput =
-  "w-full rounded-md bg-black/40 border border-white/20 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:border-white/60";
 
 function PosterCard({ item, index, onSelect }) {
   return (
@@ -1175,476 +629,6 @@ function PosterCard({ item, index, onSelect }) {
   );
 }
 
-async function reverseGeocodeAddress(latitude, longitude) {
-  const providers = [
-    {
-      url: `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=jsonv2&addressdetails=1&accept-language=id`,
-      read: (data) => data?.display_name?.trim() || "",
-    },
-    {
-      url: `https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}&lang=default`,
-      read: (data) => {
-        const props = data?.features?.[0]?.properties || {};
-        return [props.name, props.street, props.housenumber, props.district, props.city || props.county, props.state, props.country]
-          .filter(Boolean)
-          .join(", ");
-      },
-    },
-  ];
-  for (const provider of providers) {
-    try {
-      const res = await fetch(provider.url, { signal: AbortSignal.timeout(6000) });
-      if (!res.ok) continue;
-      const address = provider.read(await res.json());
-      if (address) return address;
-    } catch {
-      continue;
-    }
-  }
-  return "";
-}
-
-function ProductModal({ product, section, campaign, googleMapsApiKey, onClose }) {
-  const variants = normalizeVariants(product.variants);
-  const contentOptions = cleanList(section.contentOptions).length
-    ? cleanList(section.contentOptions)
-    : DEFAULT_CONTENT_OPTIONS;
-  const orderOptions = cleanList(section.orderOptions).length
-    ? cleanList(section.orderOptions)
-    : DEFAULT_ORDER_OPTIONS;
-
-  const [variant, setVariant] = useState(variants.length === 1 ? variants[0].name : "");
-  const [contents, setContents] = useState([]);
-  const [orderOption, setOrderOption] = useState("");
-  const [info, setInfo] = useState({ name: "", address: "" });
-  const [sppgId, setSppgId] = useState(null);
-  const [manualSppg, setManualSppg] = useState(false);
-  const [registeredAddress, setRegisteredAddress] = useState("");
-  const [sppgMatches, setSppgMatches] = useState([]);
-  const [sppgLoading, setSppgLoading] = useState(false);
-  const [addressSource, setAddressSource] = useState("database");
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [detectingAddress, setDetectingAddress] = useState(false);
-  const [locationError, setLocationError] = useState("");
-  const [detectedCoords, setDetectedCoords] = useState(null);
-  const [waUrl, setWaUrl] = useState("");
-  const scrollRef = useRef(null);
-  const locatingRef = useRef(false);
-  // The big photo follows the selected variant's own photo, falling back to
-  // the product photo when that variant has none (or nothing is picked yet).
-  const photo = variants.find((v) => v.name === variant)?.image || product.image;
-
-  useEffect(() => {
-    if (sppgId || manualSppg || info.name.trim().length < 2) return;
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      setSppgLoading(true);
-      try {
-        const response = await fetch(`/api/sppg-directory?q=${encodeURIComponent(info.name.trim())}`, { signal: controller.signal });
-        if (response.ok) setSppgMatches(await response.json());
-      } catch (error) {
-        if (error.name !== "AbortError") setSppgMatches([]);
-      } finally {
-        if (!controller.signal.aborted) setSppgLoading(false);
-      }
-    }, 250);
-    return () => { clearTimeout(timer); controller.abort(); };
-  }, [info.name, sppgId, manualSppg]);
-
-  // Esc to close + lock page scroll behind the modal.
-  useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && onClose();
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [onClose]);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
-  }, [orderOption]);
-
-  const detectAddress = useCallback(async () => {
-    if (locatingRef.current) return;
-    if (!navigator.geolocation) {
-      setLocationError("Browser ini tidak mendukung lokasi. Isi alamat secara manual.");
-      return;
-    }
-    locatingRef.current = true;
-    setDetectingAddress(true);
-    setLocationError("");
-    try {
-      const position = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 12000,
-          maximumAge: 60000,
-        });
-      });
-      const { latitude, longitude } = position.coords;
-      window.sidomulyoTrackLocation?.(latitude, longitude);
-      let address = "";
-      if (googleMapsApiKey) {
-        try {
-          const maps = await loadGoogleMaps(googleMapsApiKey);
-          const geocoder = new maps.Geocoder();
-          const { results } = await geocoder.geocode({ location: { lat: latitude, lng: longitude } });
-          address = results?.[0]?.formatted_address || "";
-        } catch {
-          address = "";
-        }
-      }
-      if (!address) address = await reverseGeocodeAddress(latitude, longitude);
-      if (!address) throw new Error("Alamat tidak ditemukan. Isi alamat secara manual.");
-      setInfo((current) => ({ ...current, address }));
-      setAddressSource("maps");
-      setDetectedCoords({ lat: latitude, lng: longitude });
-      setErrors((current) => ({ ...current, address: undefined }));
-    } catch (err) {
-      const message = err?.code === 1
-        ? "Izin lokasi ditolak. Aktifkan izin lokasi di browser atau isi alamat manual."
-        : err?.code === 2 || err?.code === 3
-          ? "Lokasi belum dapat dideteksi. Coba lagi atau isi alamat manual."
-          : err?.message || "Alamat gagal dideteksi. Isi alamat secara manual.";
-      setLocationError(message);
-    } finally {
-      locatingRef.current = false;
-      setDetectingAddress(false);
-    }
-  }, [googleMapsApiKey]);
-
-  function toggleContent(opt) {
-    setContents((c) => (c.includes(opt) ? c.filter((x) => x !== opt) : [...c, opt]));
-    setErrors((e) => ({ ...e, contents: undefined }));
-  }
-
-  function chooseOrder(opt) {
-    const errs = {};
-    if (variants.length && !variant) errs.variant = "Pilih varian terlebih dahulu";
-    if (!contents.length) errs.contents = "Centang minimal satu isi label";
-    setErrors(errs);
-    if (Object.keys(errs).length) return;
-    setOrderOption(opt);
-  }
-
-  function buildMessage() {
-    const lines = [
-      `${configText(section, "waGreeting")} ${orderOption.charAt(0).toLowerCase()}${orderOption.slice(1)}.`,
-      "",
-      `Produk: ${product.title}`,
-      variant ? `Varian: ${variant}` : null,
-      `Isi label: ${contents.join(", ")}`,
-      "",
-      `${configText(section, "nameLabel")}: ${info.name.trim()}`,
-      `Status SPPG: ${manualSppg ? "Belum terdaftar" : "Terdaftar"}`,
-      `Alamat: ${info.address.trim()}`,
-      `Sumber alamat: ${addressSource === "database" ? "Database SPPG" : addressSource === "maps" ? "Rekomendasi Maps" : "Diisi manual"}`,
-      addressSource === "maps" && detectedCoords ? `Titik lokasi: https://www.google.com/maps?q=${detectedCoords.lat},${detectedCoords.lng}` : null,
-    ];
-    return lines.filter((l) => l !== null).join("\n");
-  }
-
-  async function handleSend(e) {
-    e.preventDefault();
-    const errs = {};
-    if (manualSppg && info.name.trim().length < 2) errs.name = "Ketik nama SPPG minimal 2 karakter";
-    else if (!manualSppg && !sppgId) errs.name = "Pilih dari daftar atau pilih opsi SPPG belum terdaftar";
-    if (!info.address.trim()) errs.address = "Wajib diisi";
-    setErrors(errs);
-    if (Object.keys(errs).length) return;
-
-    setSubmitting(true);
-    const params = new URLSearchParams(window.location.search);
-    try {
-      const res = await fetch("/api/ad-campaign-leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          campaignSlug: campaign.slug,
-          source: "product_configurator",
-          sppgId,
-          manualSppg,
-          name: info.name,
-          answers: {
-            produk: product.title,
-            varian: variant || "-",
-            isi_label: contents.join(", "),
-            pilihan: orderOption,
-            address: info.address,
-            address_source: addressSource,
-            ...(addressSource === "maps" && detectedCoords ? { gps_latitude: detectedCoords.lat, gps_longitude: detectedCoords.lng } : {}),
-          },
-          utmSource: params.get("utm_source"),
-          utmMedium: params.get("utm_medium"),
-          utmCampaign: params.get("utm_campaign"),
-          utmContent: params.get("utm_content"),
-          utmTerm: params.get("utm_term"),
-          referrer: document.referrer || null,
-        }),
-      });
-      if (res.status === 400) {
-        const data = await res.json().catch(() => ({}));
-        setErrors({ form: data.message || "Data belum lengkap." });
-        return;
-      }
-      if (!res.ok) {
-        setErrors({ form: "Data belum berhasil divalidasi. Coba kirim lagi." });
-        return;
-      }
-      window.fbq?.("track", "Lead", { content_name: campaign.slug, content_category: product.title });
-    } catch {
-      setErrors({ form: "Koneksi terputus. Coba kirim lagi." });
-      return;
-    } finally {
-      setSubmitting(false);
-    }
-
-    const phone = extractWaPhone(campaign.secondaryCtaTarget);
-    if (!phone) {
-      setWaUrl("none");
-      return;
-    }
-    const url = `https://wa.me/${phone}?text=${encodeURIComponent(buildMessage())}`;
-    setWaUrl(url);
-    // A navigation (not window.open) so mobile browsers don't treat it as a
-    // blocked popup after the await above; it opens the WhatsApp app directly.
-    window.location.href = url;
-  }
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm sm:p-6"
-      onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label={product.title}
-    >
-      <motion.div
-        initial={{ opacity: 0, y: 40, scale: 0.97 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.25, ease: "easeOut" }}
-        onClick={(e) => e.stopPropagation()}
-        ref={scrollRef}
-        className="relative w-full sm:max-w-3xl max-h-[92svh] overflow-y-auto rounded-t-2xl sm:rounded-xl bg-[#141414] text-white shadow-2xl"
-      >
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Tutup"
-          className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-black/70 hover:bg-black flex items-center justify-center"
-        >
-          <FiX size={20} />
-        </button>
-
-        <div className="relative aspect-[16/10] sm:aspect-[16/8] bg-[#1a1a2e]">
-          {photo ? (
-            <AnimatePresence initial={false}>
-              {/* Whole photo (object-contain) over a blurred copy of itself,
-                  so any aspect ratio — a 2:3 product poster or a wide variant
-                  shot — shows uncropped without empty bars. */}
-              <motion.div
-                key={photo}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.35 }}
-                className="absolute inset-0 overflow-hidden"
-              >
-                <img src={photo} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover scale-110 blur-2xl opacity-60" />
-                <img
-                  src={photo}
-                  alt={variant ? `${product.title} — ${variant}` : product.title}
-                  className="relative w-full h-full object-contain"
-                />
-              </motion.div>
-            </AnimatePresence>
-          ) : (
-            <span className="w-full h-full flex items-center justify-center text-white/30">
-              <FiImage size={40} aria-hidden="true" />
-            </span>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/20 to-transparent" />
-          <div className="absolute left-5 right-5 bottom-4 sm:left-8 sm:bottom-6">
-            <h3 className="text-2xl sm:text-4xl font-black leading-tight drop-shadow">{product.title}</h3>
-            {product.desc && <p className="mt-1 text-sm sm:text-base text-white/80 max-w-xl">{product.desc}</p>}
-          </div>
-        </div>
-
-        <div className="px-5 pb-6 pt-3 sm:px-8 sm:pb-8">
-          {!orderOption ? (
-            <>
-              {variants.length > 0 && (
-                <div className="mb-6">
-                  <p className="text-sm font-semibold text-white/70 mb-2.5">{configText(section, "variantLabel")}</p>
-                  <div className="flex flex-wrap gap-2.5">
-                    {variants.map(({ name: v, image }) => (
-                      <Chip
-                        key={v}
-                        selected={variant === v}
-                        thumb={image}
-                        onClick={() => {
-                          setVariant(v);
-                          setErrors((e) => ({ ...e, variant: undefined }));
-                        }}
-                      >
-                        {v}
-                      </Chip>
-                    ))}
-                  </div>
-                  {errors.variant && <p className="mt-2 text-xs text-red-400">{errors.variant}</p>}
-                </div>
-              )}
-
-              <div className="mb-7">
-                <p className="text-sm font-semibold text-white/70 mb-2.5">{configText(section, "contentLabel")}</p>
-                <div className="flex flex-wrap gap-2.5">
-                  {contentOptions.map((opt) => (
-                    <Chip key={opt} check selected={contents.includes(opt)} onClick={() => toggleContent(opt)}>
-                      {opt}
-                    </Chip>
-                  ))}
-                </div>
-                {errors.contents && <p className="mt-2 text-xs text-red-400">{errors.contents}</p>}
-              </div>
-
-              <div className="grid sm:grid-cols-2 gap-3">
-                {orderOptions.map((opt, i) => {
-                  const Icon = i === 0 ? FiGift : FiShoppingCart;
-                  return (
-                    <button
-                      key={opt}
-                      type="button"
-                      onClick={() => chooseOrder(opt)}
-                      className="inline-flex items-center justify-center gap-2.5 rounded-md px-5 py-4 text-sm sm:text-base font-bold text-white hover:opacity-90 transition-opacity text-left"
-                      style={{ backgroundColor: i === 0 ? GREEN : BLUE }}
-                    >
-                      <Icon className="shrink-0" size={20} aria-hidden="true" />
-                      {opt}
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <form onSubmit={handleSend}>
-              <button
-                type="button"
-                onClick={() => setOrderOption("")}
-                className="inline-flex items-center gap-1.5 text-sm text-white/60 hover:text-white mb-4"
-              >
-                <FiArrowLeft aria-hidden="true" /> Kembali
-              </button>
-              <div className="mb-5 rounded-md bg-white/5 border border-white/10 p-4 text-sm text-white/70 leading-relaxed">
-                <span className="block font-bold text-white">{orderOption}</span>
-                {product.title}
-                {variant && <> · {variant}</>} · {contents.join(", ")}
-              </div>
-              <p className="text-sm font-semibold text-white/70 mb-2.5">{configText(section, "addressLabel")}</p>
-              <div className="space-y-3">
-                <div className="relative">
-                  <input
-                    className={darkInput}
-                    aria-label={configText(section, "nameLabel")}
-                    autoComplete="organization"
-                    placeholder="Ketik nama SPPG Anda"
-                    value={info.name}
-                    onChange={(e) => {
-                      setInfo({ name: e.target.value, address: "" });
-                      setSppgId(null);
-                      if (!manualSppg) setAddressSource("database");
-                      setRegisteredAddress("");
-                      setSppgMatches([]);
-                      setDetectedCoords(null);
-                    }}
-                  />
-                  {!sppgId && !manualSppg && info.name.trim().length >= 2 && (
-                    <div className="absolute z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-white/20 bg-[#252525] shadow-xl">
-                      {sppgMatches.map((item) => (
-                        <button key={item.id} type="button" className="block w-full border-b border-white/10 px-4 py-3 text-left text-sm text-white hover:bg-white/10" onClick={() => {
-                          setSppgId(item.id);
-                          setManualSppg(false);
-                          setRegisteredAddress(item.address);
-                          setInfo({ name: item.name, address: item.address });
-                          setAddressSource("database");
-                          setSppgMatches([]);
-                          setLocationError("");
-                          setErrors((current) => ({ ...current, name: undefined, address: undefined }));
-                        }}>
-                          <span className="block font-semibold">{item.name}</span>
-                          <span className="block text-xs text-white/60">{item.address}</span>
-                        </button>
-                      ))}
-                      {!sppgLoading && !sppgMatches.length && <p className="px-4 py-3 text-xs text-white/60">Nama SPPG tidak ditemukan dalam database.</p>}
-                      <button type="button" className="block w-full px-4 py-3 text-left text-sm font-semibold text-green-300 hover:bg-white/10" onClick={() => {
-                        setManualSppg(true);
-                        setSppgId(null);
-                        setSppgMatches([]);
-                        setInfo((current) => ({ ...current, address: "" }));
-                        setAddressSource("manual");
-                        setErrors((current) => ({ ...current, name: undefined }));
-                      }}>SPPG belum ada di database — ketik manual</button>
-                    </div>
-                  )}
-                  {sppgId && <p className="mt-1 text-xs text-green-400">SPPG terdaftar ✓</p>}
-                  {manualSppg && <div className="mt-2 flex items-center gap-3 text-xs"><span className="text-amber-300">SPPG belum terdaftar — isi nama dan alamat manual.</span><button type="button" className="underline text-white" onClick={() => { setManualSppg(false); setInfo({ name: "", address: "" }); setAddressSource("database"); setDetectedCoords(null); }}>Cari di database</button></div>}
-                  {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name}</p>}
-                </div>
-                {(sppgId || manualSppg) && <div>
-                  <label htmlFor="sppg-address" className="block text-sm text-white/70 mb-2">Alamat SPPG</label>
-                  <div className="mb-2 flex flex-wrap gap-2 text-xs">
-                    {sppgId && <button type="button" onClick={() => { setAddressSource("database"); setInfo((v) => ({ ...v, address: registeredAddress })); setDetectedCoords(null); }} className={`rounded-md border px-3 py-2 ${addressSource === "database" ? "border-green-400 text-green-300" : "border-white/25 text-white/70"}`}>Alamat database</button>}
-                    <button type="button" onClick={() => { setAddressSource("manual"); setInfo((v) => ({ ...v, address: "" })); setDetectedCoords(null); setLocationError(""); }} className={`rounded-md border px-3 py-2 ${addressSource === "manual" ? "border-green-400 text-green-300" : "border-white/25 text-white/70"}`}>Ketik sendiri</button>
-                    <button type="button" onClick={detectAddress} disabled={detectingAddress} className={`rounded-md border px-3 py-2 disabled:opacity-50 ${addressSource === "maps" ? "border-green-400 text-green-300" : "border-white/25 text-white/70"}`}>{detectingAddress ? "Mendeteksi..." : "Rekomendasi Maps"}</button>
-                  </div>
-                  <textarea
-                    id="sppg-address"
-                    className={darkInput}
-                    rows={3}
-                    placeholder="Alamat lengkap (jalan, desa/kelurahan, kecamatan, kota)"
-                    value={info.address}
-                    readOnly={addressSource === "database"}
-                    onChange={(e) => { setInfo((current) => ({ ...current, address: e.target.value })); setAddressSource("manual"); setDetectedCoords(null); }}
-                  />
-                  <p className="mt-2 text-xs text-white/60">{manualSppg ? "Belum ada alamat pembanding di database. Periksa alamat pengiriman sebelum dikirim." : addressSource === "database" ? "Alamat awal sesuai data SPPG dari admin." : info.address.trim().toLocaleLowerCase("id-ID") === registeredAddress.trim().toLocaleLowerCase("id-ID") ? "Teks alamat sama dengan data SPPG dari admin." : "Teks alamat tidak sama dengan data SPPG admin. Periksa apakah lokasi pengiriman benar."}</p>
-                  {errors.address && <p className="mt-1 text-xs text-red-400">{errors.address}</p>}
-                </div>}
-              </div>
-              {locationError && <p role="alert" className="mt-2 text-xs text-amber-300">{locationError}</p>}
-              {errors.form && <p className="mt-3 text-sm text-red-400">{errors.form}</p>}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="mt-5 w-full inline-flex items-center justify-center gap-2 rounded-md px-8 py-4 text-base sm:text-lg font-bold text-white hover:opacity-90 transition-opacity disabled:opacity-60"
-                style={{ backgroundColor: GREEN }}
-              >
-                <FiMessageCircle aria-hidden="true" />
-                {submitting ? "Mengirim..." : configText(section, "submitText")}
-              </button>
-              {waUrl && waUrl !== "none" && (
-                <p className="mt-3 text-xs text-white/60 text-center">
-                  WhatsApp tidak terbuka?{" "}
-                  <a href={waUrl} className="underline text-white">
-                    Klik di sini
-                  </a>
-                  .
-                </p>
-              )}
-              {waUrl === "none" && (
-                <p className="mt-3 text-sm text-green-400 text-center">
-                  Terima kasih! Data Anda sudah kami terima, tim kami akan segera menghubungi.
-                </p>
-              )}
-            </form>
-          )}
-        </div>
-      </motion.div>
-    </div>
-  );
-}
 
 function ConfiguratorSection({ section, campaign, googleMapsApiKey }) {
   const products = (section.items || []).filter((it) => it.active !== false && it.title);
@@ -1730,12 +714,6 @@ function StepsInfoStandalone({ section, accent }) {
   );
 }
 
-function splitTwoLines(text) {
-  if (!text) return [text || "", ""];
-  const idx = text.indexOf(". ");
-  if (idx === -1) return [text, ""];
-  return [text.slice(0, idx + 1), text.slice(idx + 2)];
-}
 
 function CtaBand({ campaign }) {
   if (!campaign.ctaBandHeading && !campaign.ctaBandText) return null;
@@ -1869,16 +847,9 @@ function StickyMobileCta({ campaign, ctaTarget }) {
   );
 }
 
-export default function AdCampaignLanding({ campaign, googleMapsApiKey }) {
+function CinematicTemplate({ campaign, googleMapsApiKey }) {
   const accent = campaign.accentColor || "#0A4DA6";
-  const sections = Array.isArray(campaign.sections) ? campaign.sections : [];
-  const stepsSection = sections.find((s) => s.type === "steps");
-  // Only counts once it has at least one live product, so CTAs never point
-  // at an empty #pilih-produk anchor.
-  const configurator = sections.find(
-    (s) => s.type === "configurator" && (s.items || []).some((it) => it.active !== false && it.title)
-  );
-  const ctaTarget = configurator ? "#pilih-produk" : undefined;
+  const { sections, stepsSection, configurator, ctaTarget } = campaignModel(campaign);
 
   return (
     <main className="pb-24 md:pb-0">
@@ -1891,5 +862,22 @@ export default function AdCampaignLanding({ campaign, googleMapsApiKey }) {
       {settingText(campaign, "footerEnabled") !== false && <Footer campaign={campaign} />}
       <StickyMobileCta campaign={campaign} ctaTarget={ctaTarget} />
     </main>
+  );
+}
+
+const TEMPLATE_COMPONENTS = {
+  cinematic: CinematicTemplate,
+  split: SplitTemplate,
+  sales: SalesTemplate,
+};
+
+// `preview` is set by the admin's live-preview iframe (see
+// AdCampaignPreview.jsx) so forms there never create real leads.
+export default function AdCampaignLanding({ campaign, googleMapsApiKey, preview = false }) {
+  const Template = TEMPLATE_COMPONENTS[templateOf(campaign)];
+  return (
+    <PreviewContext.Provider value={preview}>
+      <Template campaign={campaign} googleMapsApiKey={googleMapsApiKey} />
+    </PreviewContext.Provider>
   );
 }

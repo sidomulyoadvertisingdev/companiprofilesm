@@ -1,5 +1,6 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import AdCampaignAnalytics from "./AdCampaignAnalytics.jsx";
+import { PAGE_SETTING_DEFAULTS, PREVIEW_MESSAGE, SUBHEADING_DEFAULTS, TEMPLATES } from "./ad-campaign/config.js";
 import {
   FiPlus,
   FiTrash2,
@@ -14,6 +15,11 @@ import {
   FiBarChart2,
   FiSearch,
   FiGrid,
+  FiMonitor,
+  FiSmartphone,
+  FiEye,
+  FiX,
+  FiCheck,
 } from "react-icons/fi";
 
 // Self-contained admin mini-app for the ad-campaigns feature. Does NOT
@@ -85,54 +91,6 @@ const ANSWER_LABELS = {
   sppg_status: "Status SPPG",
   gps_latitude: "Latitude GPS",
   gps_longitude: "Longitude GPS",
-};
-
-// The landing page's built-in section subheadings, shown here as the field's
-// current value when a section never had one set, so the admin edits the
-// text visitors actually see. Clearing the field hides the subheading.
-const SUBHEADING_DEFAULTS = {
-  configurator: "Klik produk untuk melihat varian & minta sample.",
-  problems: "Kami memahami tantangan Anda, karena itu kami hadir dengan solusi yang tepat.",
-  benefits: "Dirancang khusus untuk kebutuhan operasional SPPG yang dinamis.",
-  areas: "Prioritas untuk SPPG aktif di 3 wilayah ini.",
-  gallery: "Lihat langsung tampilan sample label removable pada ompreng.",
-  testimonials: "Kata SPPG yang sudah mencoba label removable kami.",
-  steps: "Proses mudah, cepat, dan tanpa biaya.",
-};
-
-// Same idea for page_settings_json (see PAGE_SETTING_DEFAULTS in
-// AdCampaignLanding.jsx).
-const PAGE_SETTING_DEFAULTS = {
-  topbarEnabled: true,
-  topbarLogo: "",
-  topbarBrand: "SIDOMULYO ADVERTISING",
-  topbarTagline: "Solusi Visual untuk Bisnis Anda",
-  topbarNavProduct: "Produk",
-  topbarNavSteps: "Cara Kerja",
-  topbarNavAreas: "Area Layanan",
-  topbarNavTestimonials: "Testimoni",
-  topbarNavFaq: "FAQ",
-  topbarCtaText: "Minta Sample Gratis",
-  topbarCtaMobileText: "Sample Gratis",
-  topbarCtaTarget: "",
-  topbarButtonColor: "#2563EB",
-  topbarBackgroundColor: "#0a0a1a",
-  heroHighlight: "GRATIS",
-  ctaBandButtonText: "",
-  footerTagline: "Partner Visual untuk Operasional SPPG yang Lebih Baik",
-  footerEnabled: true,
-  footerKeywords: ["Label", "Sticker", "Desain Custom", "Cetak Berkualitas"],
-  footerLogo: "",
-  footerBrand: "SIDOMULYO ADVERTISING",
-  footerBrandTagline: "Solusi Visual untuk Bisnis Anda",
-  footerBackgroundColor: "#0B1E3D",
-  footerBrandColor: "#2563EB",
-  footerWhatsappColor: "#16A34A",
-  footerWhatsappTitle: null,
-  footerWhatsappLine1: "di WhatsApp kami",
-  footerWhatsappLine2: "Kami siap membantu Anda.",
-  footerWhatsappUrl: "",
-  formPrivacyNote: "Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.",
 };
 
 // Popup copy fields of a "Pilih Produk" section; empty = landing default.
@@ -859,10 +817,253 @@ function FormFieldsRepeater({ fields, onChange }) {
   );
 }
 
+function ColorField({ label, value, onChange, hint, placeholder }) {
+  // <input type="color"> only understands #rrggbb; anything else the admin
+  // typed (rgb(), a name) still works on the page, the swatch just shows black.
+  const swatch = /^#[0-9a-f]{6}$/i.test(value || "") ? value : "#000000";
+  return (
+    <Field label={label} hint={hint}>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          value={swatch}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-slate-300 bg-white p-1"
+          aria-label={label}
+        />
+        <TextInput value={value || ""} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+      </div>
+    </Field>
+  );
+}
+
+// Tiny wireframe of each template for the picker cards.
+function TemplateThumb({ value }) {
+  if (value === "split") {
+    return (
+      <div className="h-full bg-white p-2 flex flex-col gap-1.5">
+        <div className="h-1.5 w-full rounded bg-slate-200" />
+        <div className="flex-1 grid grid-cols-2 gap-1.5 items-center">
+          <div className="space-y-1">
+            <div className="h-1.5 w-4/5 rounded bg-slate-700" />
+            <div className="h-1.5 w-3/5 rounded bg-slate-700" />
+            <div className="h-1 w-full rounded bg-slate-300" />
+            <div className="h-2 w-1/2 rounded-full bg-green-500" />
+          </div>
+          <div className="h-full rounded bg-blue-200" />
+        </div>
+        <div className="grid grid-cols-4 gap-1">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="h-3 rounded bg-slate-100 ring-1 ring-slate-200" />)}
+        </div>
+      </div>
+    );
+  }
+  if (value === "sales") {
+    return (
+      <div className="h-full bg-slate-100 flex justify-center">
+        <div className="w-1/2 bg-white flex flex-col">
+          <div className="h-1.5 bg-green-500" />
+          <div className="flex-1 bg-blue-600 p-1.5 flex flex-col items-center gap-1">
+            <div className="h-1.5 w-4/5 rounded bg-white" />
+            <div className="h-1.5 w-3/5 rounded bg-yellow-300" />
+            <div className="h-5 w-full rounded bg-blue-300" />
+            <div className="h-2 w-full rounded bg-green-500" />
+          </div>
+          <div className="p-1.5 space-y-1">
+            <div className="h-1 w-full rounded bg-slate-200" />
+            <div className="h-1 w-full rounded bg-slate-200" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return (
+    <div className="h-full bg-black p-2 flex flex-col gap-1.5">
+      <div className="flex-1 rounded bg-gradient-to-b from-slate-600 to-black flex flex-col items-center justify-center gap-1">
+        <div className="h-1.5 w-3/5 rounded bg-white" />
+        <div className="h-1 w-2/5 rounded bg-white/50" />
+        <div className="h-2 w-1/4 rounded bg-blue-500" />
+      </div>
+      <div className="flex gap-1 justify-center">
+        {[0, 1, 2, 3].map((i) => <div key={i} className="h-5 w-3 rounded-sm bg-slate-700" />)}
+      </div>
+    </div>
+  );
+}
+
+function TemplatePicker({ value, onChange }) {
+  return (
+    <div className="grid sm:grid-cols-3 gap-3">
+      {TEMPLATES.map((t) => {
+        const selected = value === t.value;
+        return (
+          <button
+            key={t.value}
+            type="button"
+            onClick={() => onChange(t.value)}
+            aria-pressed={selected}
+            className={`relative text-left rounded-xl border-2 overflow-hidden transition-colors ${
+              selected ? "border-blue-600 ring-2 ring-blue-100" : "border-slate-200 hover:border-slate-300"
+            }`}
+          >
+            <div className="h-24 border-b border-slate-200">
+              <TemplateThumb value={t.value} />
+            </div>
+            <div className="p-3">
+              <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+                {t.label}
+                {selected && <FiCheck className="text-blue-600" aria-hidden="true" />}
+              </span>
+              <span className="mt-1 block text-xs text-slate-500 leading-snug">{t.desc}</span>
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+const PREVIEW_DEVICES = {
+  desktop: { width: 1280, label: "Desktop", icon: FiMonitor },
+  mobile: { width: 390, label: "Mobile", icon: FiSmartphone },
+};
+
+// Live preview of the unsaved form. Renders /admin/campaigns/preview in an
+// iframe (so the landing page's own breakpoints, fixed bars and popups
+// behave as on a real screen) and pushes the campaign into it via
+// postMessage; desktop mode is scaled down to fit the panel.
+function CampaignPreview({ campaign, onClose }) {
+  const [device, setDevice] = useState("desktop");
+  const [ready, setReady] = useState(false);
+  const [box, setBox] = useState({ width: 0, height: 0 });
+  const frameRef = useRef(null);
+  const boxRef = useRef(null);
+  const latestRef = useRef(campaign);
+
+  const send = useCallback((data) => {
+    frameRef.current?.contentWindow?.postMessage({ type: PREVIEW_MESSAGE, campaign: data }, window.location.origin);
+  }, []);
+
+  useEffect(() => {
+    latestRef.current = campaign;
+  }, [campaign]);
+
+  useEffect(() => {
+    function onMessage(event) {
+      if (event.origin !== window.location.origin || event.source !== frameRef.current?.contentWindow) return;
+      if (event.data?.type !== `${PREVIEW_MESSAGE}-ready`) return;
+      setReady(true);
+      send(latestRef.current);
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [send]);
+
+  // Debounced so typing in a field doesn't re-render the page per keystroke.
+  useEffect(() => {
+    if (!ready) return undefined;
+    const timer = setTimeout(() => send(campaign), 150);
+    return () => clearTimeout(timer);
+  }, [campaign, ready, send]);
+
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      setBox({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const frameWidth = PREVIEW_DEVICES[device].width;
+  const scale = box.width ? Math.min(1, box.width / frameWidth) : 1;
+
+  return (
+    <div className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2">
+        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-800">
+          <FiEye aria-hidden="true" /> Live Preview
+        </span>
+        <span className="hidden sm:inline text-xs text-slate-400">
+          {TEMPLATES.find((t) => t.value === (campaign.pageSettings?.template || "cinematic"))?.label}
+        </span>
+        <div className="ml-auto flex rounded-lg bg-slate-100 p-0.5">
+          {Object.entries(PREVIEW_DEVICES).map(([key, { label, icon }]) => {
+            const Icon = icon;
+            return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setDevice(key)}
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium ${
+                device === key ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
+              }`}
+            >
+              <Icon aria-hidden="true" /> {label}
+            </button>
+            );
+          })}
+        </div>
+        {campaign.id && campaign.slug && (
+          <a
+            href={`/promo/${campaign.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1.5 text-slate-500 hover:text-slate-800"
+            title="Buka halaman tersimpan"
+          >
+            <FiExternalLink aria-hidden="true" />
+          </a>
+        )}
+        {onClose && (
+          <button type="button" onClick={onClose} className="p-1.5 text-slate-500 hover:text-slate-800" aria-label="Tutup preview">
+            <FiX aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      <div ref={boxRef} className="relative flex-1 overflow-hidden bg-slate-200">
+        {box.width > 0 && (
+          <iframe
+            ref={frameRef}
+            src="/admin/campaigns/preview"
+            title="Preview landing page"
+            className="absolute top-0 border-0 bg-white shadow-lg"
+            style={{
+              width: frameWidth,
+              height: box.height / scale,
+              left: Math.max(0, (box.width - frameWidth * scale) / 2),
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+            }}
+          />
+        )}
+      </div>
+      <p className="border-t border-slate-200 px-3 py-1.5 text-[11px] text-slate-400">
+        Preview dari data yang belum disimpan. Form di preview tidak mengirim lead.
+      </p>
+    </div>
+  );
+}
+
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const update = () => setMatches(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, [query]);
+  return matches;
+}
+
 function CampaignForm({ initial, onSaved, onCancel }) {
   const [form, setForm] = useState(initial || emptyCampaign());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
+  const wide = useMediaQuery("(min-width: 1280px)");
 
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
   const pageSetting = (key) => form.pageSettings?.[key] ?? PAGE_SETTING_DEFAULTS[key];
@@ -886,271 +1087,371 @@ function CampaignForm({ initial, onSaved, onCancel }) {
     }
   }
 
-  return (
-    <form onSubmit={handleSubmit}>
-      {error && <div className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
+  const template = pageSetting("template");
 
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-3">Dasar</h3>
-        <div className="grid sm:grid-cols-2 gap-x-4">
-          <Field label="Slug">
-            <TextInput value={form.slug} onChange={(e) => set("slug", e.target.value)} required />
+  return (
+    <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] xl:gap-6 xl:items-start">
+      <form onSubmit={handleSubmit} className="min-w-0">
+        {error && <div className="mb-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</div>}
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-1">Template Tampilan</h3>
+          <p className="text-xs text-slate-500 mb-4">
+            Semua template memakai konten yang sama di bawah (hero, produk, sections, form). Ganti template kapan saja — hasilnya langsung terlihat di preview.
+          </p>
+          <TemplatePicker value={template} onChange={(v) => setPageSetting("template", v)} />
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-1">Tema Warna</h3>
+          <p className="text-xs text-slate-500 mb-4">
+            {template === "cinematic"
+              ? "Template Cinematic memakai palet gelap tetap; warna aksen dipakai untuk langkah, FAQ, dan ikon. Warna topbar & footer diatur di kartunya masing-masing."
+              : "Warna aksen dipakai untuk hero, judul kecil, dan ikon; warna tombol untuk semua tombol CTA."}
+          </p>
+          <div className="grid sm:grid-cols-2 gap-x-4">
+            <ColorField label="Warna aksen" value={form.accentColor} onChange={(v) => set("accentColor", v)} />
+            {template !== "cinematic" && (
+              <>
+                <ColorField label="Warna tombol CTA" value={pageSetting("themeCtaColor")} onChange={(v) => setPageSetting("themeCtaColor", v)} />
+                <ColorField label="Warna judul" value={pageSetting("themeHeadingColor")} onChange={(v) => setPageSetting("themeHeadingColor", v)} />
+                <ColorField
+                  label={template === "sales" ? "Warna latar halaman" : "Warna latar section selang-seling"}
+                  value={pageSetting("themeSurfaceColor")}
+                  onChange={(v) => setPageSetting("themeSurfaceColor", v)}
+                />
+              </>
+            )}
+          </div>
+
+          {template === "split" && (
+            <div className="mt-2 grid sm:grid-cols-2 gap-x-4 border-t border-slate-100 pt-4">
+              <Field label="Posisi foto/video hero">
+                <select
+                  value={pageSetting("splitMediaSide")}
+                  onChange={(e) => setPageSetting("splitMediaSide", e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm"
+                >
+                  <option value="right">Kanan (teks di kiri)</option>
+                  <option value="left">Kiri (teks di kanan)</option>
+                </select>
+              </Field>
+              <Field label="Form di hero" hint="Butuh Form Sample aktif. Form pindah ke hero menggantikan foto/video.">
+                <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+                  <input type="checkbox" checked={!!pageSetting("splitHeroForm")} onChange={(e) => setPageSetting("splitHeroForm", e.target.checked)} />
+                  Tampilkan form sample langsung di hero
+                </label>
+              </Field>
+            </div>
+          )}
+
+          {template === "sales" && (
+            <div className="mt-2 grid sm:grid-cols-2 gap-x-4 border-t border-slate-100 pt-4">
+              <ColorField
+                label="Warna latar hero"
+                value={pageSetting("salesHeroColor")}
+                onChange={(v) => setPageSetting("salesHeroColor", v)}
+                placeholder="Kosong = warna aksen"
+                hint="Kosongkan untuk memakai warna aksen."
+              />
+              <Field label="Bar promo di atas">
+                <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    type="checkbox"
+                    checked={pageSetting("salesAnnouncementEnabled") !== false}
+                    onChange={(e) => setPageSetting("salesAnnouncementEnabled", e.target.checked)}
+                  />
+                  Tampilkan bar promo
+                </label>
+              </Field>
+              <Field label="Teks bar promo">
+                <TextInput value={pageSetting("salesAnnouncementText")} onChange={(e) => setPageSetting("salesAnnouncementText", e.target.value)} />
+              </Field>
+              <Field label="Countdown berakhir pada" hint="Kosongkan untuk menyembunyikan countdown. Otomatis hilang saat waktunya lewat.">
+                <TextInput
+                  type="datetime-local"
+                  value={pageSetting("salesCountdownEnd")}
+                  onChange={(e) => setPageSetting("salesCountdownEnd", e.target.value)}
+                />
+              </Field>
+              <Field label="Label countdown">
+                <TextInput value={pageSetting("salesCountdownLabel")} onChange={(e) => setPageSetting("salesCountdownLabel", e.target.value)} />
+              </Field>
+            </div>
+          )}
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-3">Dasar</h3>
+          <div className="grid sm:grid-cols-2 gap-x-4">
+            <Field label="Slug">
+              <TextInput value={form.slug} onChange={(e) => set("slug", e.target.value)} required />
+            </Field>
+            <Field label="Title">
+              <TextInput value={form.title} onChange={(e) => set("title", e.target.value)} required />
+            </Field>
+            <Field label="Status">
+              <select
+                value={form.status}
+                onChange={(e) => set("status", e.target.value)}
+                className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </Field>
+            <Field label="Published At">
+              <TextInput
+                type="datetime-local"
+                value={form.publishedAt ? String(form.publishedAt).slice(0, 16) : ""}
+                onChange={(e) => set("publishedAt", e.target.value)}
+              />
+            </Field>
+            <Field label="Noindex">
+              <label className="inline-flex items-center gap-1.5 text-sm">
+                <input type="checkbox" checked={!!form.noindex} onChange={(e) => set("noindex", e.target.checked)} />
+                Sembunyikan dari mesin pencari
+              </label>
+            </Field>
+          </div>
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-3">SEO</h3>
+          <Field label="Meta Title">
+            <TextInput value={form.metaTitle} onChange={(e) => set("metaTitle", e.target.value)} />
           </Field>
-          <Field label="Title">
-            <TextInput value={form.title} onChange={(e) => set("title", e.target.value)} required />
+          <Field label="Meta Description">
+            <TextArea rows={2} value={form.metaDescription} onChange={(e) => set("metaDescription", e.target.value)} />
           </Field>
-          <Field label="Status">
-            <select
-              value={form.status}
-              onChange={(e) => set("status", e.target.value)}
-              className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
+          <ImageUploadField label="OG Image" value={form.ogImage} onChange={(v) => set("ogImage", v)} />
+          <Field label="Canonical URL">
+            <TextInput value={form.canonicalUrl} onChange={(e) => set("canonicalUrl", e.target.value)} />
           </Field>
-          <Field label="Published At">
-            <TextInput
-              type="datetime-local"
-              value={form.publishedAt ? String(form.publishedAt).slice(0, 16) : ""}
-              onChange={(e) => set("publishedAt", e.target.value)}
-            />
-          </Field>
-          <Field label="Accent Color">
-            <TextInput value={form.accentColor} onChange={(e) => set("accentColor", e.target.value)} />
-          </Field>
-          <Field label="Noindex">
-            <label className="inline-flex items-center gap-1.5 text-sm">
-              <input type="checkbox" checked={!!form.noindex} onChange={(e) => set("noindex", e.target.checked)} />
-              Sembunyikan dari mesin pencari
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-1">Topbar</h3>
+          <p className="text-xs text-slate-500 mb-4">Pengaturan ini berlaku untuk campaign yang sedang diedit. Kosongkan label menu untuk menyembunyikannya.</p>
+          <Field label="Tampilkan topbar">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" checked={pageSetting("topbarEnabled") !== false} onChange={(e) => setPageSetting("topbarEnabled", e.target.checked)} />
+              Tampilkan topbar di halaman campaign
             </label>
           </Field>
-        </div>
-      </Card>
-
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-3">SEO</h3>
-        <Field label="Meta Title">
-          <TextInput value={form.metaTitle} onChange={(e) => set("metaTitle", e.target.value)} />
-        </Field>
-        <Field label="Meta Description">
-          <TextArea rows={2} value={form.metaDescription} onChange={(e) => set("metaDescription", e.target.value)} />
-        </Field>
-        <ImageUploadField label="OG Image" value={form.ogImage} onChange={(v) => set("ogImage", v)} />
-        <Field label="Canonical URL">
-          <TextInput value={form.canonicalUrl} onChange={(e) => set("canonicalUrl", e.target.value)} />
-        </Field>
-      </Card>
-
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-1">Topbar</h3>
-        <p className="text-xs text-slate-500 mb-4">Pengaturan ini berlaku untuk campaign yang sedang diedit. Kosongkan label menu untuk menyembunyikannya.</p>
-        <Field label="Tampilkan topbar">
-          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" checked={pageSetting("topbarEnabled") !== false} onChange={(e) => setPageSetting("topbarEnabled", e.target.checked)} />
-            Tampilkan topbar di halaman campaign
-          </label>
-        </Field>
-        <ImageUploadField label="Logo topbar (opsional)" value={pageSetting("topbarLogo")} onChange={(v) => setPageSetting("topbarLogo", v)} />
-        <div className="grid sm:grid-cols-2 gap-x-4">
-          <Field label="Nama brand">
-            <TextInput value={pageSetting("topbarBrand")} onChange={(e) => setPageSetting("topbarBrand", e.target.value)} />
-          </Field>
-          <Field label="Tagline brand">
-            <TextInput value={pageSetting("topbarTagline")} onChange={(e) => setPageSetting("topbarTagline", e.target.value)} />
-          </Field>
-          {[
-            ["topbarNavProduct", "Menu Produk"],
-            ["topbarNavSteps", "Menu Cara Kerja"],
-            ["topbarNavAreas", "Menu Area Layanan"],
-            ["topbarNavTestimonials", "Menu Testimoni"],
-            ["topbarNavFaq", "Menu FAQ"],
-          ].map(([key, label]) => (
-            <Field key={key} label={label}>
-              <TextInput value={pageSetting(key)} onChange={(e) => setPageSetting(key, e.target.value)} />
+          <ImageUploadField label="Logo topbar (opsional)" value={pageSetting("topbarLogo")} onChange={(v) => setPageSetting("topbarLogo", v)} />
+          <div className="grid sm:grid-cols-2 gap-x-4">
+            <Field label="Nama brand">
+              <TextInput value={pageSetting("topbarBrand")} onChange={(e) => setPageSetting("topbarBrand", e.target.value)} />
             </Field>
-          ))}
-          <Field label="Teks tombol (desktop)">
-            <TextInput value={pageSetting("topbarCtaText")} onChange={(e) => setPageSetting("topbarCtaText", e.target.value)} />
-          </Field>
-          <Field label="Teks tombol (mobile)">
-            <TextInput value={pageSetting("topbarCtaMobileText")} onChange={(e) => setPageSetting("topbarCtaMobileText", e.target.value)} />
-          </Field>
-          <Field label="Tujuan tombol" hint="Kosongkan untuk mengikuti tujuan CTA utama. Bisa berupa #sample-form atau URL lengkap.">
-            <TextInput value={pageSetting("topbarCtaTarget")} onChange={(e) => setPageSetting("topbarCtaTarget", e.target.value)} />
-          </Field>
-          <Field label="Warna tombol dan ikon brand" hint="Kode warna CSS, misalnya #2563EB.">
-            <TextInput value={pageSetting("topbarButtonColor")} onChange={(e) => setPageSetting("topbarButtonColor", e.target.value)} />
-          </Field>
-          <Field label="Warna topbar saat halaman digulir" hint="Kode warna CSS, misalnya #0a0a1a.">
-            <TextInput value={pageSetting("topbarBackgroundColor")} onChange={(e) => setPageSetting("topbarBackgroundColor", e.target.value)} />
-          </Field>
-        </div>
-      </Card>
+            <Field label="Tagline brand">
+              <TextInput value={pageSetting("topbarTagline")} onChange={(e) => setPageSetting("topbarTagline", e.target.value)} />
+            </Field>
+            {[
+              ["topbarNavProduct", "Menu Produk"],
+              ["topbarNavSteps", "Menu Cara Kerja"],
+              ["topbarNavAreas", "Menu Area Layanan"],
+              ["topbarNavTestimonials", "Menu Testimoni"],
+              ["topbarNavFaq", "Menu FAQ"],
+            ].map(([key, label]) => (
+              <Field key={key} label={label}>
+                <TextInput value={pageSetting(key)} onChange={(e) => setPageSetting(key, e.target.value)} />
+              </Field>
+            ))}
+            <Field label="Teks tombol (desktop)">
+              <TextInput value={pageSetting("topbarCtaText")} onChange={(e) => setPageSetting("topbarCtaText", e.target.value)} />
+            </Field>
+            <Field label="Teks tombol (mobile)">
+              <TextInput value={pageSetting("topbarCtaMobileText")} onChange={(e) => setPageSetting("topbarCtaMobileText", e.target.value)} />
+            </Field>
+            <Field label="Tujuan tombol" hint="Kosongkan untuk mengikuti tujuan CTA utama. Bisa berupa #sample-form atau URL lengkap.">
+              <TextInput value={pageSetting("topbarCtaTarget")} onChange={(e) => setPageSetting("topbarCtaTarget", e.target.value)} />
+            </Field>
+            <ColorField label="Warna tombol dan ikon brand" hint="Template Cinematic." value={pageSetting("topbarButtonColor")} onChange={(v) => setPageSetting("topbarButtonColor", v)} />
+            <ColorField label="Warna topbar saat halaman digulir" hint="Template Cinematic." value={pageSetting("topbarBackgroundColor")} onChange={(v) => setPageSetting("topbarBackgroundColor", v)} />
+          </div>
+        </Card>
 
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-3">Hero</h3>
-        <Field label="Eyebrow">
-          <TextInput value={form.heroEyebrow} onChange={(e) => set("heroEyebrow", e.target.value)} />
-        </Field>
-        <Field label="Headline">
-          <TextArea rows={2} value={form.heroHeadline} onChange={(e) => set("heroHeadline", e.target.value)} />
-        </Field>
-        <Field label="Subtext">
-          <TextArea rows={2} value={form.heroSubtext} onChange={(e) => set("heroSubtext", e.target.value)} />
-        </Field>
-        <VideoUploadField
-          label="Hero Background Video"
-          value={form.heroVideo}
-          onChange={(v) => set("heroVideo", v)}
-          hint="Diputar otomatis tanpa suara & berulang di belakang judul hero. Format MP4 (H.264) atau WebM, maks 50 MB — idealnya 10–30 detik, di bawah 10 MB agar cepat dimuat."
-        />
-        <ImageUploadField label="Hero Image (poster / fallback video)" value={form.heroImage} onChange={(v) => set("heroImage", v)} />
-        <BadgesRepeater badges={form.heroBadges} onChange={(v) => set("heroBadges", v)} />
-        <IconLabelRepeater
-          label="Trust points (3 ikon kecil di bawah tombol CTA)"
-          items={form.heroTrustPoints}
-          onChange={(v) => set("heroTrustPoints", v)}
-        />
-      </Card>
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-3">Hero</h3>
+          <Field label="Eyebrow">
+            <TextInput value={form.heroEyebrow} onChange={(e) => set("heroEyebrow", e.target.value)} />
+          </Field>
+          <Field label="Headline">
+            <TextArea rows={2} value={form.heroHeadline} onChange={(e) => set("heroHeadline", e.target.value)} />
+          </Field>
+          <Field label="Subtext">
+            <TextArea rows={2} value={form.heroSubtext} onChange={(e) => set("heroSubtext", e.target.value)} />
+          </Field>
+          <VideoUploadField
+            label="Hero Background Video"
+            value={form.heroVideo}
+            onChange={(v) => set("heroVideo", v)}
+            hint="Diputar otomatis tanpa suara & berulang di belakang judul hero. Format MP4 (H.264) atau WebM, maks 50 MB — idealnya 10–30 detik, di bawah 10 MB agar cepat dimuat."
+          />
+          <ImageUploadField label="Hero Image (poster / fallback video)" value={form.heroImage} onChange={(v) => set("heroImage", v)} />
+          <BadgesRepeater badges={form.heroBadges} onChange={(v) => set("heroBadges", v)} />
+          <IconLabelRepeater
+            label="Trust points (3 ikon kecil di bawah tombol CTA)"
+            items={form.heroTrustPoints}
+            onChange={(v) => set("heroTrustPoints", v)}
+          />
+        </Card>
 
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-3">CTA</h3>
-        <div className="grid sm:grid-cols-2 gap-x-4">
-          <Field label="Primary CTA Text">
-            <TextInput value={form.primaryCtaText} onChange={(e) => set("primaryCtaText", e.target.value)} />
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-3">CTA</h3>
+          <div className="grid sm:grid-cols-2 gap-x-4">
+            <Field label="Primary CTA Text">
+              <TextInput value={form.primaryCtaText} onChange={(e) => set("primaryCtaText", e.target.value)} />
+            </Field>
+            <Field label="Primary CTA Target">
+              <TextInput value={form.primaryCtaTarget} onChange={(e) => set("primaryCtaTarget", e.target.value)} />
+            </Field>
+            <Field label="Secondary CTA Text">
+              <TextInput value={form.secondaryCtaText} onChange={(e) => set("secondaryCtaText", e.target.value)} />
+            </Field>
+            <Field
+              label="Secondary CTA Target"
+              hint='Tombol "Chat WhatsApp" di hero mengarahkan pengunjung ke form isian dulu, bukan langsung buka chat. Link wa.me di sini dipakai sebagai sumber nomor WhatsApp untuk pesan follow-up otomatis setelah pengunjung submit form.'
+            >
+              <TextInput value={form.secondaryCtaTarget} onChange={(e) => set("secondaryCtaTarget", e.target.value)} />
+            </Field>
+          </div>
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-3">Sections</h3>
+          <SectionsRepeater sections={form.sections} onChange={(v) => set("sections", v)} />
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-3">CTA Band</h3>
+          <Field label="Heading">
+            <TextArea rows={2} value={form.ctaBandHeading} onChange={(e) => set("ctaBandHeading", e.target.value)} />
           </Field>
-          <Field label="Primary CTA Target">
-            <TextInput value={form.primaryCtaTarget} onChange={(e) => set("primaryCtaTarget", e.target.value)} />
+          <Field label="Text">
+            <TextArea rows={2} value={form.ctaBandText} onChange={(e) => set("ctaBandText", e.target.value)} />
           </Field>
-          <Field label="Secondary CTA Text">
-            <TextInput value={form.secondaryCtaText} onChange={(e) => set("secondaryCtaText", e.target.value)} />
+          <Field label="WhatsApp shortcut text">
+            <TextInput value={form.whatsappShortcutText} onChange={(e) => set("whatsappShortcutText", e.target.value)} />
           </Field>
-          <Field
-            label="Secondary CTA Target"
-            hint='Tombol "Chat WhatsApp" di hero mengarahkan pengunjung ke form isian dulu, bukan langsung buka chat. Link wa.me di sini dipakai sebagai sumber nomor WhatsApp untuk pesan follow-up otomatis setelah pengunjung submit form.'
+          <IconLabelRepeater
+            label="Badges (3 ikon kecil di sisi CTA band)"
+            items={form.ctaBandBadges}
+            onChange={(v) => set("ctaBandBadges", v)}
+          />
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-1">Footer</h3>
+          <p className="text-xs text-slate-500 mb-4">Atur identitas, pesan tengah, dan kontak WhatsApp di bagian bawah halaman.</p>
+          <Field label="Tampilkan footer">
+            <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" checked={pageSetting("footerEnabled") !== false} onChange={(e) => setPageSetting("footerEnabled", e.target.checked)} />
+              Tampilkan footer di halaman campaign
+            </label>
+          </Field>
+          <ImageUploadField label="Logo footer (opsional)" value={pageSetting("footerLogo")} onChange={(v) => setPageSetting("footerLogo", v)} />
+          <div className="grid sm:grid-cols-2 gap-x-4">
+            <Field label="Nama brand footer">
+              <TextInput value={pageSetting("footerBrand")} onChange={(e) => setPageSetting("footerBrand", e.target.value)} />
+            </Field>
+            <Field label="Tagline brand footer">
+              <TextInput value={pageSetting("footerBrandTagline")} onChange={(e) => setPageSetting("footerBrandTagline", e.target.value)} />
+            </Field>
+            <Field label="Judul pesan tengah">
+              <TextInput value={pageSetting("footerTagline")} onChange={(e) => setPageSetting("footerTagline", e.target.value)} />
+            </Field>
+            <Field label="Kata kunci footer (satu per baris)">
+              <TextArea rows={4} value={(pageSetting("footerKeywords") || []).join("\n")} onChange={(e) => setPageSetting("footerKeywords", e.target.value.split("\n"))} />
+            </Field>
+            <Field label="Judul WhatsApp" hint="Kosongkan untuk menyembunyikan blok WhatsApp footer. Sebelum diubah, memakai WhatsApp shortcut text di CTA Band.">
+              <TextInput value={pageSetting("footerWhatsappTitle") ?? form.whatsappShortcutText ?? ""} onChange={(e) => setPageSetting("footerWhatsappTitle", e.target.value)} />
+            </Field>
+            <Field label="Teks WhatsApp baris 1">
+              <TextInput value={pageSetting("footerWhatsappLine1")} onChange={(e) => setPageSetting("footerWhatsappLine1", e.target.value)} />
+            </Field>
+            <Field label="Teks WhatsApp baris 2">
+              <TextInput value={pageSetting("footerWhatsappLine2")} onChange={(e) => setPageSetting("footerWhatsappLine2", e.target.value)} />
+            </Field>
+            <Field label="Link WhatsApp footer" hint="Opsional. Isi URL https://wa.me/... agar seluruh blok kontak dapat diklik.">
+              <TextInput value={pageSetting("footerWhatsappUrl")} onChange={(e) => setPageSetting("footerWhatsappUrl", e.target.value)} />
+            </Field>
+            <ColorField label="Warna latar footer" value={pageSetting("footerBackgroundColor")} onChange={(v) => setPageSetting("footerBackgroundColor", v)} />
+            <ColorField label="Warna teks footer" value={pageSetting("footerTextColor")} onChange={(v) => setPageSetting("footerTextColor", v)} />
+            <ColorField label="Warna ikon brand" value={pageSetting("footerBrandColor")} onChange={(v) => setPageSetting("footerBrandColor", v)} />
+            <ColorField label="Warna ikon WhatsApp" value={pageSetting("footerWhatsappColor")} onChange={(v) => setPageSetting("footerWhatsappColor", v)} />
+          </div>
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-3">Teks Lainnya</h3>
+          <Field label="Kata yang di-highlight di headline" hint='Ditampilkan sebagai pil hijau, mis. "GRATIS". Kosongkan untuk tanpa highlight.'>
+            <TextInput value={pageSetting("heroHighlight")} onChange={(e) => setPageSetting("heroHighlight", e.target.value)} />
+          </Field>
+          <Field label="Teks tombol CTA band" hint='Kosongkan untuk memakai Primary CTA Text + " Sekarang".'>
+            <TextInput value={pageSetting("ctaBandButtonText")} onChange={(e) => setPageSetting("ctaBandButtonText", e.target.value)} />
+          </Field>
+          <Field label="Catatan privasi di bawah form sample">
+            <TextInput value={pageSetting("formPrivacyNote")} onChange={(e) => setPageSetting("formPrivacyNote", e.target.value)} />
+          </Field>
+        </Card>
+
+        <Card className="mb-4">
+          <h3 className="font-semibold mb-3">Form Sample</h3>
+          <Field label="Aktifkan form">
+            <label className="inline-flex items-center gap-1.5 text-sm">
+              <input type="checkbox" checked={!!form.formEnabled} onChange={(e) => set("formEnabled", e.target.checked)} />
+              Tampilkan form lead di halaman
+            </label>
+          </Field>
+          <Field label="Form Title">
+            <TextInput value={form.formTitle} onChange={(e) => set("formTitle", e.target.value)} />
+          </Field>
+          <Field label="Form Subtext">
+            <TextArea rows={2} value={form.formSubtext} onChange={(e) => set("formSubtext", e.target.value)} />
+          </Field>
+          <Field label="Teks tombol kirim">
+            <TextInput value={pageSetting("formSubmitText")} onChange={(e) => setPageSetting("formSubmitText", e.target.value)} />
+          </Field>
+          <FormFieldsRepeater fields={form.formFields} onChange={(v) => set("formFields", v)} />
+        </Card>
+
+        <div className="flex gap-2 sticky bottom-0 bg-[#f5f5f7]/95 backdrop-blur py-3">
+          <button
+            type="submit"
+            disabled={saving}
+            className="bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
           >
-            <TextInput value={form.secondaryCtaTarget} onChange={(e) => set("secondaryCtaTarget", e.target.value)} />
-          </Field>
+            {saving ? "Menyimpan..." : "Simpan"}
+          </button>
+          <button type="button" onClick={onCancel} className="px-5 py-2.5 rounded-xl font-semibold text-sm border">
+            Batal
+          </button>
+          {!wide && (
+            <button
+              type="button"
+              onClick={() => setShowPreview(true)}
+              className="ml-auto inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm border border-blue-200 text-blue-700 bg-white"
+            >
+              <FiEye aria-hidden="true" /> Preview
+            </button>
+          )}
         </div>
-      </Card>
+      </form>
 
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-3">Sections</h3>
-        <SectionsRepeater sections={form.sections} onChange={(v) => set("sections", v)} />
-      </Card>
-
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-3">CTA Band</h3>
-        <Field label="Heading">
-          <TextArea rows={2} value={form.ctaBandHeading} onChange={(e) => set("ctaBandHeading", e.target.value)} />
-        </Field>
-        <Field label="Text">
-          <TextArea rows={2} value={form.ctaBandText} onChange={(e) => set("ctaBandText", e.target.value)} />
-        </Field>
-        <Field label="WhatsApp shortcut text">
-          <TextInput value={form.whatsappShortcutText} onChange={(e) => set("whatsappShortcutText", e.target.value)} />
-        </Field>
-        <IconLabelRepeater
-          label="Badges (3 ikon kecil di sisi CTA band)"
-          items={form.ctaBandBadges}
-          onChange={(v) => set("ctaBandBadges", v)}
-        />
-      </Card>
-
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-1">Footer</h3>
-        <p className="text-xs text-slate-500 mb-4">Atur identitas, pesan tengah, dan kontak WhatsApp di bagian bawah halaman.</p>
-        <Field label="Tampilkan footer">
-          <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-            <input type="checkbox" checked={pageSetting("footerEnabled") !== false} onChange={(e) => setPageSetting("footerEnabled", e.target.checked)} />
-            Tampilkan footer di halaman campaign
-          </label>
-        </Field>
-        <ImageUploadField label="Logo footer (opsional)" value={pageSetting("footerLogo")} onChange={(v) => setPageSetting("footerLogo", v)} />
-        <div className="grid sm:grid-cols-2 gap-x-4">
-          <Field label="Nama brand footer">
-            <TextInput value={pageSetting("footerBrand")} onChange={(e) => setPageSetting("footerBrand", e.target.value)} />
-          </Field>
-          <Field label="Tagline brand footer">
-            <TextInput value={pageSetting("footerBrandTagline")} onChange={(e) => setPageSetting("footerBrandTagline", e.target.value)} />
-          </Field>
-          <Field label="Judul pesan tengah">
-            <TextInput value={pageSetting("footerTagline")} onChange={(e) => setPageSetting("footerTagline", e.target.value)} />
-          </Field>
-          <Field label="Kata kunci footer (satu per baris)">
-            <TextArea rows={4} value={(pageSetting("footerKeywords") || []).join("\n")} onChange={(e) => setPageSetting("footerKeywords", e.target.value.split("\n"))} />
-          </Field>
-          <Field label="Judul WhatsApp" hint="Kosongkan untuk menyembunyikan blok WhatsApp footer. Sebelum diubah, memakai WhatsApp shortcut text di CTA Band.">
-            <TextInput value={pageSetting("footerWhatsappTitle") ?? form.whatsappShortcutText ?? ""} onChange={(e) => setPageSetting("footerWhatsappTitle", e.target.value)} />
-          </Field>
-          <Field label="Teks WhatsApp baris 1">
-            <TextInput value={pageSetting("footerWhatsappLine1")} onChange={(e) => setPageSetting("footerWhatsappLine1", e.target.value)} />
-          </Field>
-          <Field label="Teks WhatsApp baris 2">
-            <TextInput value={pageSetting("footerWhatsappLine2")} onChange={(e) => setPageSetting("footerWhatsappLine2", e.target.value)} />
-          </Field>
-          <Field label="Link WhatsApp footer" hint="Opsional. Isi URL https://wa.me/... agar seluruh blok kontak dapat diklik.">
-            <TextInput value={pageSetting("footerWhatsappUrl")} onChange={(e) => setPageSetting("footerWhatsappUrl", e.target.value)} />
-          </Field>
-          <Field label="Warna latar footer">
-            <TextInput value={pageSetting("footerBackgroundColor")} onChange={(e) => setPageSetting("footerBackgroundColor", e.target.value)} />
-          </Field>
-          <Field label="Warna teks footer">
-            <TextInput value={pageSetting("footerTextColor")} onChange={(e) => setPageSetting("footerTextColor", e.target.value)} />
-          </Field>
-          <Field label="Warna ikon brand">
-            <TextInput value={pageSetting("footerBrandColor")} onChange={(e) => setPageSetting("footerBrandColor", e.target.value)} />
-          </Field>
-          <Field label="Warna ikon WhatsApp">
-            <TextInput value={pageSetting("footerWhatsappColor")} onChange={(e) => setPageSetting("footerWhatsappColor", e.target.value)} />
-          </Field>
-        </div>
-      </Card>
-
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-3">Teks Lainnya</h3>
-        <Field label="Kata yang di-highlight di headline" hint='Ditampilkan sebagai pil hijau, mis. "GRATIS". Kosongkan untuk tanpa highlight.'>
-          <TextInput value={pageSetting("heroHighlight")} onChange={(e) => setPageSetting("heroHighlight", e.target.value)} />
-        </Field>
-        <Field label="Teks tombol CTA band" hint='Kosongkan untuk memakai Primary CTA Text + " Sekarang".'>
-          <TextInput value={pageSetting("ctaBandButtonText")} onChange={(e) => setPageSetting("ctaBandButtonText", e.target.value)} />
-        </Field>
-        <Field label="Catatan privasi di bawah form sample">
-          <TextInput value={pageSetting("formPrivacyNote")} onChange={(e) => setPageSetting("formPrivacyNote", e.target.value)} />
-        </Field>
-      </Card>
-
-      <Card className="mb-4">
-        <h3 className="font-semibold mb-3">Form Sample</h3>
-        <Field label="Aktifkan form">
-          <label className="inline-flex items-center gap-1.5 text-sm">
-            <input type="checkbox" checked={!!form.formEnabled} onChange={(e) => set("formEnabled", e.target.checked)} />
-            Tampilkan form lead di halaman
-          </label>
-        </Field>
-        <Field label="Form Title">
-          <TextInput value={form.formTitle} onChange={(e) => set("formTitle", e.target.value)} />
-        </Field>
-        <Field label="Form Subtext">
-          <TextArea rows={2} value={form.formSubtext} onChange={(e) => set("formSubtext", e.target.value)} />
-        </Field>
-        <FormFieldsRepeater fields={form.formFields} onChange={(v) => set("formFields", v)} />
-      </Card>
-
-      <div className="flex gap-2 sticky bottom-0 bg-[#f5f5f7]/95 backdrop-blur py-3">
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-blue-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-60"
-        >
-          {saving ? "Menyimpan..." : "Simpan"}
-        </button>
-        <button type="button" onClick={onCancel} className="px-5 py-2.5 rounded-xl font-semibold text-sm border">
-          Batal
-        </button>
-      </div>
-    </form>
+      {wide ? (
+        <aside className="sticky top-4 h-[calc(100vh-2rem)] min-w-0">
+          <CampaignPreview campaign={form} />
+        </aside>
+      ) : (
+        showPreview && (
+          <div className="fixed inset-0 z-50 bg-black/60 p-2 sm:p-6" role="dialog" aria-modal="true" aria-label="Preview landing page">
+            <CampaignPreview campaign={form} onClose={() => setShowPreview(false)} />
+          </div>
+        )
+      )}
+    </div>
   );
 }
 

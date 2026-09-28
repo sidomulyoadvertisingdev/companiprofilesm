@@ -1,0 +1,22 @@
+---
+import "../../../styles/index.css";
+import AdCampaignPreview from "../../../react-pages/AdCampaignPreview.jsx";
+
+// Live-preview frame for the campaign editor. Behind /admin (see
+// src/middleware.js), and deliberately without AdCampaignLayout: no Meta
+// Pixel or visitor tracker, so editing never pollutes ads/analytics data.
+const googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || "";
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Preview Campaign</title>
+  </head>
+  <body class="bg-white text-[#1d1d1f]">
+    <AdCampaignPreview client:only="react" googleMapsApiKey={googleMapsApiKey} />
+  </body>
+</html>
