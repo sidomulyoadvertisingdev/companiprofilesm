@@ -21,6 +21,8 @@ import {
 } from "react-icons/fi";
 import {
   PreviewContext,
+  readUtm,
+  trackLead,
   reverseGeocodeAddress,
   PREVIEW_NOTICE,
   NAVY,
@@ -188,6 +190,13 @@ export function LeadFormCard({
   const [submitError, setSubmitError] = useState("");
   const [success, setSuccess] = useState(null);
 
+  // Bring the thank-you card (with the WhatsApp follow-up button) into view:
+  // it is much shorter than the form, so without this the visitor is left
+  // looking at whatever section follows.
+  useEffect(() => {
+    if (success) document.getElementById("sample-form")?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [success]);
+
   if (!campaign.formEnabled) return null;
 
   function setField(key, value) {
@@ -234,8 +243,6 @@ export function LeadFormCard({
       return;
     }
 
-    const params = new URLSearchParams(window.location.search);
-
     try {
       const res = await fetch("/api/ad-campaign-leads", {
         method: "POST",
@@ -248,11 +255,7 @@ export function LeadFormCard({
           city: values.city,
           message: values.message,
           answers,
-          utmSource: params.get("utm_source"),
-          utmMedium: params.get("utm_medium"),
-          utmCampaign: params.get("utm_campaign"),
-          utmContent: params.get("utm_content"),
-          utmTerm: params.get("utm_term"),
+          ...readUtm(),
           referrer: document.referrer || null,
         }),
       });
@@ -261,7 +264,7 @@ export function LeadFormCard({
         setSubmitError(data.message || "Gagal mengirim, coba lagi.");
         return;
       }
-      window.fbq?.("track", "Lead", { content_name: campaign.slug });
+      trackLead(campaign);
       setSuccess(data);
     } catch {
       setSubmitError("Gagal mengirim, periksa koneksi internet Anda.");
@@ -290,7 +293,7 @@ export function LeadFormCard({
         {waTarget && (
           <>
             <p className="text-sm font-semibold text-[#1d1d1f] dark:text-white mb-5 max-w-sm mx-auto">
-              Satu langkah lagi: klik tombol WhatsApp di bawah supaya tim kami bisa langsung follow up pesanan Anda lebih cepat.
+              Satu langkah lagi: klik tombol WhatsApp di bawah supaya tim kami bisa langsung follow up permintaan Anda lebih cepat.
             </p>
             <a
               href={waTarget}
@@ -598,7 +601,6 @@ export function ProductModal({ product, section, campaign, googleMapsApiKey, onC
     if (Object.keys(errs).length) return;
 
     setSubmitting(true);
-    const params = new URLSearchParams(window.location.search);
     try {
       const res = await fetch("/api/ad-campaign-leads", {
         method: "POST",
@@ -618,11 +620,7 @@ export function ProductModal({ product, section, campaign, googleMapsApiKey, onC
             address_source: addressSource,
             ...(addressSource === "maps" && detectedCoords ? { gps_latitude: detectedCoords.lat, gps_longitude: detectedCoords.lng } : {}),
           },
-          utmSource: params.get("utm_source"),
-          utmMedium: params.get("utm_medium"),
-          utmCampaign: params.get("utm_campaign"),
-          utmContent: params.get("utm_content"),
-          utmTerm: params.get("utm_term"),
+          ...readUtm(),
           referrer: document.referrer || null,
         }),
       });
@@ -635,7 +633,7 @@ export function ProductModal({ product, section, campaign, googleMapsApiKey, onC
         setErrors({ form: "Data belum berhasil divalidasi. Coba kirim lagi." });
         return;
       }
-      window.fbq?.("track", "Lead", { content_name: campaign.slug, content_category: product.title });
+      trackLead(campaign, { content_category: product.title });
     } catch {
       setErrors({ form: "Koneksi terputus. Coba kirim lagi." });
       return;

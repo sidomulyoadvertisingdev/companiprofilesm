@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FiArrowRight,
   FiCheck,
@@ -25,7 +25,9 @@ import {
   ICON_MAP,
   activeItems,
   campaignModel,
+  LEAD_EVENT,
   cleanList,
+  salesCtaAfter,
   settingText,
   splitTwoLines,
   subheadingOf,
@@ -181,6 +183,9 @@ function Hero({ campaign, theme, target }) {
         <div className="mt-7">
           <BigCta text={campaign.primaryCtaText} target={target} color={theme.cta} pulse />
         </div>
+        {settingText(campaign, "heroCtaNote") && (
+          <p className="mt-3 text-xs sm:text-sm text-white/85">{settingText(campaign, "heroCtaNote")}</p>
+        )}
 
         {settingText(campaign, "salesCountdownEnd") && (
           <div className="mt-7">
@@ -380,6 +385,67 @@ function Faq({ items, theme }) {
   );
 }
 
+// Dedicated block selling the offer: checklist, CTA and a reassurance note.
+function OfferSection({ section, campaign, theme, target }) {
+  const items = activeItems(section);
+  const sub = subheadingOf(section);
+  return (
+    <section className="px-5 py-10 bg-white">
+      <Reveal
+        className="rounded-3xl p-6 text-center text-white shadow-xl"
+        style={{ background: `linear-gradient(160deg, ${theme.hero}, ${theme.heading})` }}
+      >
+        {section.badge && (
+          <span className="inline-block text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-white text-slate-900 mb-3">
+            {section.badge}
+          </span>
+        )}
+        {section.heading && <h2 className="text-2xl font-black leading-tight">{section.heading}</h2>}
+        {sub && <p className="mt-2 text-sm text-white/85">{sub}</p>}
+        {items.length > 0 && (
+          <ul className="mt-5 space-y-2 text-left inline-block">
+            {items.map((item, i) => (
+              <li key={i} className="flex items-center gap-2 text-sm font-semibold">
+                <FiCheck className="shrink-0 text-[#FDE047]" size={18} aria-hidden="true" /> {item.title}
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="mt-6">
+          <BigCta text={section.ctaText || campaign.primaryCtaText} target={target} color={theme.cta} />
+        </div>
+        {section.note && <p className="mt-3 text-xs text-white/80">{section.note}</p>}
+      </Reveal>
+    </section>
+  );
+}
+
+function FormSection({ campaign, theme, stepsSection }) {
+  if (!stepsSection && !campaign.formEnabled) return null;
+  return (
+    <section id="cara-kerja" className="px-5 py-10 scroll-mt-12" style={{ backgroundColor: tint(theme.accent, 6) }}>
+      {stepsSection && (
+        <div className="mb-8">
+          <Reveal className="text-center mb-6">
+            <h2 className="text-2xl font-black" style={{ color: theme.heading }}>{stepsSection.heading}</h2>
+            {subheadingOf(stepsSection) && <p className="mt-2 text-sm text-slate-500">{subheadingOf(stepsSection)}</p>}
+          </Reveal>
+          <Steps section={stepsSection} theme={theme} />
+        </div>
+      )}
+      {campaign.formEnabled && (
+        <LeadFormCard
+          campaign={campaign}
+          accent={theme.accent}
+          headerColor={theme.heading}
+          buttonColor={theme.cta}
+          cardClassName="rounded-3xl bg-white shadow-lg ring-1 ring-slate-200"
+        />
+      )}
+    </section>
+  );
+}
+
 // One renderer per section type; each returns the block body, or null to
 // skip the section (and its repeated CTA) when it has nothing to show.
 function renderSection(section, theme) {
@@ -389,7 +455,7 @@ function renderSection(section, theme) {
     case "problems":
       return { tone: "soft", body: <CheckList items={items} bad theme={theme} /> };
     case "benefits":
-      return { id: "solusi", body: <CheckList items={items} theme={theme} />, cta: true };
+      return { id: "solusi", body: <CheckList items={items} theme={theme} /> };
     case "steps":
       return { tone: "soft", body: <Steps section={section} theme={theme} /> };
     case "gallery":
@@ -409,7 +475,6 @@ function renderSection(section, theme) {
             ))}
           </div>
         ),
-        cta: true,
       };
     case "areas":
       return {
@@ -432,7 +497,7 @@ function renderSection(section, theme) {
         ),
       };
     case "testimonials":
-      return { id: "testimoni", tone: "soft", body: <Testimonials items={items} theme={theme} />, cta: true };
+      return { id: "testimoni", tone: "soft", body: <Testimonials items={items} theme={theme} /> };
     case "faq":
       return { id: "faq", body: <Faq items={items} theme={theme} /> };
     default:
@@ -515,10 +580,39 @@ function Footer({ campaign }) {
   );
 }
 
+// Shown only once the hero (with its own CTA) is scrolled past, hidden while
+// the lead form is on screen so it never covers the fields, and gone for
+// good after a successful submit.
 function StickyCta({ campaign, theme, target }) {
+  const [pastHero, setPastHero] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setPastHero(window.scrollY > window.innerHeight * 0.8);
+    const onLead = () => setSubmitted(true);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener(LEAD_EVENT, onLead);
+    const form = document.getElementById("sample-form");
+    const observer =
+      form && typeof IntersectionObserver !== "undefined"
+        ? new IntersectionObserver(([entry]) => setFormVisible(entry.isIntersecting), { threshold: 0.1 })
+        : null;
+    if (observer) observer.observe(form);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener(LEAD_EVENT, onLead);
+      observer?.disconnect();
+    };
+  }, []);
   if (!campaign.primaryCtaText) return null;
+  const hidden = !pastHero || formVisible || submitted;
   return (
-    <div className="fixed bottom-0 inset-x-0 z-40 pointer-events-none" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+    <div
+      className={`fixed bottom-0 inset-x-0 z-40 pointer-events-none transition-transform duration-300 ${hidden ? "translate-y-[150%]" : ""}`}
+      inert={hidden}
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="max-w-md mx-auto px-4 pb-3 pointer-events-auto">
         <a
           href={target || "#sample-form"}
@@ -534,7 +628,7 @@ function StickyCta({ campaign, theme, target }) {
 
 export default function SalesTemplate({ campaign, googleMapsApiKey }) {
   const theme = useTheme(campaign);
-  const { sections, stepsSection, configurator, ctaTarget } = campaignModel(campaign);
+  const { sections, stepsSection, formSection, configurator, ctaTarget } = campaignModel(campaign);
   const target = ctaTarget || campaign.primaryCtaTarget || "#sample-form";
 
   return (
@@ -547,37 +641,21 @@ export default function SalesTemplate({ campaign, googleMapsApiKey }) {
         {sections.map((section, idx) => {
           // The first steps section sits right above the form instead.
           if (section === stepsSection) return null;
+          const key = `${section.type}-${idx}`;
+          if (section.type === "form") return <FormSection key={key} campaign={campaign} theme={theme} />;
+          if (section.type === "offer") return <OfferSection key={key} section={section} campaign={campaign} theme={theme} target={target} />;
           const rendered = renderSection(section, theme);
           if (!rendered) return null;
           return (
-            <div key={`${section.type}-${idx}`} style={rendered.tone === "soft" ? { backgroundColor: tint(theme.accent, 6) } : undefined}>
+            <div key={key} style={rendered.tone === "soft" ? { backgroundColor: tint(theme.accent, 6) } : undefined}>
               <Block id={rendered.id} section={section} theme={theme} tone={rendered.tone}>
                 {rendered.body}
               </Block>
-              {rendered.cta && <RepeatCta campaign={campaign} theme={theme} target={target} />}
+              {salesCtaAfter(section) && <RepeatCta campaign={campaign} theme={theme} target={target} />}
             </div>
           );
         })}
-        {(stepsSection || campaign.formEnabled) && (
-          <section id="cara-kerja" className="px-5 py-10 scroll-mt-12" style={{ backgroundColor: tint(theme.accent, 6) }}>
-            {stepsSection && (
-              <div className="mb-8">
-                <Reveal className="text-center mb-6">
-                  <h2 className="text-2xl font-black" style={{ color: theme.heading }}>{stepsSection.heading}</h2>
-                  {subheadingOf(stepsSection) && <p className="mt-2 text-sm text-slate-500">{subheadingOf(stepsSection)}</p>}
-                </Reveal>
-                <Steps section={stepsSection} theme={theme} />
-              </div>
-            )}
-            <LeadFormCard
-              campaign={campaign}
-              accent={theme.accent}
-              headerColor={theme.heading}
-              buttonColor={theme.cta}
-              cardClassName="rounded-3xl bg-white shadow-lg ring-1 ring-slate-200"
-            />
-          </section>
-        )}
+        {!formSection && <FormSection campaign={campaign} theme={theme} stepsSection={stepsSection} />}
         <OfferBox campaign={campaign} theme={theme} target={target} />
         {settingText(campaign, "footerEnabled") !== false && <Footer campaign={campaign} />}
       </div>

@@ -195,6 +195,10 @@ function Hero({ campaign, ctaTarget }) {
           />
         </div>
 
+        {settingText(campaign, "heroCtaNote") && (
+          <p className="mt-4 text-xs sm:text-sm text-white/75">{settingText(campaign, "heroCtaNote")}</p>
+        )}
+
         {trustPoints.length > 0 && (
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mt-8">
             {trustPoints.map((tp, i) => {
@@ -367,8 +371,8 @@ function SampleSection({ stepsSection, campaign, accent }) {
       id="cara-kerja"
       className="py-14 sm:py-20 px-4 sm:px-6 bg-white dark:bg-[#0a0a1a] scroll-mt-16"
     >
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-start">
-        <Reveal>{stepsSection ? <StepsInfo section={stepsSection} accent={accent} /> : <div />}</Reveal>
+      <div className={stepsSection ? "max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-14 items-start" : "max-w-xl mx-auto"}>
+        {stepsSection && <Reveal><StepsInfo section={stepsSection} accent={accent} /></Reveal>}
         <Reveal delay={0.1}>
           <LeadFormCard campaign={campaign} accent={accent} />
         </Reveal>
@@ -684,10 +688,48 @@ function ConfiguratorSection({ section, campaign, googleMapsApiKey }) {
   );
 }
 
-function SectionsLoop({ sections, stepsSection, accent }) {
+function OfferSection({ section, campaign, ctaTarget }) {
+  const items = (section.items || []).filter((it) => it.active !== false && it.title);
+  const sub = section.subheading ?? "";
+  return (
+    <section className="py-14 sm:py-20 px-4 sm:px-6 bg-white dark:bg-[#0a0a1a]">
+      <Reveal className="max-w-3xl mx-auto text-center rounded-3xl px-6 py-10 sm:px-12 text-white" style={{ backgroundColor: NAVY }}>
+        {section.badge && (
+          <span className="inline-block text-xs font-bold px-3 py-1 rounded-full mb-3 text-white" style={{ backgroundColor: GREEN }}>
+            {section.badge}
+          </span>
+        )}
+        {section.heading && <h2 className="text-2xl sm:text-3xl font-bold">{section.heading}</h2>}
+        {sub && <p className="mt-2 text-slate-300">{sub}</p>}
+        {items.length > 0 && (
+          <div className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-2">
+            {items.map((item, i) => (
+              <span key={i} className="inline-flex items-center gap-2 text-sm font-medium">
+                <FiCheckCircle className="text-[#4ADE80]" aria-hidden="true" /> {item.title}
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="mt-8">
+          <CtaButton
+            text={section.ctaText || campaign.primaryCtaText}
+            target={ctaTarget || campaign.primaryCtaTarget || "#sample-form"}
+            accent={BLUE}
+            icon={FiGift}
+          />
+        </div>
+        {section.note && <p className="mt-4 text-xs text-slate-400">{section.note}</p>}
+      </Reveal>
+    </section>
+  );
+}
+
+function SectionsLoop({ sections, stepsSection, accent, campaign, ctaTarget }) {
   if (!Array.isArray(sections)) return null;
   return sections.map((section, idx) => {
     const key = `${section.type}-${idx}`;
+    if (section.type === "form") return <SampleSection key={key} campaign={campaign} accent={accent} />;
+    if (section.type === "offer") return <OfferSection key={key} section={section} campaign={campaign} ctaTarget={ctaTarget} />;
     if (section.type === "problems") return <ProblemsSection key={key} section={section} />;
     if (section.type === "benefits") return <SolutionSection key={key} section={section} />;
     if (section.type === "areas") return <AreasSection key={key} section={section} />;
@@ -849,15 +891,15 @@ function StickyMobileCta({ campaign, ctaTarget }) {
 
 function CinematicTemplate({ campaign, googleMapsApiKey }) {
   const accent = campaign.accentColor || "#0A4DA6";
-  const { sections, stepsSection, configurator, ctaTarget } = campaignModel(campaign);
+  const { sections, stepsSection, formSection, configurator, ctaTarget } = campaignModel(campaign);
 
   return (
     <main className="pb-24 md:pb-0">
       {settingText(campaign, "topbarEnabled") !== false && <TopNav campaign={campaign} ctaTarget={ctaTarget} />}
       <Hero campaign={campaign} ctaTarget={ctaTarget} />
       {configurator && <ConfiguratorSection section={configurator} campaign={campaign} googleMapsApiKey={googleMapsApiKey} />}
-      <SectionsLoop sections={sections} stepsSection={stepsSection} accent={accent} />
-      <SampleSection stepsSection={stepsSection} campaign={campaign} accent={accent} />
+      <SectionsLoop sections={sections} stepsSection={stepsSection} accent={accent} campaign={campaign} ctaTarget={ctaTarget} />
+      {!formSection && <SampleSection stepsSection={stepsSection} campaign={campaign} accent={accent} />}
       <CtaBand campaign={campaign} />
       {settingText(campaign, "footerEnabled") !== false && <Footer campaign={campaign} />}
       <StickyMobileCta campaign={campaign} ctaTarget={ctaTarget} />

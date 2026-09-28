@@ -187,6 +187,10 @@ function Hero({ campaign, theme, ctaTarget, heroForm }) {
             )}
           </div>
 
+          {settingText(campaign, "heroCtaNote") && (
+            <p className="mt-3 text-sm text-slate-500">{settingText(campaign, "heroCtaNote")}</p>
+          )}
+
           {trustPoints.length > 0 && (
             <ul className="mt-8 grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
               {trustPoints.map((tp, i) => (
@@ -526,6 +530,34 @@ function Faq({ section, theme }) {
   );
 }
 
+function Offer({ section, campaign, theme, ctaTarget }) {
+  const items = activeItems(section);
+  return (
+    <section className="py-14 sm:py-20 px-4 sm:px-6 bg-white">
+      <Reveal className="max-w-3xl mx-auto text-center rounded-[2rem] ring-1 ring-slate-200 px-6 py-10 sm:px-12" style={{ backgroundColor: tint(theme.accent, 5) }}>
+        <Heading section={section} theme={theme} />
+        {items.length > 0 && (
+          <ul className="-mt-4 mb-8 flex flex-wrap justify-center gap-x-6 gap-y-2">
+            {items.map((item, i) => (
+              <li key={i} className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                <FiCheckCircle style={{ color: theme.cta }} aria-hidden="true" /> {item.title}
+              </li>
+            ))}
+          </ul>
+        )}
+        <CtaButton
+          text={section.ctaText || campaign.primaryCtaText}
+          target={ctaTarget || campaign.primaryCtaTarget || "#sample-form"}
+          accent={theme.cta}
+          icon={FiGift}
+          className="!px-8 !py-4"
+        />
+        {section.note && <p className="mt-4 text-xs text-slate-500">{section.note}</p>}
+      </Reveal>
+    </section>
+  );
+}
+
 function CtaBand({ campaign, theme, ctaTarget }) {
   if (!campaign.ctaBandHeading && !campaign.ctaBandText) return null;
   const [line1, line2] = splitTwoLines(campaign.ctaBandHeading);
@@ -665,7 +697,7 @@ const SECTION_COMPONENTS = {
 
 export default function SplitTemplate({ campaign, googleMapsApiKey }) {
   const theme = useTheme(campaign);
-  const { sections, stepsSection, configurator, ctaTarget } = campaignModel(campaign);
+  const { sections, stepsSection, formSection, configurator, ctaTarget } = campaignModel(campaign);
   // The lead form moves into the hero only when the admin asked for it and
   // the form is actually enabled.
   const heroForm = Boolean(settingText(campaign, "splitHeroForm")) && campaign.formEnabled;
@@ -677,6 +709,12 @@ export default function SplitTemplate({ campaign, googleMapsApiKey }) {
       {configurator && <Configurator section={configurator} campaign={campaign} theme={theme} googleMapsApiKey={googleMapsApiKey} />}
       {sections.map((section, idx) => {
         const key = `${section.type}-${idx}`;
+        if (section.type === "form") {
+          return <SampleSection key={key} campaign={campaign} theme={theme} heroForm={heroForm} />;
+        }
+        if (section.type === "offer") {
+          return <Offer key={key} section={section} campaign={campaign} theme={theme} ctaTarget={ctaTarget} />;
+        }
         if (section.type === "steps" && section !== stepsSection) {
           return (
             <section key={key} className="py-14 sm:py-20 px-4 sm:px-6 bg-white">
@@ -689,7 +727,7 @@ export default function SplitTemplate({ campaign, googleMapsApiKey }) {
         const Component = SECTION_COMPONENTS[section.type];
         return Component ? <Component key={key} section={section} theme={theme} /> : null;
       })}
-      <SampleSection stepsSection={stepsSection} campaign={campaign} theme={theme} heroForm={heroForm} />
+      {!formSection && <SampleSection stepsSection={stepsSection} campaign={campaign} theme={theme} heroForm={heroForm} />}
       <CtaBand campaign={campaign} theme={theme} ctaTarget={ctaTarget} />
       {settingText(campaign, "footerEnabled") !== false && <Footer campaign={campaign} theme={theme} />}
       <StickyMobileCta campaign={campaign} theme={theme} ctaTarget={ctaTarget} />

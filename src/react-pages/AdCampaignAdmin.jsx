@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import AdCampaignAnalytics from "./AdCampaignAnalytics.jsx";
-import { PAGE_SETTING_DEFAULTS, PREVIEW_MESSAGE, SUBHEADING_DEFAULTS, TEMPLATES } from "./ad-campaign/config.js";
+import { PAGE_SETTING_DEFAULTS, PREVIEW_MESSAGE, SUBHEADING_DEFAULTS, TEMPLATES, salesCtaAfter } from "./ad-campaign/config.js";
 import {
   FiPlus,
   FiTrash2,
@@ -37,6 +37,8 @@ const SECTION_TYPES = [
   { value: "gallery", label: "Gallery (Sample Produk)" },
   { value: "testimonials", label: "Testimoni Pelanggan" },
   { value: "faq", label: "FAQ" },
+  { value: "offer", label: "Penawaran (blok CTA)" },
+  { value: "form", label: "Posisi Form Sample" },
 ];
 
 const FIELD_TYPES = ["text", "tel", "email", "select", "textarea"];
@@ -80,6 +82,7 @@ const ANSWER_LABELS = {
   current_label: "Label yang Dipakai Saat Ini",
   pain_point: "Masalah Utama",
   notes: "Catatan",
+  label_need: "Kebutuhan Label",
   // "Pilih Produk" configurator answers.
   produk: "Produk",
   varian: "Varian",
@@ -636,6 +639,13 @@ function SectionsRepeater({ sections, onChange }) {
                 </button>
               </div>
             </div>
+            {section.type === "form" ? (
+              <p className="text-xs text-slate-500">
+                Form sample (kartu &quot;Form Sample&quot;) tampil di posisi ini, bukan di akhir halaman. Section Steps lalu tampil
+                sendiri di urutannya.
+              </p>
+            ) : (
+            <>
             <TextInput
               className="mb-2"
               placeholder="Heading"
@@ -654,6 +664,31 @@ function SectionsRepeater({ sections, onChange }) {
               value={section.badge || ""}
               onChange={(e) => updateSection(i, { badge: e.target.value })}
             />
+            {section.type === "offer" && (
+              <div className="mb-3 grid sm:grid-cols-2 gap-2">
+                <TextInput
+                  placeholder="Teks tombol (kosong = Primary CTA Text)"
+                  value={section.ctaText || ""}
+                  onChange={(e) => updateSection(i, { ctaText: e.target.value })}
+                />
+                <TextInput
+                  placeholder="Catatan kecil di bawah tombol (opsional)"
+                  value={section.note || ""}
+                  onChange={(e) => updateSection(i, { note: e.target.value })}
+                />
+                <p className="sm:col-span-2 text-xs text-slate-500">Item di bawah = poin checklist penawaran (isi Judul saja).</p>
+              </div>
+            )}
+            {!["offer", "configurator"].includes(section.type) && (
+              <label className="mb-3 flex items-center gap-2 text-xs text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={salesCtaAfter(section)}
+                  onChange={(e) => updateSection(i, { ctaAfter: e.target.checked })}
+                />
+                Tombol CTA setelah section ini (template Sales Page)
+              </label>
+            )}
             {section.type === "configurator" && (
               <div className="mb-3 rounded-xl border border-blue-200 bg-blue-50/50 p-3">
                 <p className="text-xs text-slate-500 mb-2">
@@ -731,6 +766,8 @@ function SectionsRepeater({ sections, onChange }) {
                 <FiPlus /> {section.type === "configurator" ? "Tambah produk" : "Tambah item"}
               </button>
             </div>
+            </>
+            )}
           </div>
         ))}
         <button
@@ -1228,6 +1265,12 @@ function CampaignForm({ initial, onSaved, onCancel }) {
           <Field label="Canonical URL">
             <TextInput value={form.canonicalUrl} onChange={(e) => set("canonicalUrl", e.target.value)} />
           </Field>
+          <Field
+            label="Nama konversi (Meta Pixel Lead)"
+            hint="Dikirim sebagai content_name pada event Lead, hanya setelah form berhasil terkirim. Kosongkan untuk memakai slug. UTM dari iklan otomatis tersimpan di setiap lead."
+          >
+            <TextInput value={pageSetting("leadEventName")} placeholder={form.slug} onChange={(e) => setPageSetting("leadEventName", e.target.value)} />
+          </Field>
         </Card>
 
         <Card className="mb-4">
@@ -1290,6 +1333,9 @@ function CampaignForm({ initial, onSaved, onCancel }) {
             hint="Diputar otomatis tanpa suara & berulang di belakang judul hero. Format MP4 (H.264) atau WebM, maks 50 MB — idealnya 10–30 detik, di bawah 10 MB agar cepat dimuat."
           />
           <ImageUploadField label="Hero Image (poster / fallback video)" value={form.heroImage} onChange={(v) => set("heroImage", v)} />
+          <Field label="Catatan di bawah tombol CTA hero" hint='Penghilang keraguan, mis. "Gratis, tanpa kewajiban order". Kosongkan untuk menyembunyikan.'>
+            <TextInput value={pageSetting("heroCtaNote")} onChange={(e) => setPageSetting("heroCtaNote", e.target.value)} />
+          </Field>
           <BadgesRepeater badges={form.heroBadges} onChange={(v) => set("heroBadges", v)} />
           <IconLabelRepeater
             label="Trust points (3 ikon kecil di bawah tombol CTA)"

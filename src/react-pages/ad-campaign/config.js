@@ -68,13 +68,25 @@ export function templateOf(campaign) {
 // steps section rendered next to the lead form, and the configurator — which
 // only counts once it has at least one live product, so CTAs never point at
 // an empty #pilih-produk anchor.
+//
+// A "form" section is a position marker: the lead form renders there instead
+// of at the end of the page, and every steps section then renders on its own
+// (stepsSection is only set when the form still pairs with the first steps).
 export function campaignModel(campaign) {
   const sections = Array.isArray(campaign.sections) ? campaign.sections : [];
-  const stepsSection = sections.find((s) => s.type === "steps");
+  const formSection = sections.find((s) => s.type === "form");
+  const stepsSection = formSection ? undefined : sections.find((s) => s.type === "steps");
   const configurator = sections.find(
     (s) => s.type === "configurator" && (s.items || []).some((it) => it.active !== false && it.title)
   );
-  return { sections, stepsSection, configurator, ctaTarget: configurator ? "#pilih-produk" : undefined };
+  return { sections, stepsSection, formSection, configurator, ctaTarget: configurator ? "#pilih-produk" : undefined };
+}
+
+// Whether the Sales Page template repeats the main CTA after a section. The
+// admin can switch it per section (section.ctaAfter); by default it follows
+// the sections that usually end a persuasion block.
+export function salesCtaAfter(section) {
+  return section.ctaAfter ?? ["benefits", "gallery", "testimonials"].includes(section.type);
 }
 
 // Built-in section subheadings, used when a section never had one set; the
@@ -171,6 +183,11 @@ export const PAGE_SETTING_DEFAULTS = {
   footerWhatsappUrl: "",
   formPrivacyNote: "Data Anda aman dan hanya digunakan untuk keperluan pengiriman sample.",
   formSubmitText: "Kirim Permintaan Sample",
+  // Reassurance line under the hero CTA (e.g. "Gratis, tanpa kewajiban
+  // order"). Empty = hidden.
+  heroCtaNote: "",
+  // content_name sent with the Meta Pixel Lead event; empty = campaign slug.
+  leadEventName: "",
   // Template choice and the theme knobs used by the "split" and "sales"
   // templates (the cinematic template keeps its original fixed palette).
   template: "cinematic",
@@ -354,3 +371,43 @@ export async function reverseGeocodeAddress(latitude, longitude) {
   }
   return "";
 }
+
+const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"];
+const UTM_STORAGE_KEY = "ad-campaign-utm";
+
+// UTM params of the ad click. Read from the URL, and remembered for the tab
+// session so a lead still carries them if the visitor's URL loses the query
+// string (e.g. after reloading from a hash link or an in-app browser hop).
+export function readUtm() {
+  const params = new URLSearchParams(window.location.search);
+  const fromUrl = Object.fromEntries(UTM_KEYS.map((k) => [k, params.get(k)]).filter(([, v]) => v));
+  let stored = {};
+  try {
+    if (Object.keys(fromUrl).length) sessionStorage.setItem(UTM_STORAGE_KEY, JSON.stringify(fromUrl));
+    else stored = JSON.parse(sessionStorage.getItem(UTM_STORAGE_KEY) || "{}");
+  } catch {
+    stored = {};
+  }
+  const utm = Object.keys(fromUrl).length ? fromUrl : stored;
+  return {
+    utmSource: utm.utm_source || null,
+    utmMedium: utm.utm_medium || null,
+    utmCampaign: utm.utm_campaign || null,
+    utmContent: utm.utm_content || null,
+    utmTerm: utm.utm_term || null,
+  };
+}
+
+// Conversion tracking, called only after the lead API answered OK — never on
+// a bare button click. Meta Pixel gets the standard Lead event; a GTM
+// dataLayer (if the page has one) gets `ad_campaign_lead`.
+export function trackLead(campaign, extra = {}) {
+  const name = settingText(campaign, "leadEventName") || campaign.slug;
+  window.fbq?.("track", "Lead", { content_name: name, ...extra });
+  window.dataLayer?.push({ event: "ad_campaign_lead", lead_name: name, campaign_slug: campaign.slug, ...extra });
+  window.dispatchEvent(new CustomEvent(LEAD_EVENT));
+}
+
+// Fired on window after a lead is saved, so page chrome (e.g. a sticky CTA)
+// can get out of the way of the success message.
+export const LEAD_EVENT = "ad-campaign-lead";
