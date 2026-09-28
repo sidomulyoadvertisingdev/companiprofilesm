@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "astro preview",
     "seed": "node scripts/seed.mjs",
-    "seed:sppg-campaign": "node scripts/seed-ad-campaign-sppg.mjs"
+    "seed:sppg-campaign": "node scripts/seed-ad-campaign-sppg.mjs",
+    "seed:sppg-templates": "node scripts/seed-ad-campaign-templates.mjs"
   },
   "dependencies": {
     "@astrojs/node": "^9.5.5",
